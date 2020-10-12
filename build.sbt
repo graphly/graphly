@@ -4,6 +4,9 @@ version := "0.1"
 
 scalaVersion := "2.13.3"
 
+libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.2.0"
+
+/** For ScalaFX **/
 resolvers += Resolver.sonatypeRepo("snapshots")
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-Xcheckinit", "-encoding", "utf8", "-feature")

@@ -1,13 +1,27 @@
 package io
 
 import model.sim.Sim
+import XMLSimRepresentation.xmlSimRepresentation
 
-trait SimWriter[A] {
-  def write(sim: Sim): A
+trait SimRepresentation[A] {
+  def represent(sim: Sim): A
 }
 
+// class SimRepresentation a where
+//   represent :: Sim -> A
+
+// trait SimRepresentation {
+//   fn represent(sim: Sim) -> Self
+// }
+
 object Implicits {
-  implicit class WritableSim[W](sim: Sim)(implicit simWriter: SimWriter[W]) {
-    def toWritable: W = simWriter.write(sim)
+  // Eq a => a -> a -> Bool
+  // SimWriter w => Sim -> w
+  implicit class RepresentableSim[W](sim: Sim)(implicit simRepresentation: SimRepresentation[W]) {
+    def toRepresentation: W = simRepresentation.represent(sim)
+  }
+
+  def iDontKnowWhatsHappening(): Unit = {
+    val xml: scala.xml.Elem = Sim(null, null, null, null, null).toRepresentation
   }
 }

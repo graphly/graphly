@@ -16,8 +16,8 @@ case class UserClass(name: String, priority: Int, referenceSource: Node, `type`:
 
 object UserClass {
   sealed trait Type
-  case object Open
-  case object Closed
+  case object Open extends Type
+  case object Closed extends Type
 }
 
 case class Measure(alpha: Float, referenceNode: Node, referenceClass: UserClass, `type`: String, verbose: Boolean)

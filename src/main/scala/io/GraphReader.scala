@@ -1,19 +1,13 @@
 package io
 
-import model.graph.Graph
+import model.sim.Sim
 
-import scala.xml.Elem
-
-trait GraphReader[A] {
-  def read(x: A): Graph
+trait SimWriter[A] {
+  def write(sim: Sim): A
 }
 
-package object implicits {
-  implicit object XMLGraphReader extends GraphReader[xml.Elem] {
-    override def read(x: Elem): Graph = ???
-  }
-
-  implicit class GraphReadableToGraph[X](readable: X)(implicit graphReader: GraphReader[X]) {
-    def toGraph: Graph = graphReader.read(readable)
+object Implicits {
+  implicit class WritableSim[W](sim: Sim)(implicit simWriter: SimWriter[W]) {
+    def toWritable: W = simWriter.write(sim)
   }
 }

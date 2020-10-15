@@ -3,7 +3,7 @@ package ui.canvas
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.ArcType
-import util.number._
+import util.Number._
 
 case class Node(x: Double, y: Double) extends Shape {
   private val nodeRadius = 20

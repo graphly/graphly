@@ -10,8 +10,8 @@ import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
 
 class AppMainSceneView(width: Double, height: Double) extends Scene(width, height) {
   private val model: Sim = null
-  private val graphContainer = new GraphCanvasContainer
-  private val controller = new GraphCanvasController(graphContainer.canvas, model)
+  private val controller = new GraphCanvasController(model)
+  private val graphContainer = new GraphCanvasContainer(controller)
 
   root = new BorderPane {
     top = new MenuBar {

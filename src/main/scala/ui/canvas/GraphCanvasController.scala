@@ -1,5 +1,6 @@
 package ui.canvas
 
+import collection.Seq
 import model.sim.Sim
 import ui.canvas.GraphCanvasController.EditingMode
 import ui.canvas.GraphCanvasController.EditingMode.{EntryState, default}
@@ -7,10 +8,7 @@ import util.Default
 
 import scala.collection.mutable
 
-class GraphCanvasController(val view: GraphCanvas, val model: Sim) {
-  // Bind this controller to that view.
-  view.controller = this
-
+class GraphCanvasController(val model: Sim) {
   // Collection of all shapes that will be drawn. This may be later split
   // into nodes and edges since edges need to be drawn before the nodes.
   private val shapes = mutable.ArrayDeque.empty[Shape]
@@ -21,20 +19,17 @@ class GraphCanvasController(val view: GraphCanvas, val model: Sim) {
 
   // Reference to currently selected object. Only one object can
   // be selected at a time. This may later change.
-  private var selected: Option[Node] = None
-  private def selected_=(node: Node): Unit = {
+  private var _selected: Option[Node] = None
+  private def selected: Option[Node] = _selected
+  private def selected_=(node: Option[Node]): Unit = {
     selected.foreach(_.selected = false)
-    node.selected = true
-    selected = Some(node)
+    node.foreach(_.selected = true)
+    _selected = node
   }
+  private def selected_=(node: Node): Unit = selected = Some(node)
 
   def setDrawMode(newState: EntryState): Unit = {
-    selected match {
-      case _: Some[Node] => selected.get.selected = false
-      case _ =>
-    }
     selected = None
-
     viewMode = newState
   }
 
@@ -44,7 +39,7 @@ class GraphCanvasController(val view: GraphCanvas, val model: Sim) {
    * @param x : Logical X coordinate.
    * @param y : Logical Y coordinate.
    */
-  def onMouseClick(x: Double, y: Double): Unit = {
+  def onMouseClick(x: Double, y: Double, fnUpdate: Seq[Shape] => Unit): Unit = {
     viewMode match {
       case _: EditingMode.Node =>
         val node = Node(x, y)
@@ -56,7 +51,6 @@ class GraphCanvasController(val view: GraphCanvas, val model: Sim) {
       case EditingMode.DrawingEdge(start) =>
         hitTest(x, y) foreach { end =>
           // Deselect current node.
-          selected.get.selected = false
           selected = None
 
           shapes.prepend(Edge(start, end))
@@ -64,7 +58,7 @@ class GraphCanvasController(val view: GraphCanvas, val model: Sim) {
         }
     }
 
-    view.redraw(shapes)
+    fnUpdate(shapes)
   }
 
   private def hitTest(x: Double, y: Double): Option[Node] =
@@ -82,7 +76,6 @@ object GraphCanvasController {
 
     sealed trait Node extends EntryState
 
-    sealed trait InsertNode extends Node
     case object Source extends Node
     case object Sink extends Node
     case object Fork extends Node

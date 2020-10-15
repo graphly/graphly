@@ -1,19 +1,17 @@
 package ui.canvas
 
+import collection.Seq
 import javafx.scene.input.MouseEvent
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.paint.Color
 
-import scala.collection.mutable
-
-class GraphCanvas extends Canvas {
-  var controller: GraphCanvasController = _
+class GraphCanvas(val controller: GraphCanvasController) extends Canvas {
 
   private def screenToWorldTransform(x: Double, y: Double): (Double, Double) = (x, y)
 
   onMouseClicked = (e: MouseEvent) => {
     val (wx, wy) = screenToWorldTransform(e.getX, e.getY)
-    controller.onMouseClick(wx, wy)
+    controller.onMouseClick(wx, wy, redraw)
   }
 
 //  onMouseMoved = (e: MouseEvent) => {
@@ -33,7 +31,7 @@ class GraphCanvas extends Canvas {
 //    }
 //  }
 
-  def redraw(shapes: mutable.ArrayDeque[Shape]): Unit = {
+  def redraw(shapes: Seq[Shape]): Unit = {
     graphicsContext2D.fill = Color.White
     graphicsContext2D.fillRect(0, 0, width.value, height.value)
 

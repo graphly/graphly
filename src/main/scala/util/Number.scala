@@ -1,6 +1,6 @@
 package util
 
-package object number {
+object Number {
   implicit class DoubleExtensions(double: Double) {
     final def **(exponent: Double): Double = math.pow(double, exponent)
   }

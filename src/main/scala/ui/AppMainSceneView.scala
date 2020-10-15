@@ -1,15 +1,17 @@
 package ui
 
 import javafx.event.ActionEvent
+import model.sim.Sim
 import scalafx.scene.Scene
-import scalafx.scene.control.{Menu, MenuBar, MenuItem}
+import scalafx.scene.control.{Menu, MenuBar, MenuItem, SeparatorMenuItem}
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
-import ui.canvas.GraphCanvasContainer
+import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
 
 class AppMainSceneView(width: Double, height: Double) extends Scene(width, height) {
+  private val model: Sim = null
   private val graphContainer = new GraphCanvasContainer
-  private val graph = graphContainer.canvas
+  private val controller = new GraphCanvasController(graphContainer.canvas, model)
 
   root = new BorderPane {
     top = new MenuBar {
@@ -18,12 +20,13 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
         new Menu("Open"),
         new Menu("Drawing Preferences") {
           items = List(
-            new MenuItem("Nodes") {
-              onAction = (_: ActionEvent) => graph.drawingModeNodes()
-              accelerator = new KeyCodeCombination(KeyCode.N, KeyCombination.AltDown)
+            new MenuItem("Source") {
+              onAction = (_: ActionEvent) => controller.setDrawMode(GraphCanvasController.EditingMode.Source)
+              accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.AltDown)
             },
+            new SeparatorMenuItem(),
             new MenuItem("Edges") {
-              onAction = (_: ActionEvent) => graph.drawingModeEdges()
+              onAction = (_: ActionEvent) => controller.setDrawMode(GraphCanvasController.EditingMode.Edge)
               accelerator = new KeyCodeCombination(KeyCode.E, KeyCombination.AltDown)
             }
           )

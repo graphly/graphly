@@ -10,7 +10,7 @@ case class Node(x: Double, y: Double) extends Shape {
   private val selectColor = Color.GreenYellow
   private val fillColor = Color.CornflowerBlue
 
-  var selected: Boolean = true
+  var selected: Boolean = false
 
   def drawCircle(r: Double, c: Color, gc: GraphicsContext): Unit = {
     gc.fill = c

@@ -20,8 +20,4 @@ object Implicits {
   implicit class RepresentableSim[W](sim: Sim)(implicit simRepresentation: SimRepresentation[W]) {
     def toRepresentation: W = simRepresentation.represent(sim)
   }
-
-  def iDontKnowWhatsHappening(): Unit = {
-    val xml: scala.xml.Elem = Sim(null, null, null, null, null).toRepresentation
-  }
 }

@@ -13,29 +13,29 @@ import scala.collection.mutable
 class GraphCanvas extends Canvas {
   private val shapes = mutable.ArrayDeque.empty[Shape]
 
-  private var _mode: EditingMode.State = Default.default
+  private var mode: EditingMode.State = Default.default
 
-  private def mode: EditingMode.State = _mode
-  private def mode_=(state: EditingMode.State): EditingMode.State = {
-    _mode.cleanUp()
-    val old = _mode
-    _mode = state
-    old
+  private var selected: Option[Node] = None
+  private def selected_=(node: Node): Unit = {
+    selected.foreach(_.selected = false)
+    node.selected = true
+    selected = Some(node)
   }
-
-//  private var startNode: Option[Node] = None
-  private var tempSelect: Option[Node] = None
 
   onMouseClicked = (e: MouseEvent) => {
     mode match {
-      case _: EditingMode.Node => shapes.prepend(Node(e.getX, e.getY))
+      case _: EditingMode.Node =>
+        val node = Node(e.getX, e.getY)
+        shapes.prepend(node)
+        selected = node
       case EditingMode.Edge => hitTest(e.getX, e.getY) foreach { start =>
+        selected = start
         mode = EditingMode.DrawingEdge(start)
       }
       case EditingMode.DrawingEdge(start) =>
         hitTest(e.getX, e.getY) foreach { end =>
             shapes.prepend(Edge(start, end))
-            end.selected = true
+            selected = end
             mode = EditingMode.DrawingEdge(end)
         }
     }
@@ -63,38 +63,29 @@ class GraphCanvas extends Canvas {
   def redraw(): Unit = {
     graphicsContext2D.fill = Color.White
     graphicsContext2D.fillRect(0, 0, width.value, height.value)
-    for (node <- shapes) node.draw(graphicsContext2D)
+    shapes.foreach(_.draw(graphicsContext2D))
   }
 
-  def hitTest(x: Double, y: Double): Option[Node] = shapes collectFirst { case node: Node if node.hitTest(x, y) => node }
+  def hitTest(x: Double, y: Double): Option[Node] =
+    shapes collectFirst { case node: Node if node.hitTest(x, y) => node }
 
-  def drawingModeNodes(): Unit = {
-    mode.cleanUp()
+  def drawingModeNodes(): Unit =
     mode = EditingMode.Source
-    println("Drawing Nodes now")
-  }
 
-  def drawingModeEdges(): Unit = {
+  def drawingModeEdges(): Unit =
     mode = EditingMode.Edge
-    println("Drawing Edges now")
-  }
 }
 
 object GraphCanvas {
   object EditingMode {
-    sealed trait State {
-      def cleanUp(): Unit = ()
-
-    }
+    sealed trait State
 
     case object Edge extends State
-    case class DrawingEdge(startNode: ui.canvas.Node) extends State {
-      override def cleanUp(): Unit = {
-        startNode.selected = false
-      }
-    }
+    case class DrawingEdge(previous: ui.canvas.Node) extends State
 
     sealed trait Node extends State
+
+    sealed trait InsertNode extends Node
     case object Source extends Node
     case object Sink extends Node
     case object Fork extends Node

@@ -17,9 +17,9 @@ case class Node(x: Double, y: Double) extends Shape {
     gc.fillArc(x - r, y - r, 2 * r, 2 * r, 0, 360, ArcType.Chord)
   }
 
-  override def draw(gc: GraphicsContext): Unit = {
-    if (selected) drawCircle(nodeRadius * 1.3, selectColor, gc)
-    drawCircle(nodeRadius, fillColor, gc)
+  override def draw(context: GraphicsContext): Unit = {
+    if (selected) drawCircle(nodeRadius * 1.3, selectColor, context)
+    drawCircle(nodeRadius, fillColor, context)
   }
 
   def hitTest(xHit: Double, yHit: Double): Boolean = {

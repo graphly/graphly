@@ -3,5 +3,5 @@ package ui.canvas
 import scalafx.scene.canvas.GraphicsContext
 
 trait Shape {
-  def draw(gc: GraphicsContext)
+  def draw(context: GraphicsContext)
 }

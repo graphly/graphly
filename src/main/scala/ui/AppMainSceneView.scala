@@ -2,11 +2,10 @@ package ui
 
 import javafx.event.ActionEvent
 import scalafx.scene.Scene
-import scalafx.scene.canvas.Canvas
-import scalafx.scene.control.{Label, Menu, MenuBar, MenuItem, TextArea}
+import scalafx.scene.control.{Menu, MenuBar, MenuItem}
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
-import scalafx.scene.layout.{BorderPane, HBox}
-import ui.canvas.{GraphCanvas, GraphCanvasContainer}
+import scalafx.scene.layout.BorderPane
+import ui.canvas.GraphCanvasContainer
 
 class AppMainSceneView(width: Double, height: Double) extends Scene(width, height) {
   private val graphContainer = new GraphCanvasContainer

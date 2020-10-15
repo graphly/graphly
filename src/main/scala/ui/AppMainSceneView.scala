@@ -20,11 +20,11 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
         new Menu("Drawing Preferences") {
           items = List(
             new MenuItem("Nodes") {
-              onAction = (ev: ActionEvent) => graph.drawingModeNodes()
+              onAction = (_: ActionEvent) => graph.drawingModeNodes()
               accelerator = new KeyCodeCombination(KeyCode.N, KeyCombination.AltDown)
             },
             new MenuItem("Edges") {
-              onAction = (ev: ActionEvent) => graph.drawingModeEdges()
+              onAction = (_: ActionEvent) => graph.drawingModeEdges()
               accelerator = new KeyCodeCombination(KeyCode.E, KeyCombination.AltDown)
             }
           )

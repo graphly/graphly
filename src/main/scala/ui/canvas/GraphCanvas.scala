@@ -3,98 +3,103 @@ package ui.canvas
 import javafx.scene.input.MouseEvent
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.paint.Color
+import util.Default
+
+import GraphCanvas._
+import GraphCanvas.EditingMode.default
+
+import scala.collection.mutable
 
 class GraphCanvas extends Canvas {
+  private val shapes = mutable.ArrayDeque.empty[Shape]
 
-  object StateMachine extends Enumeration {
-    val Node, Edge, EdgeStartDrawing = Value
+  private var _mode: EditingMode.State = Default.default
+
+  private def mode: EditingMode.State = _mode
+  private def mode_=(state: EditingMode.State): EditingMode.State = {
+    _mode.cleanUp()
+    val old = _mode
+    _mode = state
+    old
   }
 
-  private val gctx = graphicsContext2D
-  private var shapes = List[Shape]()
-
-  // Hacky shit.
-  private var currentState: StateMachine.Value = StateMachine.Node
-  private var startNode: Option[Node] = None
+//  private var startNode: Option[Node] = None
   private var tempSelect: Option[Node] = None
 
   onMouseClicked = (e: MouseEvent) => {
-    currentState match {
-      case StateMachine.Node => shapes ::= new Node(e.getX, e.getY)
-      case StateMachine.Edge =>
-        hitTest(e.getX, e.getY) match {
-          case node: Some[Node] =>
-            startNode = node
-            startNode.get.selected = true
-            currentState = StateMachine.EdgeStartDrawing
-          case None =>
-        }
-      case StateMachine.EdgeStartDrawing =>
-        hitTest(e.getX, e.getY) match {
-          case node: Some[Node] =>
-            if (node != startNode) {
-              shapes ::= new Edge(startNode.get, node.get)
-
-              startNode.get.selected = false
-              startNode = null
-
-              currentState = StateMachine.Edge
-            }
-          case None =>
-            startNode.get.selected = false
-            startNode = null
-            currentState = StateMachine.Edge
+    mode match {
+      case _: EditingMode.Node => shapes.prepend(Node(e.getX, e.getY))
+      case EditingMode.Edge => hitTest(e.getX, e.getY) foreach { start =>
+        mode = EditingMode.DrawingEdge(start)
+      }
+      case EditingMode.DrawingEdge(start) =>
+        hitTest(e.getX, e.getY) foreach { end =>
+            shapes.prepend(Edge(start, end))
+            end.selected = true
+            mode = EditingMode.DrawingEdge(end)
         }
     }
 
     redraw()
   }
 
-  onMouseMoved = (e: MouseEvent) => {
-    hitTest(e.getX, e.getY) match {
-      case node: Some[Node] =>
-        if (node != startNode) {
-          tempSelect = node
-          tempSelect.get.selected = true
-          redraw()
-        }
-      case None =>
-        if (tempSelect.isDefined && tempSelect != startNode) {
-          tempSelect.get.selected = false
-          tempSelect = None
-          redraw()
-        }
-    }
-  }
+//  onMouseMoved = (e: MouseEvent) => {
+//    hitTest(e.getX, e.getY) match {
+//      case Some(node) =>
+//        if (startNode contains node) {
+//          tempSelect = Some(node)
+//          tempSelect.get.selected = true
+//          redraw()
+//        }
+//      case None =>
+//        if (tempSelect.isDefined && tempSelect != startNode) {
+//          tempSelect.get.selected = false
+//          tempSelect = None
+//          redraw()
+//        }
+//    }
+//  }
 
   def redraw(): Unit = {
-    gctx.fill = Color.White
-    gctx.fillRect(0, 0, width.value, height.value)
-    for (node <- shapes) node.Draw(gctx)
+    graphicsContext2D.fill = Color.White
+    graphicsContext2D.fillRect(0, 0, width.value, height.value)
+    for (node <- shapes) node.draw(graphicsContext2D)
   }
 
-  def hitTest(x: Double, y: Double): Option[Node] = {
-    for (node <- shapes) node match {
-      case node: Node =>
-        if (node.HitTest(x, y)) return Option.apply(node)
-      case _ =>
-    }
-
-    return Option.empty
-  }
+  def hitTest(x: Double, y: Double): Option[Node] = shapes collectFirst { case node: Node if node.hitTest(x, y) => node }
 
   def drawingModeNodes(): Unit = {
-    if (startNode.isDefined) {
-      startNode.get.selected = false
-      startNode = None
-    }
-
-    currentState = StateMachine.Node
+    mode.cleanUp()
+    mode = EditingMode.Source
     println("Drawing Nodes now")
   }
 
   def drawingModeEdges(): Unit = {
-    currentState = StateMachine.Edge
+    mode = EditingMode.Edge
     println("Drawing Edges now")
+  }
+}
+
+object GraphCanvas {
+  object EditingMode {
+    sealed trait State {
+      def cleanUp(): Unit = ()
+
+    }
+
+    case object Edge extends State
+    case class DrawingEdge(startNode: ui.canvas.Node) extends State {
+      override def cleanUp(): Unit = {
+        startNode.selected = false
+      }
+    }
+
+    sealed trait Node extends State
+    case object Source extends Node
+    case object Sink extends Node
+    case object Fork extends Node
+    case object Join extends Node
+
+    implicit val default: Default[State] = Source
   }
 }

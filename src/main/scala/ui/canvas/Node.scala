@@ -5,7 +5,7 @@ import scalafx.scene.paint.Color
 import scalafx.scene.shape.ArcType
 import util.Number._
 
-case class Node(x: Double, y: Double, node: model.sim.Node) extends Shape {
+case class Node(var x: Double, var y: Double, node: model.sim.Node) extends Shape {
   private val nodeRadius = 20
   private val selectColor = Color.GreenYellow
   private val fillColor = Color.CornflowerBlue

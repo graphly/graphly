@@ -14,6 +14,11 @@ class GraphCanvas(val controller: GraphCanvasController) extends Canvas {
     controller.onMouseClick(wx, wy, redraw)
   }
 
+  onMouseMoved = (e: MouseEvent) => {
+    val (wx, wy) = logicalPosition(e.getX, e.getY)
+    controller.onMouseMove(wx, wy, redraw)
+  }
+
   def redraw(shapes: Seq[Shape]): Unit = {
     graphicsContext2D.fill = Color.White
     graphicsContext2D.fillRect(0, 0, width.value, height.value)

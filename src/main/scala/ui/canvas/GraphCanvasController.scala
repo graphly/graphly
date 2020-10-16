@@ -25,6 +25,7 @@ class GraphCanvasController(val model: Sim) {
   // Reference to currently selected object. Only one object can
   // be selected at a time. This may later change.
   private var _selected: Option[Node] = None
+
   @inline
   private def selected: Option[Node] = _selected
 
@@ -33,6 +34,7 @@ class GraphCanvasController(val model: Sim) {
     node.foreach(_.selected = true)
     _selected = node
   }
+
   private def selected_=(node: Node): Unit = selected = Some(node)
 
   def setDrawMode(newState: EntryState): Unit = {
@@ -49,10 +51,19 @@ class GraphCanvasController(val model: Sim) {
   def onMouseClick(x: Double, y: Double, fnUpdate: Seq[Shape] => Unit): Unit = {
     viewMode match {
       case _: EditingMode.Node =>
-        val simNode = sim.Source((x, y))
-        val node = Node(x, y, simNode)
-        model.nodes += simNode
-        shapes.prepend(node)
+        hitTest(x, y) match {
+          case None =>
+            val simNode = sim.Source((x, y))
+            val node = Node(x, y, simNode)
+            model.nodes += simNode
+            shapes.prepend(node)
+          case Some(node) =>
+            viewMode = EditingMode.MovingNode
+            selected = Some(node)
+        }
+      case EditingMode.MovingNode =>
+        viewMode = Default.default
+        selected = None
       case EditingMode.Edge => hitTest(x, y) foreach { start =>
         selected = start
         viewMode = EditingMode.DrawingEdge(start)
@@ -71,6 +82,20 @@ class GraphCanvasController(val model: Sim) {
     fnUpdate(shapes)
   }
 
+  def onMouseMove(x: Double, y: Double, fnUpdate: Seq[Shape] => Unit): Unit = {
+    viewMode match {
+      case EditingMode.MovingNode =>
+        selected match {
+          case Some(node) =>
+            node.x = x
+            node.y = y
+            fnUpdate(shapes)
+          case _ =>
+        }
+      case _ =>
+    }
+  }
+
   private def hitTest(x: Double, y: Double): Option[Node] =
     shapes collectFirst { case node: Node if node.hitTest(x, y) => node }
 
@@ -86,20 +111,30 @@ class GraphCanvasController(val model: Sim) {
 
 
 object GraphCanvasController {
+
   object EditingMode {
+
     sealed trait State
+
     sealed trait EntryState extends State
 
     case object Edge extends EntryState
+
     case class DrawingEdge(previous: ui.canvas.Node) extends State
+
+    case object MovingNode extends State
 
     sealed trait Node extends EntryState
 
     case object Source extends Node
+
     case object Sink extends Node
+
     case object Fork extends Node
+
     case object Join extends Node
 
     implicit val default: Default[State] = Source
   }
+
 }

@@ -26,7 +26,7 @@ class GraphCanvasController(val model: Sim) {
   // be selected at a time. This may later change.
   private var _selected: Option[Node] = None
   @inline
-  private def selected: Option[Node] = _selected
+  private final def selected: Option[Node] = _selected
 
   private def selected_=(node: Option[Node]): Unit = {
     selected.foreach(_.selected = false)

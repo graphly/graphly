@@ -7,29 +7,12 @@ import scalafx.scene.paint.Color
 
 class GraphCanvas(val controller: GraphCanvasController) extends Canvas {
 
-  private def screenToWorldTransform(x: Double, y: Double): (Double, Double) = (x, y)
+  private def logicalPosition(x: Double, y: Double): (Double, Double) = (x, y)
 
   onMouseClicked = (e: MouseEvent) => {
-    val (wx, wy) = screenToWorldTransform(e.getX, e.getY)
+    val (wx, wy) = logicalPosition(e.getX, e.getY)
     controller.onMouseClick(wx, wy, redraw)
   }
-
-//  onMouseMoved = (e: MouseEvent) => {
-//    hitTest(e.getX, e.getY) match {
-//      case Some(node) =>
-//        if (startNode contains node) {
-//          tempSelect = Some(node)
-//          tempSelect.get.selected = true
-//          redraw()
-//        }
-//      case None =>
-//        if (tempSelect.isDefined && tempSelect != startNode) {
-//          tempSelect.get.selected = false
-//          tempSelect = None
-//          redraw()
-//        }
-//    }
-//  }
 
   def redraw(shapes: Seq[Shape]): Unit = {
     graphicsContext2D.fill = Color.White

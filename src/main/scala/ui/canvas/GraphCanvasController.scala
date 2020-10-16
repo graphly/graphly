@@ -1,10 +1,15 @@
 package ui.canvas
 
 import collection.Seq
-import model.sim.Sim
+import model.sim.{Sim, Connection}
+import model.sim.Position.Implicits._
+import model.sim
 import ui.canvas.GraphCanvasController.EditingMode
 import ui.canvas.GraphCanvasController.EditingMode.{EntryState, default}
 import util.Default
+import io.XMLSimRepresentation._
+import io.Implicits._
+import java.io.{File, PrintWriter}
 
 import scala.collection.mutable
 
@@ -20,7 +25,9 @@ class GraphCanvasController(val model: Sim) {
   // Reference to currently selected object. Only one object can
   // be selected at a time. This may later change.
   private var _selected: Option[Node] = None
+  @inline
   private def selected: Option[Node] = _selected
+
   private def selected_=(node: Option[Node]): Unit = {
     selected.foreach(_.selected = false)
     node.foreach(_.selected = true)
@@ -42,7 +49,9 @@ class GraphCanvasController(val model: Sim) {
   def onMouseClick(x: Double, y: Double, fnUpdate: Seq[Shape] => Unit): Unit = {
     viewMode match {
       case _: EditingMode.Node =>
-        val node = Node(x, y)
+        val simNode = sim.Source((x, y))
+        val node = Node(x, y, simNode)
+        model.nodes += simNode
         shapes.prepend(node)
       case EditingMode.Edge => hitTest(x, y) foreach { start =>
         selected = start
@@ -54,6 +63,7 @@ class GraphCanvasController(val model: Sim) {
           selected = None
 
           shapes.prepend(Edge(start, end))
+          model.connections += Connection(start.node, end.node)
           viewMode = EditingMode.Edge
         }
     }
@@ -63,6 +73,15 @@ class GraphCanvasController(val model: Sim) {
 
   private def hitTest(x: Double, y: Double): Option[Node] =
     shapes collectFirst { case node: Node if node.hitTest(x, y) => node }
+
+  def save(): Unit = {
+    val dest = new File(System.getProperty("user.home") + "/test.xml")
+    dest.createNewFile()
+    new PrintWriter(dest) {
+      write(model.toRepresentation.toString)
+      close()
+    }
+  }
 }
 
 

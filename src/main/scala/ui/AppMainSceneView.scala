@@ -9,16 +9,33 @@ import scalafx.scene.layout.BorderPane
 import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
 
 class AppMainSceneView(width: Double, height: Double) extends Scene(width, height) {
-  private val model: Sim = null
+  private val model: Sim = Sim.empty
   private val controller = new GraphCanvasController(model)
   private val graphContainer = new GraphCanvasContainer(controller)
 
   root = new BorderPane {
     top = new MenuBar {
       menus = List(
-        new Menu("Save"),
-        new Menu("Open"),
-        new Menu("Drawing Preferences") {
+        new Menu("File") {
+          items = List(
+            new MenuItem("Save") {
+              onAction = (_: ActionEvent) => {
+                controller.save()
+              }
+              accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown)
+            },
+            new MenuItem("Save As") {
+              disable = true
+              accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown, KeyCombination.AltDown)
+            },
+            new SeparatorMenuItem(),
+            new MenuItem("Open") {
+              disable = true
+              accelerator = new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)
+            },
+          )
+        },
+        new Menu("Draw") {
           items = List(
             new MenuItem("Source") {
               onAction = (_: ActionEvent) => controller.setDrawMode(GraphCanvasController.EditingMode.Source)

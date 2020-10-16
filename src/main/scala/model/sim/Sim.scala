@@ -22,12 +22,22 @@ object UserClass {
 
 case class Measure(alpha: Float, referenceNode: Node, referenceClass: UserClass, `type`: String, verbose: Boolean)
 
-case class Sim(nodes: Set[Node],
-               connections: Set[Connection],
-               classes: Set[UserClass],
-               measures: Set[Measure],
+case class Sim(nodes: mutable.Set[Node],
+               connections: mutable.Set[Connection],
+               classes: mutable.Set[UserClass],
+               measures: mutable.Set[Measure],
                configuration: Sim.Configuration = mutable.HashMap.empty)
 
 object Sim {
   type Configuration = mutable.HashMap[String, Any]
+
+  def empty(): Sim = {
+    Sim(
+      mutable.HashSet.empty,
+      mutable.HashSet.empty,
+      mutable.HashSet.empty,
+      mutable.HashSet.empty,
+      mutable.HashMap.empty
+    )
+  }
 }

@@ -1,103 +1,139 @@
 package ui.canvas
 
-import collection.Seq
-import model.sim.{Sim, Connection}
+import collection.{Seq, View, immutable, mutable}
+import model.sim.{Connection, Sim}
 import model.sim.Position.Implicits._
 import model.sim
 import ui.canvas.GraphCanvasController.EditingMode
-import ui.canvas.GraphCanvasController.EditingMode.{EntryState, default}
+import ui.canvas.GraphCanvasController.EditingMode.{DragNode, Entry, default}
 import util.Default
 import io.XMLSimRepresentation._
 import io.Implicits._
 import java.io.{File, PrintWriter}
 
-import scala.collection.mutable
+import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}
+import ui.Position.Implicits.MouseEventPosition
+import ui.{Controller, Position, canvas}
 
-class GraphCanvasController(val model: Sim) {
+class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Unit] {
   // Collection of all shapes that will be drawn. This may be later split
   // into nodes and edges since edges need to be drawn before the nodes.
   private val shapes = mutable.ArrayDeque.empty[Shape]
 
   // What state is the view in - whether we are creating nodes and connections,
   // moving objects, etc.
-  private var viewMode: EditingMode.State = Default.default
-
-  // Reference to currently selected object. Only one object can
-  // be selected at a time. This may later change.
-  private var _selected: Option[Node] = None
-
-  @inline
-  private final def selected: Option[Node] = _selected
-
-  private def selected_=(node: Option[Node]): Unit = {
-    selected.foreach(_.selected = false)
-    node.foreach(_.selected = true)
-    _selected = node
+  private var _mode: EditingMode.State = Default.default
+  private def mode_=(state: EditingMode.State): Unit = {
+    _mode.end()
+    _mode = state
+    state.start()
   }
+  @inline
+  final def mode: EditingMode.State = _mode
 
-  private def selected_=(node: Node): Unit = selected = Some(node)
-
-  def setDrawMode(newState: EntryState): Unit = {
-    selected = None
-    viewMode = newState
+  final def switchMode(state: EditingMode.State, update: Seq[Shape] => Unit): Unit = {
+    mode = state
+    update(shapes)
   }
 
   /**
    * Callback when we click inside the canvas.
    *
-   * @param x : Logical X coordinate.
-   * @param y : Logical Y coordinate.
+   * @param event: MouseEvent for position and modifiers
+   * @param update: Display update function
    */
-  def onMouseClick(x: Double, y: Double, fnUpdate: Seq[Shape] => Unit): Unit = {
-    viewMode match {
+  override def onMouseClick(event: MouseEvent, update: Seq[Shape] => Unit): Unit = {
+    val position = event.position
+    mode match {
       case _: EditingMode.Node =>
-        hitTest(x, y) match {
+        hitShape(position) match {
           case None =>
-            val simNode = sim.Source((x, y))
-            val node = Node(x, y, simNode)
+            val simNode = sim.Source(position.model)
+            val node = Node(position, simNode)
             model.nodes += simNode
             shapes.prepend(node)
-          case Some(node) =>
-            viewMode = EditingMode.MovingNode
-            selected = Some(node)
+          case Some(node: Node) =>
+            mode = EditingMode.SelectNode(Set(node))
+          case Some(edge: Edge) =>
+            mode = EditingMode.SelectEdge(Set(edge))
         }
-      case EditingMode.MovingNode =>
-        viewMode = Default.default
-        selected = None
-      case EditingMode.Edge => hitTest(x, y) foreach { start =>
-        selected = start
-        viewMode = EditingMode.DrawingEdge(start)
+      case EditingMode.BeginEdge => hitNode(position) foreach { start =>
+        mode = EditingMode.DrawingEdge(start)
       }
       case EditingMode.DrawingEdge(start) =>
-        hitTest(x, y) foreach { end =>
-          // Deselect current node.
-          selected = None
-
-          shapes.prepend(Edge(start, end))
-          model.connections += Connection(start.node, end.node)
-          viewMode = EditingMode.Edge
+        hitNode(position) match {
+          case Some(end) =>
+            shapes.prepend(Edge(start, end))
+            model.connections += Connection(start.node, end.node)
+            mode = EditingMode.DrawingEdge(end)
+          case None =>
+            mode = EditingMode.BeginEdge
+        }
+      case EditingMode.DragNode(nodes, _) =>
+        mode = EditingMode.SelectNode(nodes)
+      case select: EditingMode.Select =>
+        hitShape(position) match {
+          case Some(node: Node) =>
+            select match {
+              case EditingMode.SelectNode(nodes) if event.shiftDown =>
+                mode = EditingMode.SelectNode(if (nodes contains node) nodes - node else nodes + node)
+              case _ =>
+                mode = EditingMode.SelectNode(Set(node))
+            }
+          case Some(edge: Edge) =>
+            select match {
+              case EditingMode.SelectEdge(edges) if event.shiftDown =>
+                mode = EditingMode.SelectEdge(if (edges contains edge) edges - edge else edges + edge)
+              case _ =>
+                mode = EditingMode.SelectEdge(Set(edge))
+            }
+          case _ =>
+            mode = EditingMode.Selecting
         }
     }
 
-    fnUpdate(shapes)
+    update(shapes)
   }
 
-  def onMouseMove(x: Double, y: Double, fnUpdate: Seq[Shape] => Unit): Unit = {
-    viewMode match {
-      case EditingMode.MovingNode =>
-        selected match {
-          case Some(node) =>
-            node.x = x
-            node.y = y
-            fnUpdate(shapes)
+  override def onMouseDragged(event: MouseEvent, update: Seq[Shape] => Unit): Unit = {
+    val position = event.position
+    mode match {
+      case EditingMode.DragNode(nodes, from) =>
+        nodes.foreach(_.position += event.position - from)
+        mode = EditingMode.DragNode(nodes, event.position)
+      case EditingMode.SelectNode(nodes) if nodes.exists(_.hitBy(position)) =>
+        mode = EditingMode.DragNode(nodes, position)
+      case _: EditingMode.Select =>
+        hitShape(position) foreach {
+          case node: Node =>
+            mode = EditingMode.DragNode(Set(node), position)
           case _ =>
+        }
+      case _ => return
+    }
+    update(shapes)
+  }
+
+  override def onKeyTyped(event: KeyEvent, state: Seq[Shape] => Unit): Unit = {
+    mode match {
+      case active: EditingMode.SelectActive =>
+        event.code match {
+          case KeyCode.Undefined => // ScalaFX not recognising `delete` on local runtime
+            shapes --= active.shapes
+            mode = EditingMode.Selecting
+            state(shapes) // TODO doesn't actually delete from model
         }
       case _ =>
     }
   }
 
-  private def hitTest(x: Double, y: Double): Option[Node] =
-    shapes collectFirst { case node: Node if node.hitTest(x, y) => node }
+  private def hitShape(hit: Position): Option[Shape] = {
+    shapes find (_.hitBy(hit))
+  }
+
+  private def hitNode(hit: Position): Option[Node] = {
+    shapes collectFirst { case node: Node if node.hitBy(hit) => node }
+  }
 
   def save(): Unit = {
     val dest = new File(System.getProperty("user.home") + "/test.xml")
@@ -114,17 +150,21 @@ object GraphCanvasController {
 
   object EditingMode {
 
-    sealed trait State
+    sealed trait State {
+      def start(): Unit = ()
+      def end(): Unit = ()
+    }
 
-    sealed trait EntryState extends State
+    sealed trait Entry extends State
 
-    case object Edge extends EntryState
+    sealed trait Edge extends State
+    case object BeginEdge extends Edge with Entry
+    case class DrawingEdge(from: ui.canvas.Node) extends Edge {
+      override def start(): Unit = from.highlight = true
+      override def end(): Unit = from.highlight = false
+    }
 
-    case class DrawingEdge(previous: ui.canvas.Node) extends State
-
-    case object MovingNode extends State
-
-    sealed trait Node extends EntryState
+    sealed trait Node extends Entry
 
     case object Source extends Node
 
@@ -134,7 +174,27 @@ object GraphCanvasController {
 
     case object Join extends Node
 
-    implicit val default: Default[State] = Source
+    sealed trait Select extends State
+
+    case object Selecting extends Select
+
+    sealed trait SelectActive extends Select {
+      def shapes: View[ui.canvas.Shape]
+      override def start(): Unit = shapes.foreach(_.highlight = true)
+      override def end(): Unit = shapes.foreach(_.highlight = false)
+    }
+    case class SelectNode(nodes: Set[ui.canvas.Node]) extends SelectActive {
+      override def shapes: View[ui.canvas.Shape] = nodes.view
+    }
+    case class DragNode(nodes: Set[ui.canvas.Node], from: Position) extends SelectActive {
+      override def shapes: View[ui.canvas.Shape] = nodes.view
+    }
+
+    case class SelectEdge(edges: Set[ui.canvas.Edge]) extends SelectActive {
+      override def shapes: View[ui.canvas.Shape] = edges.view
+    }
+
+    implicit val default: Default[State] = Selecting
   }
 
 }

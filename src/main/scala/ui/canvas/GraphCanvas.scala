@@ -1,23 +1,18 @@
 package ui.canvas
 
-import collection.Seq
+import javafx.beans.property.ObjectProperty
+import javafx.event.EventHandler
 import javafx.scene.input.MouseEvent
+
+import collection.Seq
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.paint.Color
+import ui.{Controlled, Controller}
 
-class GraphCanvas(val controller: GraphCanvasController) extends Canvas {
-
-  private def logicalPosition(x: Double, y: Double): (Double, Double) = (x, y)
-
-  onMouseClicked = (e: MouseEvent) => {
-    val (wx, wy) = logicalPosition(e.getX, e.getY)
-    controller.onMouseClick(wx, wy, redraw)
-  }
-
-  onMouseMoved = (e: MouseEvent) => {
-    val (wx, wy) = logicalPosition(e.getX, e.getY)
-    controller.onMouseMove(wx, wy, redraw)
-  }
+class GraphCanvas(override val controller: Controller[Seq[Shape] => Unit])
+  extends Canvas
+    with Controlled[Seq[Shape] => Unit] {
+  onMousePressed = _ => requestFocus()
 
   def redraw(shapes: Seq[Shape]): Unit = {
     graphicsContext2D.fill = Color.White
@@ -25,4 +20,6 @@ class GraphCanvas(val controller: GraphCanvasController) extends Canvas {
 
     shapes.foreach(_.draw(graphicsContext2D))
   }
+
+  override val state: Seq[Shape] => Unit = redraw
 }

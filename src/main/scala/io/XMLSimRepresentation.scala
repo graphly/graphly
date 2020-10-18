@@ -10,12 +10,12 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     val timestamp: String = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u").format(ZonedDateTime.now())
     // TODO: This will almost certainly need it's own function once nodes are fully implemented
     val nodes: Array[xml.Elem] = x.nodes.map((node: Node) =>
-      <node name="TODO" x={node.position.x.toString} y={node.position.y.toString}></node>
+      <node name="TODO" ></node>
     ).toArray
 
     val nodePositions: Array[xml.Elem] = x.nodes.map((node: Node) =>
       <station name="TODO">
-        <position rotate="false" x="0.0" y="0.0"/>
+        <position rotate="false" x={node.position.x.toString} y={node.position.y.toString}/>
       </station>
     ).toArray
 
@@ -38,6 +38,11 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       <results>
       </results>
     </archive>
+  }
+
+  override def toSim(xmlSim: xml.Elem): Sim = {
+    println(xmlSim.attributes)
+    ???
   }
 
   object Implicit {

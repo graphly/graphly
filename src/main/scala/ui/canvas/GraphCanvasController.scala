@@ -32,9 +32,29 @@ class GraphCanvasController(val model: Sim) extends Controller[Iterable[Shape] =
   @inline
   final def mode: EditingMode.State = _mode
 
+  // Callbacks to run when we switch the mode.
+  private var _onSwitchModeCb = new mutable.ArrayBuffer[EditingMode.Entry => Unit]
+  final def addOnSwitchModeCallback(cb: EditingMode.Entry => Unit): Unit = {
+    if (!_onSwitchModeCb.contains(cb)) {
+      _onSwitchModeCb += cb
+    }
+  }
+
+  final def remOnSwitchModeCallback(cb: EditingMode.Entry => Unit): Unit = {
+    if (_onSwitchModeCb.contains(cb)) {
+      _onSwitchModeCb -= cb
+    }
+  }
+
   final def switchMode(state: EditingMode.State, update: Iterable[Shape] => Unit): Unit = {
     mode = state
     update(shapes)
+
+    // Call update callback when we change to an exposed state.
+    state match {
+      case e: EditingMode.Entry => _onSwitchModeCb.foreach(_(e))
+      case _ =>
+    }
   }
 
   /**
@@ -186,13 +206,18 @@ object GraphCanvasController {
   object EditingMode {
 
     sealed trait State {
+      var toolbarStatusMnemonic: String = toString
+
       def start(): Unit = ()
       def end(): Unit = ()
     }
 
     sealed trait Entry extends State
 
-    sealed trait Edge extends State
+    sealed trait Edge extends State {
+      toolbarStatusMnemonic = "Creating edges"
+    }
+
     case object BeginEdge extends Edge with Entry
     case class DrawingEdge(from: ui.canvas.Node) extends Edge {
       override def start(): Unit = from.highlight = true
@@ -211,7 +236,7 @@ object GraphCanvasController {
 
     sealed trait Select extends State
 
-    case object Selecting extends Select
+    case object Selecting extends Select with Entry
 
     sealed trait SelectActive extends Select {
       def shapes: View[ui.canvas.Shape]

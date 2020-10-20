@@ -4,8 +4,9 @@ import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
 import ui.Position
 import util.Number.DoubleExtensions
+import model.sim
 
-case class Edge(start: Node, end: Node) extends Shape {
+case class Edge(start: Node, end: Node, connection: sim.Connection) extends Shape {
   private val strokeColor = Color.Black
   private val highlightColor = Color.GreenYellow
   override var highlight: Boolean = false

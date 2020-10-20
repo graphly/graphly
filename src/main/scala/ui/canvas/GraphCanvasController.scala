@@ -63,7 +63,8 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
       case EditingMode.DrawingEdge(start) =>
         hitNode(position) match {
           case Some(end) =>
-            shapes.prepend(Edge(start, end))
+            val simConnection = sim.Connection(start.node, end.node)
+            shapes.prepend(Edge(start, end, simConnection))
             model.connections += Connection(start.node, end.node)
             mode = EditingMode.DrawingEdge(end)
           case None =>
@@ -99,7 +100,10 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
     val position = event.position
     mode match {
       case EditingMode.DragNode(nodes, from) =>
-        nodes.foreach(_.position += event.position - from)
+        nodes.foreach { node =>
+          node.position += event.position - from
+          node.node.position = node.position.model
+        }
         mode = EditingMode.DragNode(nodes, event.position)
       case EditingMode.SelectNode(nodes) if nodes.exists(_.hitBy(position)) =>
         mode = EditingMode.DragNode(nodes, position)
@@ -120,8 +124,19 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
         event.code match {
           case KeyCode.Undefined => // ScalaFX not recognising `delete` on local runtime
             shapes --= active.shapes
+            active match {
+              case active: EditingMode.SelectActiveNode =>
+                model.nodes --= active.nodes.view.map(_.node)
+                val removed = shapes.collect {
+                  case e: Edge if (active.nodes contains e.start) || (active.nodes contains e.end) => e
+                }
+                shapes --= removed
+                model.connections --= removed.view.map(_.connection)
+              case EditingMode.SelectEdge(edges) =>
+                model.connections --= edges.view.map(_.connection)
+            }
             mode = EditingMode.Selecting
-            state(shapes) // TODO doesn't actually delete from model
+            state(shapes)
         }
       case _ =>
     }
@@ -183,10 +198,16 @@ object GraphCanvasController {
       override def start(): Unit = shapes.foreach(_.highlight = true)
       override def end(): Unit = shapes.foreach(_.highlight = false)
     }
-    case class SelectNode(nodes: Set[ui.canvas.Node]) extends SelectActive {
+
+    sealed trait SelectActiveNode extends SelectActive {
+      val nodes: Set[ui.canvas.Node]
       override def shapes: View[ui.canvas.Shape] = nodes.view
     }
-    case class DragNode(nodes: Set[ui.canvas.Node], from: Position) extends SelectActive {
+
+    case class SelectNode(nodes: Set[ui.canvas.Node]) extends SelectActiveNode {
+      override def shapes: View[ui.canvas.Shape] = nodes.view
+    }
+    case class DragNode(nodes: Set[ui.canvas.Node], from: Position) extends SelectActiveNode {
       override def shapes: View[ui.canvas.Shape] = nodes.view
     }
 

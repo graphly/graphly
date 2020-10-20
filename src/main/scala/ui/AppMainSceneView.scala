@@ -40,7 +40,7 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
             new MenuItem("Select") {
               onAction = (_: ActionEvent) =>
                 controller.switchMode(GraphCanvasController.EditingMode.Selecting, graphContainer.canvas.redraw)
-              accelerator = new KeyCodeCombination(KeyCode.E, KeyCombination.AltDown)
+              accelerator = new KeyCodeCombination(KeyCode.M, KeyCombination.AltDown)
             }
           )
         },

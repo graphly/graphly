@@ -1,7 +1,7 @@
 package ui.canvas
 
 import collection.Seq
-import model.sim.{Sim, Connection}
+import model.sim.{Connection, Sim}
 import model.sim.Position.Implicits._
 import model.sim
 import ui.canvas.GraphCanvasController.EditingMode
@@ -10,6 +10,8 @@ import util.Default
 import io.XMLSimRepresentation._
 import io.Implicits._
 import java.io.{File, PrintWriter}
+
+import scalafx.stage.{FileChooser, Stage}
 
 import scala.collection.mutable
 
@@ -100,7 +102,13 @@ class GraphCanvasController(val model: Sim) {
     shapes collectFirst { case node: Node if node.hitTest(x, y) => node }
 
   def save(): Unit = {
-    val dest = new File(System.getProperty("user.home") + "/test.xml")
+    val fileChooser = new FileChooser;
+    fileChooser.initialDirectory = new File(System.getProperty("user.home"))
+    fileChooser.title = "Save Simulation"
+    fileChooser.extensionFilters.add(new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg"))
+    fileChooser.initialFileName = ".jsimg"
+    val dest = fileChooser.showSaveDialog(new Stage)
+
     dest.createNewFile()
     new PrintWriter(dest) {
       write(model.toRepresentation.toString)

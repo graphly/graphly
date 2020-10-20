@@ -3,7 +3,7 @@ package ui
 import javafx.event.ActionEvent
 import model.sim.Sim
 import scalafx.scene.Scene
-import scalafx.scene.control.{Menu, MenuBar, MenuItem, SeparatorMenuItem}
+import scalafx.scene.control.{Label, Menu, MenuBar, MenuItem, SeparatorMenuItem, TextArea, ToolBar}
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
@@ -12,6 +12,13 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
   private val model: Sim = Sim.empty
   private val controller = new GraphCanvasController(model)
   private val graphContainer = new GraphCanvasContainer(controller)
+
+  private val statusBar = new Label() {
+    text = s"Status: ${controller.mode.toolbarStatusMnemonic}"
+  }
+  controller.addOnSwitchModeCallback(state => {
+    statusBar.text = s"Status: ${state.toolbarStatusMnemonic}"
+  })
 
   root = new BorderPane {
     top = new MenuBar {
@@ -63,5 +70,7 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
     }
 
     center = graphContainer
+
+    bottom = statusBar
   }
 }

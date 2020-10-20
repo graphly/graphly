@@ -3,27 +3,28 @@ package ui.canvas
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.ArcType
+import ui.{Position, Positioned}
 import util.Number._
 
-case class Node(var x: Double, var y: Double, node: model.sim.Node) extends Shape {
+case class Node(override var position: Position, node: model.sim.Node) extends Shape with Positioned {
   private val nodeRadius = 20
   private val selectColor = Color.GreenYellow
   private val fillColor = Color.CornflowerBlue
 
-  var selected: Boolean = false
+  var highlight: Boolean = false
 
   def drawCircle(r: Double, c: Color, gc: GraphicsContext): Unit = {
     gc.fill = c
-    gc.fillArc(x - r, y - r, 2 * r, 2 * r, 0, 360, ArcType.Chord)
+    gc.fillArc(position.x - r, position.y - r, 2 * r, 2 * r, 0, 360, ArcType.Chord)
   }
 
   override def draw(context: GraphicsContext): Unit = {
-    if (selected) drawCircle(nodeRadius * 1.3, selectColor, context)
+    if (highlight) drawCircle(nodeRadius * 1.3, selectColor, context)
     drawCircle(nodeRadius, fillColor, context)
   }
 
-  def hitTest(xHit: Double, yHit: Double): Boolean = {
-    val dist = (x - xHit) ** 2 + (y - yHit) ** 2
+  override def hitBy(hit: Position): Boolean = {
+    val dist = (position.x - hit.x) ** 2 + (position.y - hit.y) ** 2
     dist < nodeRadius * nodeRadius
   }
 }

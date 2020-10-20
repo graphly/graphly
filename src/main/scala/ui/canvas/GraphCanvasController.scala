@@ -11,6 +11,7 @@ import io.XMLSimRepresentation._
 import io.Implicits._
 import java.io.{File, PrintWriter}
 
+import scalafx.stage.{FileChooser, Stage}
 import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}
 import ui.Position.Implicits.MouseEventPosition
 import ui.{Controller, Position, canvas}
@@ -163,7 +164,13 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
   }
 
   def save(): Unit = {
-    val dest = new File(System.getProperty("user.home") + "/test.xml")
+    val fileChooser = new FileChooser;
+    fileChooser.initialDirectory = new File(System.getProperty("user.home"))
+    fileChooser.title = "Save Simulation"
+    fileChooser.extensionFilters.add(new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg"))
+    fileChooser.initialFileName = ".jsimg"
+    val dest = fileChooser.showSaveDialog(new Stage)
+
     dest.createNewFile()
     new PrintWriter(dest) {
       write(model.toRepresentation.toString)

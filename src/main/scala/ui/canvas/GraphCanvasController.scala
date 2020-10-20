@@ -57,8 +57,9 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
           case Some(edge: Edge) =>
             mode = EditingMode.SelectEdge(Set(edge))
         }
-      case EditingMode.BeginEdge => hitNode(position) foreach { start =>
-        mode = EditingMode.DrawingEdge(start)
+      case EditingMode.BeginEdge => hitNode(position) match {
+        case Some(start) => mode = EditingMode.DrawingEdge(start)
+        case None => mode = EditingMode.Selecting
       }
       case EditingMode.DrawingEdge(start) =>
         hitNode(position) match {
@@ -72,6 +73,9 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
         }
       case EditingMode.DragNode(nodes, _) =>
         mode = EditingMode.SelectNode(nodes)
+      case boxSelect: EditingMode.BoxSelect =>
+        // Currently inefficient, may be made more efficient upon refactor
+        mode = EditingMode.SelectNode((boxSelect.nodes.toSet | boxSelect.prev) -- (boxSelect.nodes & boxSelect.prev))
       case select: EditingMode.Select =>
         hitShape(position) match {
           case Some(node: Node) =>
@@ -107,11 +111,19 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
         mode = EditingMode.DragNode(nodes, event.position)
       case EditingMode.SelectNode(nodes) if nodes.exists(_.hitBy(position)) =>
         mode = EditingMode.DragNode(nodes, position)
+      case EditingMode.SelectNode(nodes) if event.shiftDown =>
+        mode = EditingMode.BoxSelect(position, prev = nodes)
+      case boxSelect@EditingMode.BoxSelect(origin) =>
+        boxSelect.removeAll(_.position.inRectangle(origin, position).unary_!)
+        boxSelect ++= shapes.view.collect { case node: Node if node.position.inRectangle(origin, position) => node }
+        update(shapes :+ new SelectionBox(origin, position))
+        return
       case _: EditingMode.Select =>
-        hitShape(position) foreach {
-          case node: Node =>
+        hitNode(position) match {
+          case Some(node) =>
             mode = EditingMode.DragNode(Set(node), position)
-          case _ =>
+          case None =>
+            mode = EditingMode.BoxSelect(position)
         }
       case _ => return
     }
@@ -200,18 +212,51 @@ object GraphCanvasController {
     }
 
     sealed trait SelectActiveNode extends SelectActive {
-      val nodes: Set[ui.canvas.Node]
+      val nodes: collection.Set[ui.canvas.Node]
       override def shapes: View[ui.canvas.Shape] = nodes.view
     }
 
-    case class SelectNode(nodes: Set[ui.canvas.Node]) extends SelectActiveNode {
+    /* This class is not immutable for efficiency reasons, although this means you have to play nice with it
+       We should probably refactor more of the immutability out for efficiency, or stick to it, rather than the mix
+     */
+    class BoxSelect(val origin: Position, val prev: immutable.Set[ui.canvas.Node] = Set.empty) extends SelectActiveNode {
+      private val _nodes: mutable.Set[ui.canvas.Node] = mutable.Set.empty
+      override val nodes: collection.Set[ui.canvas.Node] = _nodes
+
+      def removeAll(p: ui.canvas.Node => Boolean): Unit = {
+        _nodes.filterInPlace(node => {
+          if (p(node)) {
+            // Impure, but avoids looping twice. _nodes is strict so this operation will work as expected
+            node.highlight ^= true
+            false
+          } else true
+        })
+      }
+      def ++=(iterable: Iterable[ui.canvas.Node]): Unit = {
+        iterable.foreach {
+          case node if !(_nodes contains node) =>
+            node.highlight ^= true
+            _nodes += node
+          case _ =>
+        }
+      }
+
+      override def start(): Unit = prev.foreach(_.highlight = true); nodes.foreach(_.highlight ^= true)
+      override def end(): Unit = nodes.foreach(_.highlight = false); prev.foreach(_.highlight = false)
+    }
+    object BoxSelect {
+      def apply(origin: Position, prev: immutable.Set[ui.canvas.Node] = Set.empty) = new BoxSelect(origin, prev)
+      def unapply(boxSelect: BoxSelect): Option[Position] = Some(boxSelect.origin)
+    }
+
+    case class SelectNode(nodes: immutable.Set[ui.canvas.Node]) extends SelectActiveNode {
       override def shapes: View[ui.canvas.Shape] = nodes.view
     }
-    case class DragNode(nodes: Set[ui.canvas.Node], from: Position) extends SelectActiveNode {
+    case class DragNode(nodes: immutable.Set[ui.canvas.Node], from: Position) extends SelectActiveNode {
       override def shapes: View[ui.canvas.Shape] = nodes.view
     }
 
-    case class SelectEdge(edges: Set[ui.canvas.Edge]) extends SelectActive {
+    case class SelectEdge(edges: immutable.Set[ui.canvas.Edge]) extends SelectActive {
       override def shapes: View[ui.canvas.Shape] = edges.view
     }
 

@@ -25,6 +25,9 @@ case class Position(x: Double, y: Double) {
     xRect.sign == xFinish.sign && yRect.sign == yFinish.sign &&
       xRect.abs < xFinish.abs && yRect.abs < yFinish.abs
   }
+
+  def min(other: Position): Position = Position(x min other.x, y min other.y)
+  def max(other: Position): Position = Position(x max other.x, y max other.y)
 }
 
 object Position {

@@ -46,7 +46,7 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
           items = List(
             new MenuItem("Select") {
               onAction = (_: ActionEvent) =>
-                controller.switchMode(GraphCanvasController.EditingMode.Selecting, graphContainer.canvas.redraw)
+                controller.switchModeAndRedraw(GraphCanvasController.EditingMode.Selecting, graphContainer.canvas.redraw)
               accelerator = new KeyCodeCombination(KeyCode.M, KeyCombination.AltDown)
             }
           )
@@ -55,13 +55,13 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
           items = List(
             new MenuItem("Source") {
               onAction = (_: ActionEvent) =>
-                controller.switchMode(GraphCanvasController.EditingMode.Source, graphContainer.canvas.redraw)
+                controller.switchModeAndRedraw(GraphCanvasController.EditingMode.Source, graphContainer.canvas.redraw)
               accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.AltDown)
             },
             new SeparatorMenuItem(),
             new MenuItem("Edges") {
               onAction = (_: ActionEvent) =>
-                controller.switchMode(GraphCanvasController.EditingMode.BeginEdge, graphContainer.canvas.redraw)
+                controller.switchModeAndRedraw(GraphCanvasController.EditingMode.BeginEdge, graphContainer.canvas.redraw)
               accelerator = new KeyCodeCombination(KeyCode.E, KeyCombination.AltDown)
             }
           )

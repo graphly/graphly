@@ -49,7 +49,7 @@ class GraphCanvasController(val model: Sim) extends Controller[Iterable[Shape] =
   @inline
   final def mode: EditingMode.State = _mode
 
-  final def switchMode(state: EditingMode.State, update: Iterable[Shape] => Unit): Unit = {
+  final def switchModeAndRedraw(state: EditingMode.State, update: Iterable[Shape] => Unit): Unit = {
     mode = state
     update(shapes)
   }

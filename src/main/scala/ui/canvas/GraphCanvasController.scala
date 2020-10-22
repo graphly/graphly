@@ -21,6 +21,20 @@ class GraphCanvasController(val model: Sim) extends Controller[Iterable[Shape] =
   // into nodes and edges since edges need to be drawn before the nodes.
   private val shapes = mutable.ArrayDeque.empty[Shape]
 
+  // Callbacks to run when we switch the mode.
+  private var _onSwitchModeCb = new mutable.ArrayBuffer[EditingMode.State => Unit]
+  final def addOnSwitchModeCallback(cb: EditingMode.State => Unit): Unit = {
+    if (!_onSwitchModeCb.contains(cb)) {
+      _onSwitchModeCb += cb
+    }
+  }
+
+  final def remOnSwitchModeCallback(cb: EditingMode.State => Unit): Unit = {
+    if (_onSwitchModeCb.contains(cb)) {
+      _onSwitchModeCb -= cb
+    }
+  }
+
   // What state is the view in - whether we are creating nodes and connections,
   // moving objects, etc.
   private var _mode: EditingMode.State = Default.default
@@ -28,33 +42,16 @@ class GraphCanvasController(val model: Sim) extends Controller[Iterable[Shape] =
     _mode.end()
     _mode = state
     state.start()
+
+    // Call update callback when we change to an exposed state.
+    _onSwitchModeCb.foreach(_(state))
   }
   @inline
   final def mode: EditingMode.State = _mode
 
-  // Callbacks to run when we switch the mode.
-  private var _onSwitchModeCb = new mutable.ArrayBuffer[EditingMode.Entry => Unit]
-  final def addOnSwitchModeCallback(cb: EditingMode.Entry => Unit): Unit = {
-    if (!_onSwitchModeCb.contains(cb)) {
-      _onSwitchModeCb += cb
-    }
-  }
-
-  final def remOnSwitchModeCallback(cb: EditingMode.Entry => Unit): Unit = {
-    if (_onSwitchModeCb.contains(cb)) {
-      _onSwitchModeCb -= cb
-    }
-  }
-
   final def switchMode(state: EditingMode.State, update: Iterable[Shape] => Unit): Unit = {
     mode = state
     update(shapes)
-
-    // Call update callback when we change to an exposed state.
-    state match {
-      case e: EditingMode.Entry => _onSwitchModeCb.foreach(_(e))
-      case _ =>
-    }
   }
 
   /**
@@ -239,6 +236,8 @@ object GraphCanvasController {
     case object Selecting extends Select with Entry
 
     sealed trait SelectActive extends Select {
+      toolbarStatusMnemonic = "Selecting"
+
       def shapes: View[ui.canvas.Shape]
       override def start(): Unit = shapes.foreach(_.highlight = true)
       override def end(): Unit = shapes.foreach(_.highlight = false)

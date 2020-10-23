@@ -3,7 +3,7 @@ package ui.canvas
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
 import ui.Position
-import util.Number.DoubleExtensions
+import util.Number.Implicit.DoubleExtensions
 import model.sim
 
 case class Edge(start: Node, end: Node, connection: sim.Connection) extends Shape {

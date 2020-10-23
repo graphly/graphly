@@ -4,7 +4,7 @@ import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.ArcType
 import ui.{Position, Positioned}
-import util.Number._
+import util.Number.Implicit._
 
 case class Node(override var position: Position, node: model.sim.Node) extends Shape with Positioned {
   private val nodeRadius = 20

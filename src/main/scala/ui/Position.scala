@@ -2,7 +2,7 @@ package ui
 
 import scalafx.scene.input.MouseEvent
 import model.sim
-import util.Number.DoubleExtensions
+import _root_.util.Number.Implicit.DoubleExtensions
 
 case class Position(x: Double, y: Double) {
   def model: sim.Position = sim.Position(x, y)
@@ -31,7 +31,7 @@ case class Position(x: Double, y: Double) {
 }
 
 object Position {
-  object Implicits {
+  object Implicit {
     implicit class MouseEventPosition(mouseEvent: MouseEvent) {
       def position: Position = {
         Position(mouseEvent.x, mouseEvent.y)

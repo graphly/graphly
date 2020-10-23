@@ -1,4 +1,5 @@
 package ui.canvas
+
 import ui.Position
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color

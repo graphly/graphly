@@ -1,23 +1,22 @@
 package ui.canvas
 
-import collection.{Seq, View, immutable, mutable}
-import model.sim.{Connection, Sim}
-import model.sim.Position.Implicits._
-import model.sim
-import ui.canvas.GraphCanvasController.EditingMode
-import ui.canvas.GraphCanvasController.EditingMode.{DragNode, Entry, default}
-import util.Default
-import io.XMLSimRepresentation._
-import io.Implicits._
 import java.io.{File, PrintWriter}
 
-import scalafx.stage.{FileChooser, Stage}
+import io.Implicit._
+import io.XMLSimRepresentation.Implicit._
+import model.sim
+import model.sim.{Connection, Sim}
 import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}
-import scalafx.Includes._
-import ui.Position.Implicits.MouseEventPosition
-import ui.{Controller, Position, canvas}
+import scalafx.stage.{FileChooser, Stage}
+import ui.Position.Implicit.MouseEventPosition
+import ui.canvas.GraphCanvasController.EditingMode
+import ui.canvas.GraphCanvasController.EditingMode.default
+import ui.{Controller, Position}
+import util.Default
 
-class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Unit] {
+import scala.collection.{View, immutable, mutable}
+
+class GraphCanvasController(val model: Sim) extends Controller[Iterable[Shape] => Unit] {
   // Collection of all shapes that will be drawn. This may be later split
   // into nodes and edges since edges need to be drawn before the nodes.
   private val shapes = mutable.ArrayDeque.empty[Shape]
@@ -33,7 +32,7 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
   @inline
   final def mode: EditingMode.State = _mode
 
-  final def switchMode(state: EditingMode.State, update: Seq[Shape] => Unit): Unit = {
+  final def switchMode(state: EditingMode.State, update: Iterable[Shape] => Unit): Unit = {
     mode = state
     update(shapes)
   }
@@ -44,7 +43,7 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
    * @param event: MouseEvent for position and modifiers
    * @param update: Display update function
    */
-  override def onMouseClick(event: MouseEvent, update: Seq[Shape] => Unit): Unit = {
+  override def onMouseClick(event: MouseEvent, update: Iterable[Shape] => Unit): Unit = {
     val position = event.position
     mode match {
       case _: EditingMode.Node =>
@@ -102,7 +101,7 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
     update(shapes)
   }
 
-  override def onMouseDragged(event: MouseEvent, update: Seq[Shape] => Unit): Unit = {
+  override def onMouseDragged(event: MouseEvent, update: Iterable[Shape] => Unit): Unit = {
     val position = event.position
     mode match {
       case EditingMode.DragNode(nodes, from) =>
@@ -118,7 +117,7 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
       case boxSelect@EditingMode.BoxSelect(origin) =>
         boxSelect.removeAll(_.position.inRectangle(origin, position).unary_!)
         boxSelect ++= shapes.view.collect { case node: Node if node.position.inRectangle(origin, position) => node }
-        update(shapes :+ new SelectionBox(origin, position))
+        update(shapes.view :+ new SelectionBox(origin, position))
         return
       case _: EditingMode.Select =>
         hitNode(position) match {
@@ -132,7 +131,7 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
     update(shapes)
   }
 
-  override def onKeyTyped(event: KeyEvent, state: Seq[Shape] => Unit): Unit = {
+  override def onKeyTyped(event: KeyEvent, state: Iterable[Shape] => Unit): Unit = {
     mode match {
       case active: EditingMode.SelectActive =>
         event.code match {
@@ -151,6 +150,7 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
             }
             mode = EditingMode.Selecting
             state(shapes)
+          case _ =>
         }
       case _ =>
     }

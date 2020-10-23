@@ -13,6 +13,7 @@ import java.io.{File, PrintWriter}
 
 import scalafx.stage.{FileChooser, Stage}
 import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}
+import scalafx.Includes._
 import ui.Position.Implicits.MouseEventPosition
 import ui.{Controller, Position, canvas}
 
@@ -164,17 +165,17 @@ class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Uni
   }
 
   def save(): Unit = {
-    val fileChooser = new FileChooser;
+    val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
     fileChooser.title = "Save Simulation"
     fileChooser.extensionFilters.add(new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg"))
     fileChooser.initialFileName = ".jsimg"
-    val dest = fileChooser.showSaveDialog(new Stage)
-
-    dest.createNewFile()
-    new PrintWriter(dest) {
-      write(model.toRepresentation.toString)
-      close()
+    Option(fileChooser.showSaveDialog(new Stage)).foreach { dest =>
+      dest.createNewFile()
+      new PrintWriter(dest) {
+        write(model.toRepresentation.toString)
+        close()
+      }
     }
   }
 }

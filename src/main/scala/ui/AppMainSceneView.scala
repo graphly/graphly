@@ -6,11 +6,12 @@ import scalafx.scene.Scene
 import scalafx.scene.control.{Menu, MenuBar, MenuItem, SeparatorMenuItem}
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
-import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
+import ui.canvas.{GraphCanvasContainer, GraphCanvasController, VerticalSettingsMenu}
 
 class AppMainSceneView(width: Double, height: Double) extends Scene(width, height) {
   private val model: Sim = Sim.empty
-  private val controller = new GraphCanvasController(model)
+  private val rightMenu = new VerticalSettingsMenu
+  private val controller = new GraphCanvasController(model, rightMenu)
   private val graphContainer = new GraphCanvasContainer(controller)
 
   root = new BorderPane {
@@ -63,5 +64,6 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
     }
 
     center = graphContainer
+    right = rightMenu
   }
 }

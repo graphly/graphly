@@ -12,11 +12,11 @@ import io.Implicits._
 import java.io.{File, PrintWriter}
 
 import scalafx.stage.{FileChooser, Stage}
-import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}
+import scalafx.scene.input.{KeyCode, KeyEvent, MouseButton, MouseEvent}
 import ui.Position.Implicits.MouseEventPosition
 import ui.{Controller, Position, canvas}
 
-class GraphCanvasController(val model: Sim) extends Controller[Seq[Shape] => Unit] {
+class GraphCanvasController(val model: Sim, val rightMenu: VerticalSettingsMenu) extends Controller[Seq[Shape] => Unit] {
   // Collection of all shapes that will be drawn. This may be later split
   // into nodes and edges since edges need to be drawn before the nodes.
   private val shapes = mutable.ArrayDeque.empty[Shape]

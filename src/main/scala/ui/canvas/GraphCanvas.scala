@@ -1,11 +1,8 @@
 package ui.canvas
 
-import javafx.scene.layout.Background
-import scalafx.beans.binding.{Bindings, ObjectBinding}
 import scalafx.beans.property.ObjectProperty
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.paint.Color
-import ui.util.Background.Implicit._
 import ui.{Controlled, Controller}
 
 class GraphCanvas(override val controller: Controller[Iterable[Shape] => Unit])
@@ -14,7 +11,6 @@ class GraphCanvas(override val controller: Controller[Iterable[Shape] => Unit])
   onMousePressed = _ => requestFocus()
 
   val fill: ObjectProperty[Color] = ObjectProperty(Color.White)
-  val background: ObjectBinding[Background] = Bindings.createObjectBinding(() => backgroundFromColor(fill()), fill)
 
   def redraw(shapes: Iterable[Shape]): Unit = {
     graphicsContext2D.fill = fill()

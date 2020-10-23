@@ -16,7 +16,7 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
   private val statusBar = new Label() {
     text = s"Status: ${controller.mode.toolbarStatusMnemonic}"
   }
-  controller.onSwitchModeEvt += (state => statusBar.text = s"Status: ${state.toolbarStatusMnemonic}")
+  controller.onSwitchMode += (state => statusBar.text = s"Status: ${state.toolbarStatusMnemonic}")
 
   root = new BorderPane {
     top = new MenuBar {

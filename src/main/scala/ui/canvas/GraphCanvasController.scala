@@ -26,7 +26,7 @@ class GraphCanvasController(val model: Sim) extends Controller[Iterable[Shape] =
   private val shapes = mutable.ArrayDeque.empty[Shape]
 
   // Callbacks to run when we switch the mode.
-  val onSwitchModeEvt = new Event[EditingMode.State]
+  val onSwitchMode = new Event[EditingMode.State]
 
   // What state is the view in - whether we are creating nodes and connections,
   // moving objects, etc.
@@ -37,7 +37,7 @@ class GraphCanvasController(val model: Sim) extends Controller[Iterable[Shape] =
     state.start()
 
     // Call update callback when we change to an exposed state.
-    onSwitchModeEvt.dispatch(state)
+    onSwitchMode.dispatch(state)
   }
   @inline
   final def mode: EditingMode.State = _mode

@@ -13,6 +13,10 @@ import ui.canvas.GraphCanvasController.EditingMode
 import ui.canvas.GraphCanvasController.EditingMode.default
 import ui.{Controller, Position}
 import util.Default
+import ui.canvas.GraphCanvasController.EditingMode.{DragNode, Entry, default}
+import util.{Default, Event}
+import io.XMLSimRepresentation._
+import java.io.{File, PrintWriter}
 
 import scala.collection.{View, immutable, mutable}
 
@@ -21,6 +25,9 @@ class GraphCanvasController(val model: Sim) extends Controller[Iterable[Shape] =
   // into nodes and edges since edges need to be drawn before the nodes.
   private val shapes = mutable.ArrayDeque.empty[Shape]
 
+  // Callbacks to run when we switch the mode.
+  val onSwitchMode = new Event[EditingMode.State]
+
   // What state is the view in - whether we are creating nodes and connections,
   // moving objects, etc.
   private var _mode: EditingMode.State = Default.default
@@ -28,11 +35,14 @@ class GraphCanvasController(val model: Sim) extends Controller[Iterable[Shape] =
     _mode.end()
     _mode = state
     state.start()
+
+    // Call update callback when we change to an exposed state.
+    onSwitchMode.dispatch(state)
   }
   @inline
   final def mode: EditingMode.State = _mode
 
-  final def switchMode(state: EditingMode.State, update: Iterable[Shape] => Unit): Unit = {
+  final def switchModeAndRedraw(state: EditingMode.State, update: Iterable[Shape] => Unit): Unit = {
     mode = state
     update(shapes)
   }
@@ -186,13 +196,18 @@ object GraphCanvasController {
   object EditingMode {
 
     sealed trait State {
+      var toolbarStatusMnemonic: String = toString
+
       def start(): Unit = ()
       def end(): Unit = ()
     }
 
     sealed trait Entry extends State
 
-    sealed trait Edge extends State
+    sealed trait Edge extends State {
+      toolbarStatusMnemonic = "Creating edges"
+    }
+
     case object BeginEdge extends Edge with Entry
     case class DrawingEdge(from: ui.canvas.Node) extends Edge {
       override def start(): Unit = from.highlight = true
@@ -211,9 +226,11 @@ object GraphCanvasController {
 
     sealed trait Select extends State
 
-    case object Selecting extends Select
+    case object Selecting extends Select with Entry
 
     sealed trait SelectActive extends Select {
+      toolbarStatusMnemonic = "Selecting"
+
       def shapes: View[ui.canvas.Shape]
       override def start(): Unit = shapes.foreach(_.highlight = true)
       override def end(): Unit = shapes.foreach(_.highlight = false)

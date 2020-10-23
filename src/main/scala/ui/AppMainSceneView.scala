@@ -3,7 +3,7 @@ package ui
 import javafx.event.ActionEvent
 import model.sim.Sim
 import scalafx.scene.Scene
-import scalafx.scene.control.{Menu, MenuBar, MenuItem, SeparatorMenuItem}
+import scalafx.scene.control.{Label, Menu, MenuBar, MenuItem, SeparatorMenuItem, TextArea, ToolBar}
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
@@ -12,6 +12,11 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
   private val model: Sim = Sim.empty
   private val controller = new GraphCanvasController(model)
   private val graphContainer = new GraphCanvasContainer(controller)
+
+  private val statusBar = new Label() {
+    text = s"Status: ${controller.mode.toolbarStatusMnemonic}"
+  }
+  controller.onSwitchMode += (state => statusBar.text = s"Status: ${state.toolbarStatusMnemonic}")
 
   root = new BorderPane {
     top = new MenuBar {
@@ -39,7 +44,7 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
           items = List(
             new MenuItem("Select") {
               onAction = (_: ActionEvent) =>
-                controller.switchMode(GraphCanvasController.EditingMode.Selecting, graphContainer.canvas.redraw)
+                controller.switchModeAndRedraw(GraphCanvasController.EditingMode.Selecting, graphContainer.canvas.redraw)
               accelerator = new KeyCodeCombination(KeyCode.M, KeyCombination.AltDown)
             }
           )
@@ -48,13 +53,13 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
           items = List(
             new MenuItem("Source") {
               onAction = (_: ActionEvent) =>
-                controller.switchMode(GraphCanvasController.EditingMode.Source, graphContainer.canvas.redraw)
+                controller.switchModeAndRedraw(GraphCanvasController.EditingMode.Source, graphContainer.canvas.redraw)
               accelerator = new KeyCodeCombination(KeyCode.S, KeyCombination.AltDown)
             },
             new SeparatorMenuItem(),
             new MenuItem("Edges") {
               onAction = (_: ActionEvent) =>
-                controller.switchMode(GraphCanvasController.EditingMode.BeginEdge, graphContainer.canvas.redraw)
+                controller.switchModeAndRedraw(GraphCanvasController.EditingMode.BeginEdge, graphContainer.canvas.redraw)
               accelerator = new KeyCodeCombination(KeyCode.E, KeyCombination.AltDown)
             }
           )
@@ -63,5 +68,7 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
     }
 
     center = graphContainer
+
+    bottom = statusBar
   }
 }

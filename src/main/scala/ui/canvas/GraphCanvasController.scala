@@ -13,6 +13,10 @@ import ui.canvas.GraphCanvasController.EditingMode
 import ui.canvas.GraphCanvasController.EditingMode.default
 import ui.{Controller, Position}
 import util.Default
+import ui.canvas.GraphCanvasController.EditingMode.{DragNode, Entry, default}
+import util.{Default, Event}
+import io.XMLSimRepresentation._
+import java.io.{File, PrintWriter}
 
 import scala.collection.{View, immutable, mutable}
 
@@ -22,18 +26,7 @@ class GraphCanvasController(val model: Sim) extends Controller[Iterable[Shape] =
   private val shapes = mutable.ArrayDeque.empty[Shape]
 
   // Callbacks to run when we switch the mode.
-  private var _onSwitchModeCb = new mutable.ArrayBuffer[EditingMode.State => Unit]
-  final def addOnSwitchModeCallback(cb: EditingMode.State => Unit): Unit = {
-    if (!_onSwitchModeCb.contains(cb)) {
-      _onSwitchModeCb += cb
-    }
-  }
-
-  final def remOnSwitchModeCallback(cb: EditingMode.State => Unit): Unit = {
-    if (_onSwitchModeCb.contains(cb)) {
-      _onSwitchModeCb -= cb
-    }
-  }
+  val onSwitchModeEvt = new Event[EditingMode.State]
 
   // What state is the view in - whether we are creating nodes and connections,
   // moving objects, etc.
@@ -44,7 +37,7 @@ class GraphCanvasController(val model: Sim) extends Controller[Iterable[Shape] =
     state.start()
 
     // Call update callback when we change to an exposed state.
-    _onSwitchModeCb.foreach(_(state))
+    onSwitchModeEvt.dispatch(state)
   }
   @inline
   final def mode: EditingMode.State = _mode

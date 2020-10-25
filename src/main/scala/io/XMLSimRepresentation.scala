@@ -47,6 +47,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     val xmlSimNodes = xmlSim.child
     val simulation = xmlSimNodes(1)
     val jmodel = xmlSimNodes(3)
+    //TODO: Handle simulation results
     val results = xmlSimNodes(5)
 
     val positionlessNodes: mutable.HashMap[String, Position => Node] = mutable.HashMap.empty

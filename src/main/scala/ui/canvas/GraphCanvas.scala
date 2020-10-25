@@ -19,7 +19,7 @@ class GraphCanvas(override val controller: Controller[Iterable[GraphCanvas.DrawA
     graphicsContext2D.fill = fill()
     graphicsContext2D.fillRect(0, 0, width.value, height.value)
 
-    shapes.foreach(_(graphicsContext2D))
+    shapes.foreach(_ (graphicsContext2D))
   }
 
   override val state: Iterable[GraphCanvas.DrawAction] => Unit = redraw

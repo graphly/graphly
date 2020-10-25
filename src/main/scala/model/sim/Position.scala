@@ -19,7 +19,7 @@ case class Position(x: Double, y: Double) {
     val xFinish = finish.x - start.x
     val yFinish = finish.y - start.y
     xRect.sign == xFinish.sign && yRect.sign == yFinish.sign &&
-      xRect.abs < xFinish.abs && yRect.abs < yFinish.abs
+    xRect.abs < xFinish.abs && yRect.abs < yFinish.abs
   }
 
   def min(other: Position): Position = Position(x min other.x, y min other.y)
@@ -28,7 +28,8 @@ case class Position(x: Double, y: Double) {
 
 object Position {
   object Implicits {
-    implicit def pairToPosition(pair: (Double, Double)): Position = Position(pair._1, pair._2)
+    implicit def pairToPosition(pair: (Double, Double)): Position =
+      Position(pair._1, pair._2)
   }
 
   def Zero: Position = Position(0, 0)

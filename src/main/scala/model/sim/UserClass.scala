@@ -1,6 +1,11 @@
 package model.sim
 
-case class UserClass(name: String, priority: Int, referenceSource: Node, `type`: UserClass.Type)
+case class UserClass(
+    name: String,
+    priority: Int,
+    referenceSource: Node,
+    `type`: UserClass.Type
+)
 
 object UserClass {
   sealed trait Type

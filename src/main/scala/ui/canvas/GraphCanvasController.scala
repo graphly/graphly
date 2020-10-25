@@ -12,12 +12,15 @@ import ui.Position.Implicit.MouseEventPosition
 import ui.canvas.Draw.Implicit.{ShapeConnection, ShapeNode}
 import ui.canvas.GraphCanvasController.EditingMode
 import ui.canvas.GraphCanvasController.EditingMode.default
-import util.{Default, Event}
+import ui.util.Event
+import util.Default
 
 import scala.collection.{View, immutable, mutable}
 import scala.reflect.ClassTag
 
-class GraphCanvasController[D](val model: sim.Sim)(implicit val drawable: Draw[D]) extends Controller[Iterable[D] => Unit] {
+class GraphCanvasController[D](val model: sim.Sim)(implicit
+    val drawable: Draw[D]
+) extends Controller[Iterable[D] => Unit] {
   // Callbacks to run when we switch the mode
   val onSwitchMode = new Event[EditingMode.State]
 
@@ -35,40 +38,47 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit val drawable: Draw[D
   @inline
   final def mode: EditingMode.State = _mode
 
-  final def switchMode(state: EditingMode.State, update: Iterable[D] => Unit): Unit = {
+  final def switchMode(
+      state: EditingMode.State,
+      update: Iterable[D] => Unit
+  ): Unit = {
     mode = state
     update(drawables)
   }
 
-  def drawables: View[D] = model.connections.view.map(c => drawable.connection(c, mode.highlights(c))) ++
-    model.nodes.view.map(n => drawable.node(n, mode.highlights(n)))
-
+  def drawables: View[D] =
+    model.connections.view.map(c =>
+      drawable.connection(c, mode.highlights(c))
+    ) ++
+      model.nodes.view.map(n => drawable.node(n, mode.highlights(n)))
 
   /**
-   * Callback when we click inside the canvas.
-   *
-   * @param event  : MouseEvent for position and modifiers
-   * @param update : Display update function
-   */
-  override def onMouseClick(event: MouseEvent, update: Iterable[D] => Unit): Unit = {
+    * Callback when we click inside the canvas.
+    *
+    * @param event  : MouseEvent for position and modifiers
+    * @param update : Display update function
+    */
+  override def onMouseClick(
+      event: MouseEvent,
+      update: Iterable[D] => Unit
+  ): Unit = {
     val position = event.position.model
     mode match {
       case _: EditingMode.Node =>
         hitShape(position) match {
           case None =>
             val simNode = sim.Source(position)
-            //            val node = Node(position, simNode)
             model.nodes += simNode
-          //            shapes.prepend(node)
           case Some(node: sim.Node) =>
             mode = EditingMode.SelectNode(Set(node))
           case Some(edge: sim.Connection) =>
             mode = EditingMode.SelectEdge(Set(edge))
         }
-      case EditingMode.BeginEdge => hitNode(position) match {
-        case Some(start) => mode = EditingMode.DrawingEdge(start)
-        case None => mode = EditingMode.Selecting
-      }
+      case EditingMode.BeginEdge =>
+        hitNode(position) match {
+          case Some(start) => mode = EditingMode.DrawingEdge(start)
+          case None        => mode = EditingMode.Selecting
+        }
       case EditingMode.DrawingEdge(start) =>
         hitNode(position) match {
           case Some(end) =>
@@ -81,20 +91,26 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit val drawable: Draw[D
         mode = EditingMode.SelectNode(nodes)
       case boxSelect: EditingMode.BoxSelect =>
         // Currently inefficient, may be made more efficient upon refactor
-        mode = EditingMode.SelectNode((boxSelect.active.toSet | boxSelect.prev) -- (boxSelect.active & boxSelect.prev))
+        mode = EditingMode.SelectNode(
+          (boxSelect.active.toSet | boxSelect.prev) -- (boxSelect.active & boxSelect.prev)
+        )
       case select: EditingMode.Select =>
         hitShape(position) match {
           case Some(node: sim.Node) =>
             select match {
               case EditingMode.SelectNode(nodes) if event.shiftDown =>
-                mode = EditingMode.SelectNode(if (nodes contains node) nodes - node else nodes + node)
+                mode = EditingMode.SelectNode(
+                  if (nodes contains node) nodes - node else nodes + node
+                )
               case _ =>
                 mode = EditingMode.SelectNode(Set(node))
             }
           case Some(edge: sim.Connection) =>
             select match {
               case EditingMode.SelectEdge(edges) if event.shiftDown =>
-                mode = EditingMode.SelectEdge(if (edges contains edge) edges - edge else edges + edge)
+                mode = EditingMode.SelectEdge(
+                  if (edges contains edge) edges - edge else edges + edge
+                )
               case _ =>
                 mode = EditingMode.SelectEdge(Set(edge))
             }
@@ -106,7 +122,10 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit val drawable: Draw[D
     update(drawables)
   }
 
-  override def onMouseDragged(event: MouseEvent, update: Iterable[D] => Unit): Unit = {
+  override def onMouseDragged(
+      event: MouseEvent,
+      update: Iterable[D] => Unit
+  ): Unit = {
     val position = event.position.model
     mode match {
       case EditingMode.DragNode(nodes, from) =>
@@ -118,7 +137,7 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit val drawable: Draw[D
         mode = EditingMode.DragNode(nodes, position)
       case EditingMode.SelectNode(nodes) if event.shiftDown =>
         mode = EditingMode.BoxSelect(position, prev = nodes)
-      case boxSelect@EditingMode.BoxSelect(origin) =>
+      case boxSelect @ EditingMode.BoxSelect(origin) =>
         boxSelect.removeAll(_.position.inRectangle(origin, position).unary_!)
         boxSelect ++= model.nodes.view.filter {
           _.position.inRectangle(origin, position)
@@ -146,7 +165,9 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit val drawable: Draw[D
               case active: EditingMode.SelectActiveNode =>
                 model.nodes --= active.active
                 model.connections.filterInPlace { connection =>
-                  !active.active(connection.source) && !active.active(connection.target)
+                  !active.active(connection.source) && !active.active(
+                    connection.target
+                  )
                 }
               case EditingMode.SelectEdge(edges) =>
                 model.connections --= edges
@@ -159,7 +180,8 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit val drawable: Draw[D
     }
   }
 
-  private def hitShape(hit: sim.Position): Option[sim.Shape] = hitNode(hit) orElse hitConnection(hit)
+  private def hitShape(hit: sim.Position): Option[sim.Shape] =
+    hitNode(hit) orElse hitConnection(hit)
 
   private def hitNode(hit: sim.Position): Option[sim.Node] = {
     model.nodes.find(_.hits(hit))
@@ -173,7 +195,9 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit val drawable: Draw[D
     val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
     fileChooser.title = "Save Simulation"
-    fileChooser.extensionFilters.add(new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg"))
+    fileChooser.extensionFilters.add(
+      new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg")
+    )
     fileChooser.initialFileName = ".jsimg"
     Option(fileChooser.showSaveDialog(new Stage)).foreach { dest =>
       dest.createNewFile()
@@ -184,7 +208,6 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit val drawable: Draw[D
     }
   }
 }
-
 
 object GraphCanvasController {
 
@@ -241,7 +264,10 @@ object GraphCanvasController {
     /* This class is not immutable for efficiency reasons, although this means you have to play nice with it
        We should probably refactor more of the immutability out for efficiency, or stick to it, rather than the mix
      */
-    class BoxSelect(val origin: sim.Position, val prev: immutable.Set[sim.Node] = Set.empty) extends SelectActiveNode {
+    class BoxSelect(
+        val origin: sim.Position,
+        val prev: immutable.Set[sim.Node] = Set.empty
+    ) extends SelectActiveNode {
       private val _nodes: mutable.Set[sim.Node] = mutable.Set.empty
       override val active: collection.Set[sim.Node] = _nodes
 
@@ -255,16 +281,25 @@ object GraphCanvasController {
     }
 
     object BoxSelect {
-      def apply(origin: sim.Position, prev: immutable.Set[sim.Node] = Set.empty) = new BoxSelect(origin, prev)
+      def apply(
+          origin: sim.Position,
+          prev: immutable.Set[sim.Node] = Set.empty
+      ) = new BoxSelect(origin, prev)
 
-      def unapply(boxSelect: BoxSelect): Option[sim.Position] = Some(boxSelect.origin)
+      def unapply(boxSelect: BoxSelect): Option[sim.Position] =
+        Some(boxSelect.origin)
     }
 
-    case class SelectNode(override val active: immutable.Set[sim.Node]) extends SelectActiveNode
+    case class SelectNode(override val active: immutable.Set[sim.Node])
+        extends SelectActiveNode
 
-    case class DragNode(override val active: immutable.Set[sim.Node], from: sim.Position) extends SelectActiveNode
+    case class DragNode(
+        override val active: immutable.Set[sim.Node],
+        from: sim.Position
+    ) extends SelectActiveNode
 
-    case class SelectEdge(override val active: immutable.Set[sim.Connection]) extends SelectActive[sim.Connection]
+    case class SelectEdge(override val active: immutable.Set[sim.Connection])
+        extends SelectActive[sim.Connection]
 
     implicit val default: Default[State] = Selecting
   }

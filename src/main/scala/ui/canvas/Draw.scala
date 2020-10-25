@@ -10,8 +10,10 @@ trait Draw[D] {
 }
 
 object Draw {
+
   trait Shape[S, D] {
     def apply(shape: S, highlight: Boolean): D
+
     def hits(shape: S, position: Position): Boolean
   }
 
@@ -22,10 +24,13 @@ object Draw {
       def hits(position: Position): Boolean = draw.node.hits(node, position)
     }
 
-    implicit class ShapeConnection[D](connection: Connection)(implicit draw: Draw[D]) {
+    implicit class ShapeConnection[D](connection: Connection)(implicit
+        draw: Draw[D]
+    ) {
 //      def toDrawable[T](implicit drawable: Drawable[T]): T = drawable.connection(connection)
 
-      def hits(position: Position): Boolean = draw.connection.hits(connection, position)
+      def hits(position: Position): Boolean =
+        draw.connection.hits(connection, position)
     }
   }
 }

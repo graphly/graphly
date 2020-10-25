@@ -2,8 +2,8 @@ package ui
 
 import java.io.File
 
-import io.Implicits.SimableRepresention
-import io.XMLSimRepresentation.xmlSimRepresentation
+import io.Implicit.SimableRepresention
+import io.XMLSimRepresentation.Implicit.xmlSimRepresentation
 import javafx.event.ActionEvent
 import model.sim.Sim
 import scalafx.scene.Scene

@@ -45,6 +45,15 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
   override def toSim(xmlSim: xml.Elem): Sim = {
 
+  private def userClassFromXML(xmlUserClass: xml.Node, nodes: collection.Map[String, Node]): Option[(String, UserClass)] = for {
+    className <- xmlUserClass.attribute("name")
+    classPriority <- xmlUserClass.attribute("priority")
+    classReferenceSource <- xmlUserClass.attribute("referenceSource")
+    classUserClassType <- xmlUserClass.attribute("type")
+    priority <- classPriority.headOption
+    referenceSource <- nodes.get(classReferenceSource.toString())
+  } yield (className.toString(), UserClass(className.toString(), priority.toString().toInt, referenceSource, if (classUserClassType.toString().equals("open")) UserClass.Open else UserClass.Closed))
+
   private def connectionFromXML(xmlConnection: xml.Node, nodes: collection.Map[String, Node]): Option[Connection] = for {
     sourceName <- xmlConnection.attribute("source")
     targetName <- xmlConnection.attribute("target")

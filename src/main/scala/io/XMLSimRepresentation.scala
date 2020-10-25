@@ -45,6 +45,13 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
   override def toSim(xmlSim: xml.Elem): Sim = {
 
+  private def connectionFromXML(xmlConnection: xml.Node, nodes: collection.Map[String, Node]): Option[Connection] = for {
+    sourceName <- xmlConnection.attribute("source")
+    targetName <- xmlConnection.attribute("target")
+    sourceNode <- nodes.get(sourceName.toString)
+    targetNode <- nodes.get(targetName.toString)
+  } yield Connection(sourceNode, targetNode)
+
   private def nodeFromXML(xmlNode: xml.Node): Option[(String, Position => Node)] = for {
     classNames <- xmlNode.child(1).attribute("className")
     className  <- classNames.headOption

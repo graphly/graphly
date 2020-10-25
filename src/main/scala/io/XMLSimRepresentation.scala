@@ -44,6 +44,56 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   }
 
   override def toSim(xmlSim: xml.Elem): Sim = {
+    val xmlSimNodes = xmlSim.child
+    val simulation = xmlSimNodes(1)
+    val jmodel = xmlSimNodes(3)
+    val results = xmlSimNodes(5)
+
+    val positionlessNodes: mutable.HashMap[String, Position => Node] = mutable.HashMap.empty
+    val nodes: mutable.HashMap[String, Node] = mutable.HashMap.empty
+    val connections: mutable.HashSet[Connection] = mutable.HashSet.empty
+    val userClasses: mutable.HashMap[String, UserClass] = mutable.HashMap.empty
+    val measures: mutable.HashSet[Measure] = mutable.HashSet.empty
+
+    val simulationAssets = simulation.head.child
+
+    // Nodes must be made first
+    simulationAssets.filter((node: xml.Node) => node.label == "node").foreach((nodeXML: xml.Node) => {
+      val (nodeName, node) = nodeFromXML(nodeXML).get
+      positionlessNodes.put(nodeName, node)
+    })
+
+    jmodel
+      .child
+      .filter((XMLChildren: xml.Node) => XMLChildren.label.equals("station"))
+      .foreach((stationXML: xml.Node) => for {
+        stationName <- stationXML.attribute("name")
+        position <- stationXML.child.drop(1).headOption
+        x <- position.attribute("x")
+        y <- position.attribute("y")
+      } yield nodes.put(stationName.toString(), positionlessNodes(stationName.toString())(Position(x.toString().toDouble, y.toString().toDouble))))
+
+    simulationAssets.foreach((simulationAsset: xml.Node) => {
+      simulationAsset.label match {
+        case "node" => () // Done already
+        case "connection" => connections.add(connectionFromXML(simulationAsset, nodes).get)
+        case "userClass" =>
+          val (userClassName, userClass) = userClassFromXML(simulationAsset, nodes).get
+          userClasses.put(userClassName, userClass)
+        case "measure" => measures.add(measureFromXML(simulationAsset, nodes, userClasses).get)
+        case unimplementedName => if (unimplementedName != "#PCDATA") {
+          println("Found unimplemented simulation asset: " + unimplementedName)
+          println(simulationAsset)
+        }
+      }
+    })
+
+    nodes.values.foreach(println)
+    connections.foreach(println)
+    measures.foreach(println)
+    userClasses.values.foreach(println)
+    Sim(mutable.HashSet.from(nodes.values), connections, mutable.HashSet.from(userClasses.values), measures)
+  }
 
   private def measureFromXML(xmlMeasure: xml.Node, nodes: collection.Map[String, Node], userClasses: collection.Map[String, UserClass]): Option[Measure] = for {
     classAlpha <- xmlMeasure.attribute("alpha")

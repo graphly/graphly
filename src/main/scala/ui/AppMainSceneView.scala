@@ -1,15 +1,20 @@
 package ui
 
+import java.io.File
+
+import io.Implicits.SimableRepresention
+import io.XMLSimRepresentation.xmlSimRepresentation
 import javafx.event.ActionEvent
 import model.sim.Sim
 import scalafx.scene.Scene
 import scalafx.scene.control.{Label, Menu, MenuBar, MenuItem, SeparatorMenuItem, TextArea, ToolBar}
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
+import scalafx.stage.{FileChooser, Stage}
 import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
 
 class AppMainSceneView(width: Double, height: Double) extends Scene(width, height) {
-  private val model: Sim = Sim.empty
+  private var model: Sim = Sim.empty
   private val controller = new GraphCanvasController(model)
   private val graphContainer = new GraphCanvasContainer(controller)
 
@@ -35,7 +40,15 @@ class AppMainSceneView(width: Double, height: Double) extends Scene(width, heigh
             },
             new SeparatorMenuItem(),
             new MenuItem("Open") {
-              disable = true
+              onAction = (_: ActionEvent) => {
+                val fileChooser = new FileChooser()
+                fileChooser.initialDirectory = new File(System.getProperty("user.home"))
+                fileChooser.title = "Open Simulation"
+                fileChooser.extensionFilters.add(new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg"))
+                val xmlFile = fileChooser.showOpenDialog(new Stage)
+                //TODO: Update display
+                model = xml.XML.loadFile(xmlFile).toSim
+              }
               accelerator = new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)
             },
           )

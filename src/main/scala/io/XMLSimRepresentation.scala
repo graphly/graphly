@@ -3,7 +3,10 @@ package io
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-import model.sim.{Connection, Node, Sim}
+import scala.collection.mutable
+import model.sim.{Connection, Measure, Node, Position, Sim, UserClass}
+import model.sim
+import scala.language.implicitConversions
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   override def represent(x: Sim): xml.Elem = {
@@ -41,8 +44,17 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   }
 
   override def toSim(xmlSim: xml.Elem): Sim = {
-    println(xmlSim.attributes)
-    ???
+
+  private def nodeFromXML(xmlNode: xml.Node): Option[(String, Position => Node)] = for {
+    classNames <- xmlNode.child(1).attribute("className")
+    className  <- classNames.headOption
+    names <- xmlNode.attribute("name")
+    name <- names.headOption
+  } yield className.toString match {
+    //TODO: Add names & other node types
+    case "Queue" => (name.toString, sim.Queue(_: Position))
+    case "RandomSource" => (name.toString, sim.Source(_: Position))
+    case "JobSink" => (name.toString, sim.Sink(_: Position))
   }
 
   object Implicit {

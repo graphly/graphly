@@ -45,6 +45,17 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
   override def toSim(xmlSim: xml.Elem): Sim = {
 
+  private def measureFromXML(xmlMeasure: xml.Node, nodes: collection.Map[String, Node], userClasses: collection.Map[String, UserClass]): Option[Measure] = for {
+    classAlpha <- xmlMeasure.attribute("alpha")
+    classReferenceNode <- xmlMeasure.attribute("referenceNode")
+    classReferenceClass <- xmlMeasure.attribute("referenceUserClass")
+    classType <- xmlMeasure.attribute("type")
+    classVerbose <- xmlMeasure.attribute("verbose")
+    referenceNode <- nodes.get(classReferenceNode.toString())
+    referenceUserClass <- userClasses.get(classReferenceClass.toString())
+  } yield Measure(classAlpha.toString().toFloat, referenceNode, referenceUserClass, classType.toString(), classVerbose.toString.toBoolean)
+
+
   private def userClassFromXML(xmlUserClass: xml.Node, nodes: collection.Map[String, Node]): Option[(String, UserClass)] = for {
     className <- xmlUserClass.attribute("name")
     classPriority <- xmlUserClass.attribute("priority")

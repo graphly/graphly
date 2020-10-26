@@ -65,7 +65,7 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
     mode match {
       case _: EditingMode.Node => hitShape(position) match {
           case None =>
-            val simNode = sim.Source(position)
+            val simNode = sim.Source(position, "TODO name node")
             model.nodes += simNode
           case Some(node: sim.Node) => mode = EditingMode.SelectNode(Set(node))
           case Some(edge: sim.Connection) =>

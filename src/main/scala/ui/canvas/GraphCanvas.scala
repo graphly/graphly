@@ -13,6 +13,7 @@ class GraphCanvas(override val controller: Controller[Iterable[GraphCanvas.DrawA
     with Controlled[Iterable[GraphCanvas.DrawAction] => Unit] {
   onMousePressed = _ => requestFocus()
 
+  override val state: Iterable[GraphCanvas.DrawAction] => Unit = redraw
   val fill: ObjectProperty[Color] = ObjectProperty(Color.White)
 
   def redraw(shapes: Iterable[GraphCanvas.DrawAction]): Unit = {
@@ -21,27 +22,12 @@ class GraphCanvas(override val controller: Controller[Iterable[GraphCanvas.DrawA
 
     shapes.foreach(_ (graphicsContext2D))
   }
-
-  override val state: Iterable[GraphCanvas.DrawAction] => Unit = redraw
 }
 
 object GraphCanvas {
   type DrawAction = GraphicsContext => ()
 
   implicit object DrawActionDraw extends Draw[DrawAction] {
-    override def selectionBox(start: sim.Position, end: sim.Position): DrawAction = { context =>
-      val topLeft = start min end
-      val delta = (start max end) - topLeft
-      context.stroke = Color.Goldenrod
-      context.lineWidth = 2
-      context.strokeRect(topLeft.x, topLeft.y, delta.x, delta.y)
-    }
-
-    private def drawCircle(position: sim.Position, radius: Double, color: Color, gc: GraphicsContext): Unit = {
-      gc.fill = color
-      gc.fillArc(position.x - radius, position.y - radius, 2 * radius, 2 * radius, 0, 360, ArcType.Chord)
-    }
-
     override val node: Draw.Shape[sim.Node, DrawAction] = new Draw.Shape[sim.Node, DrawAction] {
       private val radius = 20
       private val highlighting = Color.GreenYellow
@@ -57,7 +43,6 @@ object GraphCanvas {
         dist < radius ** 2
       }
     }
-
     override val connection: Draw.Shape[sim.Connection, DrawAction] = new Draw.Shape[sim.Connection, DrawAction] {
       private val width = 5
       private val highlighting = Color.GreenYellow
@@ -79,9 +64,31 @@ object GraphCanvas {
         if (!hit.inRectangle(connection.source.position, connection.target.position)) return false
         val fromStart = hit - connection.source.position
         val edgeDisplacement = connection.target.position - connection.source.position
-        val normal = fromStart - edgeDisplacement * ((fromStart `.` edgeDisplacement) / (edgeDisplacement.magnitude ** 2))
+        val normal = fromStart - edgeDisplacement *
+          ((fromStart `.` edgeDisplacement) / (edgeDisplacement.magnitude ** 2))
         normal.magnitude < width
       }
+    }
+
+    override def selectionBox(start: sim.Position, end: sim.Position): DrawAction = { context =>
+      val topLeft = start min end
+      val delta = (start max end) - topLeft
+      context.stroke = Color.Goldenrod
+      context.lineWidth = 2
+      context.strokeRect(topLeft.x, topLeft.y, delta.x, delta.y)
+    }
+
+    private def drawCircle(position: sim.Position, radius: Double, color: Color, gc: GraphicsContext): Unit = {
+      gc.fill = color
+      gc.fillArc(
+        position.x - radius,
+        position.y - radius,
+        2 * radius,
+        2 * radius,
+        0,
+        360,
+        ArcType.Chord
+      )
     }
   }
 }

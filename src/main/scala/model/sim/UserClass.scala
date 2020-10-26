@@ -9,6 +9,6 @@ case class UserClass(
 
 object UserClass {
   sealed trait Type
-  case object Open extends Type
+  case object Open   extends Type
   case object Closed extends Type
 }

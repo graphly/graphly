@@ -28,17 +28,7 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
   // moving objects, etc.
   private var _mode: EditingMode.State = Default.default
 
-  private def mode_=(state: EditingMode.State): Unit = {
-    _mode = state
-
-    // Call update callback when we change to an exposed state
-    onSwitchMode.dispatch(state)
-  }
-
-  @inline
-  final def mode: EditingMode.State = _mode
-
-  final def switchMode(
+  final def redrawMode(
       state: EditingMode.State,
       update: Iterable[D] => Unit
   ): Unit = {
@@ -47,10 +37,19 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
   }
 
   def drawables: View[D] =
-    model.connections.view.map(c =>
-      drawable.connection(c, mode.highlights(c))
-    ) ++
+    model.connections.view
+      .map(c => drawable.connection(c, mode.highlights(c))) ++
       model.nodes.view.map(n => drawable.node(n, mode.highlights(n)))
+
+  @inline
+  final def mode: EditingMode.State = _mode
+
+  private def mode_=(state: EditingMode.State): Unit = {
+    _mode = state
+
+    // Call update callback when we change to an exposed state
+    onSwitchMode.dispatch(state)
+  }
 
   /**
     * Callback when we click inside the canvas.
@@ -61,77 +60,72 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
   override def onMouseClick(
       event: MouseEvent,
       update: Iterable[D] => Unit
-  ): Unit = {
+  ): Unit                                                    = {
     val position = event.position.model
     mode match {
-      case _: EditingMode.Node =>
-        hitShape(position) match {
+      case _: EditingMode.Node => hitShape(position) match {
           case None =>
             val simNode = sim.Source(position)
             model.nodes += simNode
-          case Some(node: sim.Node) =>
-            mode = EditingMode.SelectNode(Set(node))
+          case Some(node: sim.Node) => mode = EditingMode.SelectNode(Set(node))
           case Some(edge: sim.Connection) =>
             mode = EditingMode.SelectEdge(Set(edge))
         }
-      case EditingMode.BeginEdge =>
-        hitNode(position) match {
+      case EditingMode.BeginEdge => hitNode(position) match {
           case Some(start) => mode = EditingMode.DrawingEdge(start)
-          case None        => mode = EditingMode.Selecting
+          case None => mode = EditingMode.Selecting
         }
-      case EditingMode.DrawingEdge(start) =>
-        hitNode(position) match {
+      case EditingMode.DrawingEdge(start) => hitNode(position) match {
           case Some(end) =>
             model.connections += sim.Connection(start, end)
             mode = EditingMode.DrawingEdge(end)
-          case None =>
-            mode = EditingMode.BeginEdge
+          case None => mode = EditingMode.BeginEdge
         }
       case EditingMode.DragNode(nodes, _) =>
         mode = EditingMode.SelectNode(nodes)
       case boxSelect: EditingMode.BoxSelect =>
         // Currently inefficient, may be made more efficient upon refactor
         mode = EditingMode.SelectNode(
-          (boxSelect.active.toSet | boxSelect.prev) -- (boxSelect.active & boxSelect.prev)
+          (boxSelect.active.toSet | boxSelect.prev) --
+            (boxSelect.active & boxSelect.prev)
         )
-      case select: EditingMode.Select =>
-        hitShape(position) match {
-          case Some(node: sim.Node) =>
-            select match {
+      case select: EditingMode.Select => hitShape(position) match {
+          case Some(node: sim.Node) => select match {
               case EditingMode.SelectNode(nodes) if event.shiftDown =>
                 mode = EditingMode.SelectNode(
                   if (nodes contains node) nodes - node else nodes + node
                 )
-              case _ =>
-                mode = EditingMode.SelectNode(Set(node))
+              case _ => mode = EditingMode.SelectNode(Set(node))
             }
-          case Some(edge: sim.Connection) =>
-            select match {
+          case Some(edge: sim.Connection) => select match {
               case EditingMode.SelectEdge(edges) if event.shiftDown =>
                 mode = EditingMode.SelectEdge(
                   if (edges contains edge) edges - edge else edges + edge
                 )
-              case _ =>
-                mode = EditingMode.SelectEdge(Set(edge))
+              case _ => mode = EditingMode.SelectEdge(Set(edge))
             }
-          case _ =>
-            mode = EditingMode.Selecting
+          case _ => mode = EditingMode.Selecting
         }
     }
 
     update(drawables)
   }
 
+  private def hitShape(hit: sim.Position): Option[sim.Shape] =
+    hitNode(hit) orElse hitConnection(hit)
+
+  private def hitConnection(hit: sim.Position): Option[sim.Connection] = {
+    model.connections.find(_.hits(hit))
+  }
+
   override def onMouseDragged(
       event: MouseEvent,
       update: Iterable[D] => Unit
-  ): Unit = {
+  ): Unit                                                  = {
     val position = event.position.model
     mode match {
       case EditingMode.DragNode(nodes, from) =>
-        nodes.foreach { node =>
-          node.position += event.position.model - from
-        }
+        nodes.foreach { node => node.position += event.position.model - from }
         mode = EditingMode.DragNode(nodes, event.position.model)
       case EditingMode.SelectNode(nodes) if nodes.exists(_.hits(position)) =>
         mode = EditingMode.DragNode(nodes, position)
@@ -144,33 +138,32 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
         }
         update(drawables ++ View(drawable.selectionBox(origin, position)))
         return
-      case _: EditingMode.Select =>
-        hitNode(position) match {
-          case Some(node) =>
-            mode = EditingMode.DragNode(Set(node), position)
-          case None =>
-            mode = EditingMode.BoxSelect(position)
+      case _: EditingMode.Select => hitNode(position) match {
+          case Some(node) => mode = EditingMode.DragNode(Set(node), position)
+          case None => mode = EditingMode.BoxSelect(position)
         }
       case _ => return
     }
     update(drawables)
   }
 
+  private def hitNode(hit: sim.Position): Option[sim.Node] = {
+    model.nodes.find(_.hits(hit))
+  }
+
   override def onKeyTyped(event: KeyEvent, state: Iterable[D] => Unit): Unit = {
     mode match {
-      case active: EditingMode.SelectActive[_] =>
-        event.code match {
-          case KeyCode.Undefined => // ScalaFX not recognising `delete` on local runtime
+      case active: EditingMode.SelectActive[_] => event.code match {
+          case KeyCode
+                .Undefined => // ScalaFX not recognising `delete` on local runtime
             active match {
               case active: EditingMode.SelectActiveNode =>
                 model.nodes --= active.active
                 model.connections.filterInPlace { connection =>
-                  !active.active(connection.source) && !active.active(
-                    connection.target
-                  )
+                  !active.active(connection.source) &&
+                  !active.active(connection.target)
                 }
-              case EditingMode.SelectEdge(edges) =>
-                model.connections --= edges
+              case EditingMode.SelectEdge(edges) => model.connections --= edges
             }
             mode = EditingMode.Selecting
             state(drawables)
@@ -180,24 +173,12 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
     }
   }
 
-  private def hitShape(hit: sim.Position): Option[sim.Shape] =
-    hitNode(hit) orElse hitConnection(hit)
-
-  private def hitNode(hit: sim.Position): Option[sim.Node] = {
-    model.nodes.find(_.hits(hit))
-  }
-
-  private def hitConnection(hit: sim.Position): Option[sim.Connection] = {
-    model.connections.find(_.hits(hit))
-  }
-
-  def save(): Unit = {
+  def save(): Unit                                                           = {
     val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
     fileChooser.title = "Save Simulation"
-    fileChooser.extensionFilters.add(
-      new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg")
-    )
+    fileChooser.extensionFilters
+      .add(new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg"))
     fileChooser.initialFileName = ".jsimg"
     Option(fileChooser.showSaveDialog(new Stage)).foreach { dest =>
       dest.createNewFile()
@@ -209,7 +190,7 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
   }
 }
 
-object GraphCanvasController {
+object GraphCanvasController                {
 
   object EditingMode {
 
@@ -225,25 +206,9 @@ object GraphCanvasController {
       toolbarStatusMnemonic = "Creating edges"
     }
 
-    case object BeginEdge extends Edge with Entry
-
-    case class DrawingEdge(from: sim.Node) extends Edge {
-      override def highlights(shape: sim.Shape): Boolean = shape == from
-    }
-
     sealed trait Node extends Entry
 
-    case object Source extends Node
-
-    case object Sink extends Node
-
-    case object Fork extends Node
-
-    case object Join extends Node
-
     sealed trait Select extends State
-
-    case object Selecting extends Select with Entry
 
     sealed abstract class SelectActive[T: ClassTag] extends Select {
       toolbarStatusMnemonic = "Selecting"
@@ -251,15 +216,17 @@ object GraphCanvasController {
 
       override def highlights(shape: sim.Shape): Boolean = {
         shape match {
-          case shape: T =>
-            active contains shape
-          case _ =>
-            false
+          case shape: T => active contains shape
+          case _ => false
         }
       }
     }
 
     sealed abstract class SelectActiveNode extends SelectActive[sim.Node]
+
+    case class DrawingEdge(from: sim.Node) extends Edge {
+      override def highlights(shape: sim.Shape): Boolean = shape == from
+    }
 
     /* This class is not immutable for efficiency reasons, although this means you have to play nice with it
        We should probably refactor more of the immutability out for efficiency, or stick to it, rather than the mix
@@ -268,26 +235,14 @@ object GraphCanvasController {
         val origin: sim.Position,
         val prev: immutable.Set[sim.Node] = Set.empty
     ) extends SelectActiveNode {
-      private val _nodes: mutable.Set[sim.Node] = mutable.Set.empty
+      private val _nodes: mutable.Set[sim.Node]     = mutable.Set.empty
       override val active: collection.Set[sim.Node] = _nodes
 
       def removeAll(p: sim.Node => Boolean): Unit = {
         _nodes.filterInPlace(p andThen (!_))
       }
 
-      def ++=(iterable: Iterable[sim.Node]): Unit = {
-        _nodes ++= iterable
-      }
-    }
-
-    object BoxSelect {
-      def apply(
-          origin: sim.Position,
-          prev: immutable.Set[sim.Node] = Set.empty
-      ) = new BoxSelect(origin, prev)
-
-      def unapply(boxSelect: BoxSelect): Option[sim.Position] =
-        Some(boxSelect.origin)
+      def ++=(iterable: Iterable[sim.Node]): Unit = { _nodes ++= iterable }
     }
 
     case class SelectNode(override val active: immutable.Set[sim.Node])
@@ -300,6 +255,28 @@ object GraphCanvasController {
 
     case class SelectEdge(override val active: immutable.Set[sim.Connection])
         extends SelectActive[sim.Connection]
+
+    case object BeginEdge                  extends Edge with Entry
+
+    case object Source extends Node
+
+    case object Sink extends Node
+
+    case object Fork extends Node
+
+    case object Join extends Node
+
+    case object Selecting extends Select with Entry
+
+    object BoxSelect {
+      def apply(
+          origin: sim.Position,
+          prev: immutable.Set[sim.Node] = Set.empty
+      ) = new BoxSelect(origin, prev)
+
+      def unapply(boxSelect: BoxSelect): Option[sim.Position] =
+        Some(boxSelect.origin)
+    }
 
     implicit val default: Default[State] = Selecting
   }

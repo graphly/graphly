@@ -2,7 +2,7 @@ package ui
 
 import scalafx.scene.input.MouseEvent
 import model.sim
-import util.Number.DoubleExtensions
+import _root_.util.Number.Implicit.DoubleExtensions
 
 case class Position(x: Double, y: Double) {
   def model: sim.Position = sim.Position(x, y)
@@ -23,7 +23,7 @@ case class Position(x: Double, y: Double) {
     val xFinish = finish.x - start.x
     val yFinish = finish.y - start.y
     xRect.sign == xFinish.sign && yRect.sign == yFinish.sign &&
-      xRect.abs < xFinish.abs && yRect.abs < yFinish.abs
+    xRect.abs < xFinish.abs && yRect.abs < yFinish.abs
   }
 
   def min(other: Position): Position = Position(x min other.x, y min other.y)
@@ -31,7 +31,7 @@ case class Position(x: Double, y: Double) {
 }
 
 object Position {
-  object Implicits {
+  object Implicit {
     implicit class MouseEventPosition(mouseEvent: MouseEvent) {
       def position: Position = {
         Position(mouseEvent.x, mouseEvent.y)

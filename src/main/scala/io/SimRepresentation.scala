@@ -1,12 +1,12 @@
 package io
 
 import model.sim.Sim
-import XMLSimRepresentation.xmlSimRepresentation
 
 trait SimRepresentation[A] {
   def represent(sim: Sim): A
 }
-object Implicits {
+
+object Implicit {
   implicit class RepresentableSim[W](sim: Sim)(implicit simRepresentation: SimRepresentation[W]) {
     def toRepresentation: W = simRepresentation.represent(sim)
   }

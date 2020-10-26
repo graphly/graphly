@@ -40,5 +40,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     </archive>
   }
 
-  implicit val xmlSimRepresentation: SimRepresentation[xml.Elem] = this
+  object Implicit {
+    implicit val xmlSimRepresentation: SimRepresentation[xml.Elem] = XMLSimRepresentation
+  }
 }

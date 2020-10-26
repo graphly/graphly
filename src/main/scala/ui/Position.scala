@@ -23,7 +23,7 @@ case class Position(x: Double, y: Double) {
     val xFinish = finish.x - start.x
     val yFinish = finish.y - start.y
     xRect.sign == xFinish.sign && yRect.sign == yFinish.sign &&
-      xRect.abs < xFinish.abs && yRect.abs < yFinish.abs
+    xRect.abs < xFinish.abs && yRect.abs < yFinish.abs
   }
 
   def min(other: Position): Position = Position(x min other.x, y min other.y)

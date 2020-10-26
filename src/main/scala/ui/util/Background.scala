@@ -5,9 +5,13 @@ import scalafx.geometry.Insets
 import scalafx.scene.paint.Color
 
 object Background {
-  def apply(color: Color): Background = new Background(Array(new BackgroundFill(color, new CornerRadii(0), Insets(0, 0, 0, 0))))
+  def apply(color: Color): Background =
+    new Background(
+      Array(new BackgroundFill(color, new CornerRadii(0), Insets(0, 0, 0, 0)))
+    )
 
   object Implicit {
-    implicit def backgroundFromColor(color: Color): Background = Background(color)
+    implicit def backgroundFromColor(color: Color): Background =
+      Background(color)
   }
 }

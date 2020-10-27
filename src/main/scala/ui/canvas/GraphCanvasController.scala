@@ -154,8 +154,8 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
   override def onKeyTyped(event: KeyEvent, state: Iterable[D] => Unit): Unit = {
     mode match {
       case active: EditingMode.SelectActive[_] => event.code match {
-          case KeyCode
-                .Undefined => // ScalaFX not recognising `delete` on local runtime
+          // ScalaFX not recognising `delete` on local runtime
+          case KeyCode.Undefined =>
             active match {
               case active: EditingMode.SelectActiveNode =>
                 model.nodes --= active.active
@@ -173,7 +173,7 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
     }
   }
 
-  def save(): Unit                                                           = {
+  def save(): Unit = {
     val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
     fileChooser.title = "Save Simulation"

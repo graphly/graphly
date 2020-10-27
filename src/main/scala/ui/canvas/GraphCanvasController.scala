@@ -210,8 +210,6 @@ object GraphCanvasController                {
 
     sealed trait Select extends State
 
-    object Select {}
-
     case object Selecting extends Select with Entry
 
     sealed abstract class SelectActive[T: ClassTag] extends Select {

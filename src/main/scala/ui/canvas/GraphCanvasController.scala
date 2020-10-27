@@ -18,7 +18,7 @@ import util.Default
 import scala.collection.{View, immutable, mutable}
 import scala.reflect.ClassTag
 
-class GraphCanvasController[D](val model: sim.Sim, val rightMenu: VerticalSettingsMenu)(implicit
+class GraphCanvasController[D](val model: sim.Sim)(implicit
     val drawable: Draw[D]
 ) extends Controller[Iterable[D] => Unit] {
   // Callbacks to run when we switch the mode

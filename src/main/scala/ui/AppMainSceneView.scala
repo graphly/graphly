@@ -12,9 +12,9 @@ import ui.canvas.{GraphCanvasContainer, GraphCanvasController, VerticalSettingsM
 class AppMainSceneView(width: Double, height: Double)
   extends Scene(width, height) {
   private val model: Sim = Sim.empty
-  private val rightMenu = new VerticalSettingsMenu
-  private val controller = new GraphCanvasController(model, rightMenu)
+  private val controller = new GraphCanvasController(model)
   private val graphContainer = new GraphCanvasContainer(controller)
+  private val rightMenu = VerticalSettingsMenu(controller)
 
   private val statusBar =
     new Label() {

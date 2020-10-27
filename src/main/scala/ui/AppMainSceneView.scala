@@ -3,19 +3,11 @@ package ui
 import javafx.event.ActionEvent
 import model.sim.Sim
 import scalafx.scene.Scene
-import scalafx.scene.control.{
-  Label,
-  Menu,
-  MenuBar,
-  MenuItem,
-  SeparatorMenuItem,
-  TextArea,
-  ToolBar
-}
+import scalafx.scene.control._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
-import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
 import ui.canvas.GraphCanvas.DrawActionDraw
+import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
 
 class AppMainSceneView(width: Double, height: Double)
     extends Scene(width, height) {

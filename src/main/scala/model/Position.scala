@@ -1,4 +1,4 @@
-package model.sim
+package model
 
 import util.Number.Implicit.DoubleExtensions
 

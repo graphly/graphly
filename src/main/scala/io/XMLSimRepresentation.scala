@@ -12,7 +12,7 @@ import scala.language.implicitConversions
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   override def represent(x: Sim): xml.Elem  = {
     val timestamp: String      = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u")
-      .format(ZonedDateTime.now())
+      .format(ZonedDateTime.now)
     // TODO: This will almost certainly need it's own function once nodes are fully implemented
     val nodes: Array[xml.Elem] =
       x.nodes.map((node: Node) => <node name="TODO" ></node>).toArray
@@ -84,9 +84,9 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
             x           <- position.attribute("x")
             y           <- position.attribute("y")
           } yield nodes.put(
-            stationName.toString(),
-            positionlessNodes(stationName.toString())(
-              Position(x.toString().toDouble, y.toString().toDouble)
+            stationName.toString,
+            positionlessNodes(stationName.toString)(
+              Position(x.toString.toDouble, y.toString.toDouble)
             )
           )
       )
@@ -135,13 +135,13 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       classReferenceClass <- xmlMeasure.attribute("referenceUserClass")
       classType           <- xmlMeasure.attribute("type")
       classVerbose        <- xmlMeasure.attribute("verbose")
-      referenceNode       <- nodes.get(classReferenceNode.toString())
-      referenceUserClass  <- userClasses.get(classReferenceClass.toString())
+      referenceNode       <- nodes.get(classReferenceNode.toString)
+      referenceUserClass  <- userClasses.get(classReferenceClass.toString)
     } yield Measure(
-      classAlpha.toString().toFloat,
+      classAlpha.toString.toFloat,
       referenceNode,
       referenceUserClass,
-      classType.toString(),
+      classType.toString,
       classVerbose.toString.toBoolean
     )
 
@@ -155,14 +155,14 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       classReferenceSource <- xmlUserClass.attribute("referenceSource")
       classUserClassType   <- xmlUserClass.attribute("type")
       priority             <- classPriority.headOption
-      referenceSource      <- nodes.get(classReferenceSource.toString())
+      referenceSource      <- nodes.get(classReferenceSource.toString)
     } yield (
-      className.toString(),
+      className.toString,
       UserClass(
-        className.toString(),
-        priority.toString().toInt,
+        className.toString,
+        priority.toString.toInt,
         referenceSource,
-        if (classUserClassType.toString().equals("open")) UserClass.Open
+        if (classUserClassType.toString.equals("open")) UserClass.Open
         else UserClass.Closed
       )
     )

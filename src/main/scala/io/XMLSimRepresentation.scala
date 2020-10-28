@@ -69,7 +69,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       .filter((XMLChildren: xml.Node) => XMLChildren.label.equals("station"))
       .foreach((stationXML: xml.Node) => for {
         stationName <- stationXML.attribute("name")
-        position <- stationXML.child.drop(1).headOption
+        position <- stationXML.child(1).headOption
         x <- position.attribute("x")
         y <- position.attribute("y")
       } yield nodes.put(stationName.toString(), positionlessNodes(stationName.toString())(Position(x.toString().toDouble, y.toString().toDouble))))

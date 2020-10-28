@@ -1,4 +1,4 @@
-package util
+package ui.util
 
 import scala.collection.mutable
 

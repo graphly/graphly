@@ -4,8 +4,8 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 import scala.collection.mutable
-import model.sim.{Connection, Measure, Node, Position, Sim, UserClass}
-import model.sim
+import model.sim.{Connection, Measure, Node, Sim, UserClass}
+import model.{Position, sim}
 import scala.language.implicitConversions
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {

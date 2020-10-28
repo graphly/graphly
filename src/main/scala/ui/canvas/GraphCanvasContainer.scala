@@ -4,7 +4,10 @@ import scalafx.scene.layout.Pane
 import ui.util.Background
 import ui.util.Property.Implicit._
 
-class GraphCanvasContainer(val controller: GraphCanvasController) extends Pane {
+class GraphCanvasContainer(
+    val controller: GraphCanvasController[GraphCanvas.DrawAction]
+)(implicit draw: Draw[GraphCanvas.DrawAction, _])
+    extends Pane {
   val canvas = new GraphCanvas(controller)
   canvas.width <== this.width
   canvas.height <== this.height

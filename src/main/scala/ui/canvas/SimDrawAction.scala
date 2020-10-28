@@ -1,6 +1,6 @@
 package ui.canvas
 
-import model.{Position, sim}
+import model.{LinearTransform, Position, sim}
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.ArcType
@@ -34,9 +34,8 @@ object SimDrawAction {
     }
 
     implicit object Node extends this.Shape[sim.Node] {
-      private val radius       = 20
+      val radius: Int          = 20
       private val highlighting = Color.GreenYellow
-      private val fill         = Color.CornflowerBlue
 
       private def drawCircle(
           position: Position,
@@ -103,14 +102,23 @@ object SimDrawAction {
           )
         }
 
+        val delta = (connection.target.position - connection.source.position)
+          .unit * Node.radius
+        val head  = connection.target.position - delta
+        val angle = math.Pi / 6
+        val end   = head - delta * math.cos(angle)
+
         context.stroke = fill
         context.lineWidth = width
-        context.strokeLine(
-          connection.source.x,
-          connection.source.y,
-          connection.target.x,
-          connection.target.y
-        )
+        context
+          .strokeLine(connection.source.x, connection.source.y, end.x, end.y)
+
+        context.fill = fill
+        context.fillPolygon(Seq(
+          head.coords,
+          (head - LinearTransform.radians(angle) * delta).coords,
+          (head - LinearTransform.radians(-angle) * delta).coords
+        ))
       }
 
       override def hits(connection: sim.Connection, hit: Position): Boolean = {

@@ -1,7 +1,7 @@
 package ui.util
 
-import scalafx.scene.layout.{Background, BackgroundFill, CornerRadii}
 import scalafx.geometry.Insets
+import scalafx.scene.layout.{Background, BackgroundFill, CornerRadii}
 import scalafx.scene.paint.Color
 
 object Background {

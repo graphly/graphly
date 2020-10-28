@@ -56,14 +56,28 @@ object SimDrawAction {
         )
       }
 
+      def classColor(instance: Any): Color                               = {
+        val conversion    = 0.5 / 26
+        val name          = instance.getClass.getSimpleName
+        def index(n: Int) = 0.5 + (name(n).toUpper.toInt % 26) * conversion
+        Color.color(index(0), index(1), index(2))
+      }
+
       override def apply(node: sim.Node, highlight: Boolean): DrawAction = {
         context =>
           if (highlight)
             drawCircle(node.position, radius * 1.3, highlighting, context)
-          drawCircle(node.position, radius, fill, context)
+          drawCircle(node.position, radius, classColor(node), context)
+          context.fill = Color.Black
+          val textSizeOffset = 5
+          context.fillText(
+            node.toString.substring(0, 2),
+            node.x - textSizeOffset * 1.5,
+            node.y + textSizeOffset
+          )
       }
 
-      override def hits(node: sim.Node, hit: Position): Boolean = {
+      override def hits(node: sim.Node, hit: Position): Boolean          = {
         val dist = (node.x - hit.x) ** 2 + (node.y - hit.y) ** 2
         dist < radius ** 2
       }

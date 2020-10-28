@@ -47,6 +47,17 @@ case class LinearTransform(a: Double, b: Double, c: Double, d: Double) {
   def *(position: Position): Position     =
     Position(a * position.x + b * position.y, c * position.x + d * position.y)
   def unary_- : LinearTransform           = LinearTransform(-a, -b, -c, -d)
+
+  def *(transform: LinearTransform): LinearTransform =
+    LinearTransform(
+      a * transform.a + b * transform.c,
+      a * transform.b + b * transform.d,
+      c * transform.a + d * transform.c,
+      c * transform.b + d * transform.d
+    )
+
+  def *(factor: Int): LinearTransform =
+    LinearTransform(a * factor, b * factor, c * factor, d * factor)
 }
 
 object LinearTransform                                                 {

@@ -1,26 +1,27 @@
 package ui.canvas
 
-import java.io.{File, PrintWriter}
+import java.io.{File, FileInputStream, PrintWriter}
 
 import io.Implicit._
 import io.XMLSimRepresentation.Implicit._
+import model.sim.Trace.Image
 import model.{Position, sim}
 import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}
 import scalafx.stage.{FileChooser, Stage}
 import ui.Controller
 import ui.Position.Implicit.MouseEventPosition
 import ui.canvas.Draw.Implicit.DrawShape
-import ui.canvas.GraphCanvasController.EditingMode
 import ui.canvas.GraphCanvasController.EditingMode.default
+import ui.canvas.GraphCanvasController.{EditingMode, Redraw}
 import ui.util.Event
 import util.Default
 
 import scala.collection.{View, immutable, mutable}
-import scala.reflect.ClassTag
+import scala.reflect.{ClassTag, classTag}
 
 class GraphCanvasController[D](val model: sim.Sim)(implicit
     val draw: Draw[D, sim.Shape]
-) extends Controller[Iterable[D] => Unit] {
+) extends Controller[Redraw[D]] {
   // Callbacks to run when we switch the mode
   val onSwitchMode = new Event[EditingMode.State]
 
@@ -28,17 +29,17 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
   // moving objects, etc.
   private var _mode: EditingMode.State = Default.default
 
-  final def redrawMode(
-      state: EditingMode.State,
-      update: Iterable[D] => Unit
-  ): Unit = {
+  final def redrawMode(state: EditingMode.State, update: Redraw[D]): Unit = {
     mode = state
-    update(drawables)
+    update(Some(foreground), Some(background))
   }
 
-  def drawables: View[D] =
+  def foreground: View[D] =
     model.connections.view.map(c => draw.shape(c, mode.highlights(c))) ++
       model.nodes.view.map(n => draw.shape(n, mode.highlights(n)))
+
+  def background: View[D] =
+    model.traces.view.map(t => draw.shape(t, highlight = mode.highlights(t)))
 
   @inline
   final def mode: EditingMode.State = _mode
@@ -56,10 +57,7 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
     * @param event  : MouseEvent for position and modifiers
     * @param update : Display update function
     */
-  override def onMouseClick(
-      event: MouseEvent,
-      update: Iterable[D] => Unit
-  ): Unit                                                = {
+  override def onMouseClick(event: MouseEvent, update: Redraw[D]): Unit   = {
     val position = event.position.model
     mode match {
       case EditingMode.Node(mkNode) => hitShape(position) match {
@@ -103,22 +101,30 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
             }
           case _ => mode = EditingMode.Selecting
         }
+      case EditingMode.DragTrace(trace, _) =>
+        mode = EditingMode.SelectTrace(trace)
+      case select: EditingMode.Trace =>
+        hitTrace(position) match {
+          case Some(trace: sim.Trace) => select match {
+              case EditingMode.SelectTrace(traces) if event.shiftDown =>
+                mode = EditingMode.SelectTrace(
+                  if (traces contains trace) traces - trace else traces + trace
+                )
+              case _ => mode = EditingMode.SelectTrace(trace)
+            }
+          case _ =>
+            mode =
+              if (mode == EditingMode.SelectingTrace) EditingMode.Selecting
+              else EditingMode.SelectingTrace
+        }
+        update(None, Some(background))
+        return
     }
 
-    update(drawables)
+    update(Some(foreground), None)
   }
 
-  private def hitShape(hit: Position): Option[sim.Shape] =
-    hitNode(hit) orElse hitConnection(hit)
-
-  private def hitConnection(hit: Position): Option[sim.Connection] = {
-    model.connections.find(x => x.hits[D](hit))
-  }
-
-  override def onMouseDragged(
-      event: MouseEvent,
-      update: Iterable[D] => Unit
-  ): Unit                                              = {
+  override def onMouseDragged(event: MouseEvent, update: Redraw[D]): Unit = {
     val position = event.position.model
     mode match {
       case EditingMode.DragNode(nodes, from) =>
@@ -133,24 +139,43 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
         boxSelect ++= model.nodes.view.filter {
           _.position.inRectangle(origin, position)
         }
-        update(drawables ++ View(draw.selectionBox(origin, position)))
+
+        update(
+          Some(foreground ++ View(draw.selectionBox(origin, position))),
+          None
+        )
         return
       case _: EditingMode.Select => hitNode(position) match {
           case Some(node) => mode = EditingMode.DragNode(Set(node), position)
           case None => mode = EditingMode.BoxSelect(position)
         }
+      case trace: EditingMode.Trace =>
+        trace match {
+          case EditingMode.DragTrace(traces, from) =>
+            traces.foreach { trace =>
+              trace.position += event.position.model - from
+            }
+            mode = EditingMode.DragTrace(traces, position)
+          case EditingMode.SelectTrace(traces)
+              if traces.exists(_.hits[D](position)) =>
+            mode = EditingMode.DragTrace(traces, position)
+          case _ => hitTrace(position) match {
+              case Some(trace) =>
+                mode = EditingMode.DragTrace(Set(trace), position)
+              case _ =>
+            }
+        }
+        update(None, Some(background))
+        return
       case _ => return
     }
-    update(drawables)
+
+    update(Some(foreground), None)
   }
 
-  private def hitNode(hit: Position): Option[sim.Node] = {
-    model.nodes.find(_.hits[D](hit))
-  }
-
-  override def onKeyTyped(event: KeyEvent, state: Iterable[D] => Unit): Unit = {
+  override def onKeyTyped(event: KeyEvent, update: Redraw[D]): Unit       = {
     mode match {
-      case active: EditingMode.SelectActive[_] => event.code match {
+      case active: EditingMode.Active[_] => event.code match {
           // ScalaFX not recognising `delete` on local runtime
           case KeyCode.Undefined =>
             active match {
@@ -161,16 +186,21 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
                   !active.active(connection.target)
                 }
               case EditingMode.SelectEdge(edges) => model.connections --= edges
+              case trace: EditingMode.ActiveTrace =>
+                // Unknown failure for `--=` to work
+                model.traces.filterInPlace(!trace.active(_))
+                update(None, Some(background))
+                return
             }
             mode = EditingMode.Selecting
-            state(drawables)
+            update(Some(foreground), None)
           case _ =>
         }
       case _ =>
     }
   }
 
-  def save(): Unit = {
+  def save(): Unit                                         = {
     val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
     fileChooser.title = "Save Simulation"
@@ -185,9 +215,40 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
       }
     }
   }
+
+  def loadTrace(update: Redraw[D]): Unit                   = {
+    val fileChooser: scalafx.stage.FileChooser = new FileChooser
+    fileChooser.title = "Open Trace"
+    fileChooser.initialDirectory = new File(System.getProperty("user.home"))
+    fileChooser.extensionFilters.add(
+      new FileChooser.ExtensionFilter("Portable Network Graphics", "*.png")
+    )
+    fileChooser.extensionFilters
+      .add(new FileChooser.ExtensionFilter("JPEG", "*.jpg"))
+    fileChooser.initialFileName = ".png"
+    Option(fileChooser.showOpenDialog(new Stage)).foreach { dest =>
+      val image = Image(new FileInputStream(dest))
+      val trace = sim.Trace(image, Position.Zero, 750, 750)
+      model.traces += trace
+      redrawMode(EditingMode.SelectTrace(trace), update)
+    }
+  }
+
+  private def hitShape(hit: Position): Option[sim.Element] =
+    hitNode(hit) orElse hitConnection(hit)
+
+  private def hitNode(hit: Position): Option[sim.Node] =
+    model.nodes.find(_.hits[D](hit))
+
+  private def hitConnection(hit: Position): Option[sim.Connection] =
+    model.connections.find(x => x.hits[D](hit))
+
+  private def hitTrace(hit: Position): Option[sim.Trace] =
+    model.traces.find(x => x.hits[D](hit))
 }
 
-object GraphCanvasController                {
+object GraphCanvasController      {
+  type Redraw[D] = (Option[Iterable[D]], Option[Iterable[D]]) => Unit
 
   object EditingMode {
 
@@ -217,9 +278,11 @@ object GraphCanvasController                {
 
     case object Selecting extends Select with Entry
 
-    sealed abstract class SelectActive[T: ClassTag] extends Select {
+    sealed abstract class Active[T: ClassTag] extends State {
       val active: collection.Set[T]
-      override def toolbarStatusMnemonic: String = s"Select [${active.size}]"
+
+      override def toolbarStatusMnemonic: String =
+        s"Select [${classTag[T].runtimeClass.getSimpleName}:${active.size}]"
 
       override def highlights(shape: sim.Shape): Boolean = {
         shape match {
@@ -229,7 +292,17 @@ object GraphCanvasController                {
       }
     }
 
-    sealed abstract class SelectActiveNode          extends SelectActive[sim.Node]
+    sealed abstract class SelectActiveNode extends Active[sim.Node] with Select
+
+    case class SelectNode(override val active: immutable.Set[sim.Node])
+        extends SelectActiveNode
+
+    object SelectNode            {
+      def apply(shapes: immutable.Set[sim.Node]): Select =
+        if (shapes.isEmpty) Selecting else new SelectNode(shapes)
+
+      def apply(shapes: sim.Node*): SelectNode = new SelectNode(shapes.toSet)
+    }
 
     /* This class is not immutable for efficiency reasons, although this means you have to play nice with it
        We should probably refactor more of the immutability out for efficiency, or stick to it, rather than the mix
@@ -240,23 +313,14 @@ object GraphCanvasController                {
     ) extends SelectActiveNode {
       private val _nodes: mutable.Set[sim.Node]     = mutable.Set.empty
       override val active: collection.Set[sim.Node] = _nodes
-      override def toolbarStatusMnemonic: String    = s"Select [Box]"
+
+      override def toolbarStatusMnemonic: String = s"Select [Box]"
 
       def removeAll(p: sim.Node => Boolean): Unit = {
         _nodes.filterInPlace(p andThen (!_))
       }
 
       def ++=(iterable: Iterable[sim.Node]): Unit = { _nodes ++= iterable }
-    }
-
-    case class SelectNode(override val active: immutable.Set[sim.Node])
-        extends SelectActiveNode
-
-    object SelectNode            {
-      def apply(shapes: immutable.Set[sim.Node]): Select =
-        if (shapes.isEmpty) Selecting else new SelectNode(shapes)
-
-      def apply(shapes: sim.Node*): SelectNode = new SelectNode(shapes.toSet)
     }
 
     object BoxSelect             {
@@ -273,7 +337,8 @@ object GraphCanvasController                {
     ) extends SelectActiveNode
 
     case class SelectEdge(override val active: immutable.Set[sim.Connection])
-        extends SelectActive[sim.Connection]
+        extends Active[sim.Connection]
+        with Select
 
     object SelectEdge            {
       def apply(shapes: immutable.Set[sim.Connection]): Select =
@@ -284,6 +349,33 @@ object GraphCanvasController                {
     }
 
     implicit val default: Default[State] = Selecting
-  }
 
+    sealed trait Trace extends State
+
+    object SelectingTrace             extends Trace                        {
+      override def toolbarStatusMnemonic: String = s"Trace"
+    }
+
+    sealed abstract class ActiveTrace extends Active[sim.Trace] with Trace {
+      override def toolbarStatusMnemonic: String = s"Trace [${active.size}]"
+    }
+
+    case class SelectTrace(override val active: immutable.Set[sim.Trace])
+        extends ActiveTrace {
+      override def toolbarStatusMnemonic: String = s"Trace [${active.size}]"
+    }
+
+    object SelectTrace {
+      def apply(trace: immutable.Set[sim.Trace]): Trace =
+        if (trace.isEmpty) SelectingTrace else new SelectTrace(trace)
+
+      def apply(trace: sim.Trace*): SelectTrace = new SelectTrace(trace.toSet)
+    }
+
+    case class DragTrace(
+        override val active: immutable.Set[sim.Trace],
+        from: Position
+    ) extends ActiveTrace
+
+  }
 }

@@ -7,6 +7,7 @@ case class Sim(
     connections: mutable.Set[Connection],
     classes: mutable.Set[UserClass],
     measures: mutable.Set[Measure],
+    traces: mutable.Set[Trace],
     configuration: Sim.Configuration = mutable.HashMap.empty
 )
 
@@ -15,6 +16,7 @@ object Sim {
 
   def empty: Sim = {
     Sim(
+      mutable.HashSet.empty,
       mutable.HashSet.empty,
       mutable.HashSet.empty,
       mutable.HashSet.empty,

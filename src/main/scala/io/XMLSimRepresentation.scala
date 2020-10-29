@@ -7,23 +7,29 @@ import model.sim.{Connection, Node, Sim}
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   override def represent(x: Sim): xml.Elem = {
-    val timestamp: String = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u").format(ZonedDateTime.now())
+    val timestamp: String      = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u")
+      .format(ZonedDateTime.now())
     // TODO: This will almost certainly need it's own function once nodes are fully implemented
-    val nodes: Array[xml.Elem] = x.nodes.map((node: Node) =>
-      <node name="TODO" x={node.position.x.toString} y={node.position.y.toString}></node>
+    val nodes: Array[xml.Elem] = x.nodes.map(
+      (node: Node) =>
+        <node name="TODO" x={node.position.x.toString} y={
+          node.position.y.toString
+        }></node>
     ).toArray
 
-    val nodePositions: Array[xml.Elem] = x.nodes.map((node: Node) =>
-      <station name="TODO">
+    val nodePositions: Array[xml.Elem] =
+      x.nodes.map((node: Node) => <station name="TODO">
         <position rotate="false" x="0.0" y="0.0"/>
-      </station>
+      </station>).toArray
+
+    val connections: Array[xml.Elem] = x.connections.map(
+      (connection: Connection) =>
+        <connection source={connection.source.toString} target={
+          connection.target.toString
+        }/>
     ).toArray
 
-    val connections: Array[xml.Elem] = x.connections.map((connection: Connection) =>
-        <connection source={connection.source.toString} target={connection.target.toString}/>
-    ).toArray
-
-    // TODO: This is a temp hack :))
+    // TODO: This is a temp hack
     <archive name="TODO" timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">
       <sim disableStatisticStop="false" logDecimalSeparator="." logDelimiter="," logPath="~/JMT/" logReplaceMode="0" maxEvents="-1" maxSamples="1000000" name="TODO" polling="1.0" xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
         <userClass name="Class1" priority="0" referenceSource="Source 1" type="open"/>
@@ -41,6 +47,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   }
 
   object Implicit {
-    implicit val xmlSimRepresentation: SimRepresentation[xml.Elem] = XMLSimRepresentation
+    implicit val xmlSimRepresentation: SimRepresentation[xml.Elem] =
+      XMLSimRepresentation
   }
 }

@@ -34,7 +34,9 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     ).toArray
 
     // TODO: This is a temp hack :))
-    <archive name="TODO" timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">
+    <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="TODO" timestamp={
+      timestamp
+    } xsi:noNamespaceSchemaLocation="Archive.xsd">
       <sim disableStatisticStop="false" logDecimalSeparator="." logDelimiter="," logPath="~/JMT/" logReplaceMode="0" maxEvents="-1" maxSamples="1000000" name="TODO" polling="1.0" xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
         <userClass name="Class1" priority="0" referenceSource="Source 1" type="open"/>
         {nodes}

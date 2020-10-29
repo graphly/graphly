@@ -180,6 +180,9 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
     Option(fileChooser.showSaveDialog(new Stage)).foreach { dest =>
       dest.createNewFile()
       new PrintWriter(dest) {
+        write(
+          "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>\n"
+        )
         write(model.toRepresentation.toString)
         close()
       }

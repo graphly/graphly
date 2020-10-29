@@ -15,16 +15,16 @@ class VerticalSettingsMenu(controller: GraphCanvasController[_]) extends GridPan
 
   controller.onSwitchMode +=
     {
-      case _: GraphCanvasController.EditingMode.SelectNode => extend()
-      case _: GraphCanvasController.EditingMode.SelectEdge => extend()
-      case _ => retract()
+      case _: GraphCanvasController.EditingMode.SelectNode => show()
+      case _: GraphCanvasController.EditingMode.SelectEdge => show()
+      case _ => hide()
     }
 
-  def retract(): Unit = {
+  def hide(): Unit = {
     visible = false
   }
 
-  def extend(): Unit = {
+  def show(): Unit = {
     visible = true
   }
 

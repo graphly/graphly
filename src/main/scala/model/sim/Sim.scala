@@ -1,8 +1,5 @@
 package model.sim
 
-import java.io.{ByteArrayInputStream, FileInputStream, InputStream}
-
-import scala.io
 import scala.collection.mutable
 
 case class Sim(

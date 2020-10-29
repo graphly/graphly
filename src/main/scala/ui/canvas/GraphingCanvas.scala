@@ -1,13 +1,11 @@
 package ui.canvas
 
-import scalafx.beans.property.ObjectProperty
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.layout.StackPane
 import scalafx.scene.paint.Color
 import ui.canvas.GraphCanvasController.Redraw
 import ui.canvas.GraphingCanvas.{DrawAction, DrawActions}
 import ui.util.Background
-import ui.util.Property.Implicit._
 import ui.{Controlled, Controller}
 
 class GraphingCanvas(

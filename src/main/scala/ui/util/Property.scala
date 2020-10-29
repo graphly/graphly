@@ -10,10 +10,8 @@ object Property {
         val objectProperty: ObservableValue[T, _]
     ) {
       def map[U](f: T => U): ObjectBinding[U] =
-        Bindings.createObjectBinding(
-          () => f(objectProperty.value),
-          objectProperty
-        )
+        Bindings
+          .createObjectBinding(() => f(objectProperty.value), objectProperty)
     }
 
     implicit def observableConverter[T, U](
@@ -40,8 +38,6 @@ object Property {
 
     implicit def observableToJFX[J <: Object](
         objectProperty: ObservableValue[_ <: SFXDelegate[_ <: J], _]
-    ): ObjectBinding[J] = {
-      objectProperty.toJFX
-    }
+    ): ObjectBinding[J] = { objectProperty.toJFX }
   }
 }

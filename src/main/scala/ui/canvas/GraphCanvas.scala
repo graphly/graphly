@@ -7,11 +7,10 @@ import ui.{Controlled, Controller}
 class GraphCanvas(override val controller: Controller[Unit]) extends Canvas with Controlled[Unit] {
   onMousePressed = _ => requestFocus()
 
-  override val state: () = ()
+  override val state: Unit = ()
 
   def redraw(shapes: Iterable[DrawAction]): Unit = {
     graphicsContext2D.clearRect(0, 0, width(), height())
-
     shapes.foreach(_(graphicsContext2D))
   }
 }

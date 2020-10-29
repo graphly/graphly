@@ -15,8 +15,12 @@ class VerticalSettingsMenu(controller: GraphCanvasController[_]) extends GridPan
 
   controller.onSwitchMode +=
     {
-      case _: GraphCanvasController.EditingMode.SelectNode => show()
-      case _: GraphCanvasController.EditingMode.SelectEdge => show()
+      case GraphCanvasController.EditingMode.SelectNode(nodes) =>
+        setTitle(nodes.head.getClass.getSimpleName)
+        show()
+      case _: GraphCanvasController.EditingMode.SelectEdge =>
+        setTitle("Edge")
+        show()
       case _ => hide()
     }
 

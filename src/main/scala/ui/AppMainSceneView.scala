@@ -1,12 +1,12 @@
 package ui
 
 import javafx.event.ActionEvent
-import model.sim.Sim
+import model.sim._
 import scalafx.scene.Scene
 import scalafx.scene.control._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
-import ui.canvas.GraphCanvas.DrawActionDraw
+import ui.canvas.SimDrawAction._
 import ui.canvas.{GraphCanvasContainer, GraphCanvasController, VerticalSettingsMenu}
 
 class AppMainSceneView(width: Double, height: Double)
@@ -67,11 +67,62 @@ class AppMainSceneView(width: Double, height: Double)
             new MenuItem("Source") {
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
-                  GraphCanvasController.EditingMode.Source,
+                  GraphCanvasController.EditingMode.Node(Source),
                   graphContainer.canvas.redraw
                 )
-              accelerator =
-                new KeyCodeCombination(KeyCode.S, KeyCombination.AltDown)
+              accelerator = new KeyCodeCombination(
+                KeyCode.N,
+                KeyCombination.ShiftDown,
+                KeyCombination.ControlDown
+              )
+            },
+            new MenuItem("Fork")   {
+              onAction = (_: ActionEvent) =>
+                controller.redrawMode(
+                  GraphCanvasController.EditingMode.Node(Fork),
+                  graphContainer.canvas.redraw
+                )
+              accelerator = new KeyCodeCombination(
+                KeyCode.F,
+                KeyCombination.ShiftDown,
+                KeyCombination.ControlDown
+              )
+            },
+            new MenuItem("Join")   {
+              onAction = (_: ActionEvent) =>
+                controller.redrawMode(
+                  GraphCanvasController.EditingMode.Node(Join),
+                  graphContainer.canvas.redraw
+                )
+              accelerator = new KeyCodeCombination(
+                KeyCode.J,
+                KeyCombination.ShiftDown,
+                KeyCombination.AltDown
+              )
+            },
+            new MenuItem("Queue")  {
+              onAction = (_: ActionEvent) =>
+                controller.redrawMode(
+                  GraphCanvasController.EditingMode.Node(Queue),
+                  graphContainer.canvas.redraw
+                )
+              accelerator = new KeyCodeCombination(
+                KeyCode.Q,
+                KeyCombination.ShiftDown,
+                KeyCombination.AltDown
+              )
+            },
+            new MenuItem("Sink")   {
+              onAction = (_: ActionEvent) =>
+                controller.redrawMode(
+                  GraphCanvasController.EditingMode.Node(Sink),
+                  graphContainer.canvas.redraw
+                )
+              accelerator = new KeyCodeCombination(
+                KeyCode.S,
+                KeyCombination.ShiftDown,
+                KeyCombination.AltDown
+              )
             },
             new SeparatorMenuItem(),
             new MenuItem("Edges") {

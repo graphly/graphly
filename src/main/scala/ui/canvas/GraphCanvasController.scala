@@ -37,7 +37,8 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
   }
 
   def drawables: View[D] =
-    model.connections.view.map(c => draw.shape(c, mode.highlights(c))) ++
+    model.traces.view.map(c => draw.shape(c, highlight = false)) ++
+      model.connections.view.map(c => draw.shape(c, mode.highlights(c))) ++
       model.nodes.view.map(n => draw.shape(n, mode.highlights(n)))
 
   @inline

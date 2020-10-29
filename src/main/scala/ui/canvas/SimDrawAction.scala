@@ -2,6 +2,7 @@ package ui.canvas
 
 import model.{LinearTransform, Position, sim}
 import scalafx.scene.canvas.GraphicsContext
+import scalafx.scene.image.Image
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.ArcType
 import ui.canvas.GraphCanvas.DrawAction
@@ -24,6 +25,7 @@ object SimDrawAction {
         shape match {
           case node: sim.Node => Node(node, highlight)
           case connection: sim.Connection => Connection(connection, highlight)
+          case trace: sim.Trace => Trace(trace, highlight)
         }
 
       override def hits(shape: sim.Shape, hit: Position): Boolean =
@@ -135,6 +137,16 @@ object SimDrawAction {
         normal.magnitude < width
       }
 
+    }
+
+    implicit object Trace extends this.Shape[sim.Trace] {
+      override def apply(trace: sim.Trace, highlight: Boolean): DrawAction = {
+        context =>
+          val image = new Image(trace.image.stream, 0, 0, true, true)
+          context.drawImage(image, 10, 10)
+      }
+
+      override def hits(connection: sim.Trace, hit: Position): Boolean     = false
     }
   }
 }

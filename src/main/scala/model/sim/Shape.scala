@@ -1,5 +1,7 @@
 package model.sim
 
+import java.io.{ByteArrayInputStream, InputStream}
+
 import model.{Position, Positioned}
 
 sealed trait Shape
@@ -15,3 +17,21 @@ case class Fork(var position: Position)   extends Node
 case class Join(var position: Position)   extends Node
 
 case class Connection(source: Node, target: Node) extends Shape
+
+case class Trace(var image: Trace.Image) extends Shape
+
+object Trace {
+  /* Use a byte array for redrawing in memory, especially since a FileInputStream cannot be reset.
+     A better buffer system may be warranted later, but we can keep the interface consistent and provide a stream
+     as necessary */
+  class Image(raw: InputStream) {
+    private val bytes       = raw.readAllBytes()
+    def stream: InputStream = { new ByteArrayInputStream(bytes) }
+  }
+
+  object Image                  {
+    def apply(raw: InputStream): Image = new Image(raw)
+
+    def unapply(image: Image): Option[InputStream] = Some(image.stream)
+  }
+}

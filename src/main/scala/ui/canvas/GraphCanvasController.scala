@@ -187,8 +187,8 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
                 }
               case EditingMode.SelectEdge(edges) => model.connections --= edges
               case trace: EditingMode.ActiveTrace =>
-                // Unknown failure for `--=` to work
-                model.traces.filterInPlace(!trace.active(_))
+                // Remove all selected traces from the model.
+                model.traces --= model.traces.filter(trace.active(_))
                 update(None, Some(background))
                 return
             }
@@ -244,7 +244,7 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
     model.connections.find(x => x.hits[D](hit))
 
   private def hitTrace(hit: Position): Option[sim.Trace] =
-    model.traces.find(x => x.hits[D](hit))
+    model.traces.findLast(x => x.hits[D](hit))
 }
 
 object GraphCanvasController      {

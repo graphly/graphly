@@ -10,13 +10,15 @@ import ui.canvas.SimDrawAction._
 import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
 
 class AppMainSceneView(width: Double, height: Double)
-    extends Scene(width, height) {
-  private val model: Sim     = Sim.empty
-  private val controller     = new GraphCanvasController(model)
+  extends Scene(width, height) {
+  private val model: Sim = Sim.empty
+  private val controller = new GraphCanvasController(model)
   private val graphContainer = new GraphCanvasContainer(controller)
 
   private val statusBar =
-    new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}" }
+    new Label() {
+      text = s"Status: ${controller.mode.toolbarStatusMnemonic}"
+    }
   controller.onSwitchMode +=
     (state => statusBar.text = s"Status: ${state.toolbarStatusMnemonic}")
 
@@ -62,7 +64,7 @@ class AppMainSceneView(width: Double, height: Double)
             new MenuItem("Source") {
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node((Source.apply _).curried("TODO name")(ServiceTimeStrategy(Exponential(1.0)))),
+                  GraphCanvasController.EditingMode.Node(Source),
                   graphContainer.canvas.redraw
                 )
               accelerator = new KeyCodeCombination(
@@ -74,7 +76,7 @@ class AppMainSceneView(width: Double, height: Double)
             new MenuItem("Fork")   {
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node((Fork.apply _).curried("TODO name")),
+                  GraphCanvasController.EditingMode.Node(Fork),
                   graphContainer.canvas.redraw
                 )
               accelerator = new KeyCodeCombination(
@@ -86,7 +88,7 @@ class AppMainSceneView(width: Double, height: Double)
             new MenuItem("Join")   {
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node((Join.apply _).curried("TODO name")),
+                  GraphCanvasController.EditingMode.Node(Join),
                   graphContainer.canvas.redraw
                 )
               accelerator = new KeyCodeCombination(
@@ -98,7 +100,7 @@ class AppMainSceneView(width: Double, height: Double)
             new MenuItem("Queue")  {
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node((Queue.apply _).curried("TODO name")),
+                  GraphCanvasController.EditingMode.Node(Queue),
                   graphContainer.canvas.redraw
                 )
               accelerator = new KeyCodeCombination(
@@ -110,7 +112,7 @@ class AppMainSceneView(width: Double, height: Double)
             new MenuItem("Sink")   {
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node((Sink.apply _).curried("TODO name")),
+                  GraphCanvasController.EditingMode.Node(Sink),
                   graphContainer.canvas.redraw
                 )
               accelerator = new KeyCodeCombination(

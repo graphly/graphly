@@ -4,6 +4,8 @@ import java.io.{File, PrintWriter}
 
 import io.Implicit._
 import io.XMLSimRepresentation.Implicit._
+import model.sim.Node
+import model.sim.Shape.Metadata
 import model.{Position, sim}
 import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}
 import scalafx.stage.{FileChooser, Stage}
@@ -23,15 +25,22 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
 ) extends Controller[Iterable[D] => Unit] {
   // Callbacks to run when we switch the mode
   val onSwitchMode = new Event[EditingMode.State]
+  private val counters: mutable.Map[(Metadata, String, Position) => Node, Int] = mutable.Map(
+    sim.Source -> 0,
+    sim.Queue -> 0,
+    sim.Sink -> 0,
+    sim.Fork -> 0,
+    sim.Join -> 0
+  )
 
   // What state is the view in - whether we are creating nodes and connections,
   // moving objects, etc.
   private var _mode: EditingMode.State = Default.default
 
   final def redrawMode(
-      state: EditingMode.State,
-      update: Iterable[D] => Unit
-  ): Unit = {
+                        state: EditingMode.State,
+                        update: Iterable[D] => Unit
+                      ): Unit = {
     mode = state
     update(drawables)
   }
@@ -63,11 +72,14 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
     val position = event.position.model
     mode match {
       case EditingMode.Node(mkNode) => hitShape(position) match {
-          case None => model.nodes += mkNode(position)
-          case Some(node: sim.Node) => mode = EditingMode.SelectNode(Set(node))
-          case Some(edge: sim.Connection) =>
-            mode = EditingMode.SelectEdge(Set(edge))
-        }
+        case None =>
+          counters(mkNode) += 1
+          val name = s"$mkNode ${counters(mkNode)}"
+          model.nodes += mkNode(mutable.Map.empty, name, position)
+        case Some(node: sim.Node) => mode = EditingMode.SelectNode(Set(node))
+        case Some(edge: sim.Connection) =>
+          mode = EditingMode.SelectEdge(Set(edge))
+      }
       case EditingMode.BeginEdge => hitNode(position) match {
           case Some(start) => mode = EditingMode.DrawingEdge(start)
           case None => mode = EditingMode.Selecting
@@ -199,26 +211,27 @@ object GraphCanvasController                {
 
     sealed trait Entry extends State
 
-    sealed trait Edge     extends State {
+    sealed trait Edge extends State {
       override def toolbarStatusMnemonic = "Create [Edge]"
     }
 
     case object BeginEdge extends Edge with Entry
 
-    case class DrawingEdge(from: sim.Node)             extends Edge  {
+    case class DrawingEdge(from: sim.Node) extends Edge {
       override def highlights(shape: sim.Shape): Boolean = shape == from
     }
 
-    case class Node(constructor: Position => sim.Node) extends Entry {
-      override def toolbarStatusMnemonic = s"Create [Node:$constructor]"
+    case class Node(constructor: (sim.Shape.Metadata, String, Position) => sim.Node) extends Entry {
+      override def toolbarStatusMnemonic = "Create [Node]"
     }
 
-    sealed trait Select                                extends State
+    sealed trait Select extends State
 
     case object Selecting extends Select with Entry
 
     sealed abstract class SelectActive[T: ClassTag] extends Select {
       val active: collection.Set[T]
+
       override def toolbarStatusMnemonic: String = s"Select [${active.size}]"
 
       override def highlights(shape: sim.Shape): Boolean = {

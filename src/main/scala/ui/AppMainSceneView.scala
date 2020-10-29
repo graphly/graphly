@@ -7,13 +7,14 @@ import scalafx.scene.control._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import ui.canvas.SimDrawAction._
-import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
+import ui.canvas.{GraphCanvasController, GraphingCanvas}
 
 class AppMainSceneView(width: Double, height: Double)
     extends Scene(width, height) {
   private val model: Sim     = Sim.empty
-  private val controller     = new GraphCanvasController(model)
-  private val graphContainer = new GraphCanvasContainer(controller)
+  private val controller     =
+    new GraphCanvasController[GraphingCanvas.DrawAction](model)
+  private val graphContainer = new GraphingCanvas(controller)
 
   private val statusBar =
     new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}" }
@@ -23,7 +24,7 @@ class AppMainSceneView(width: Double, height: Double)
   root = new BorderPane {
     top = new MenuBar {
       menus = List(
-        new Menu("File") {
+        new Menu("File")  {
           items = List(
             new MenuItem("Save")    {
               onAction = (_: ActionEvent) => { controller.save() }
@@ -46,24 +47,24 @@ class AppMainSceneView(width: Double, height: Double)
             }
           )
         },
-        new Menu("Edit") {
+        new Menu("Edit")  {
           items = List(new MenuItem("Select") {
             onAction = (_: ActionEvent) =>
               controller.redrawMode(
                 GraphCanvasController.EditingMode.Selecting,
-                graphContainer.canvas.redraw
+                graphContainer.redraw
               )
             accelerator =
               new KeyCodeCombination(KeyCode.M, KeyCombination.AltDown)
           })
         },
-        new Menu("Draw") {
+        new Menu("Draw")  {
           items = List(
             new MenuItem("Source") {
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
                   GraphCanvasController.EditingMode.Node(Source),
-                  graphContainer.canvas.redraw
+                  graphContainer.redraw
                 )
               accelerator = new KeyCodeCombination(
                 KeyCode.N,
@@ -75,7 +76,7 @@ class AppMainSceneView(width: Double, height: Double)
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
                   GraphCanvasController.EditingMode.Node(Fork),
-                  graphContainer.canvas.redraw
+                  graphContainer.redraw
                 )
               accelerator = new KeyCodeCombination(
                 KeyCode.F,
@@ -87,7 +88,7 @@ class AppMainSceneView(width: Double, height: Double)
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
                   GraphCanvasController.EditingMode.Node(Join),
-                  graphContainer.canvas.redraw
+                  graphContainer.redraw
                 )
               accelerator = new KeyCodeCombination(
                 KeyCode.J,
@@ -99,7 +100,7 @@ class AppMainSceneView(width: Double, height: Double)
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
                   GraphCanvasController.EditingMode.Node(Queue),
-                  graphContainer.canvas.redraw
+                  graphContainer.redraw
                 )
               accelerator = new KeyCodeCombination(
                 KeyCode.Q,
@@ -111,7 +112,7 @@ class AppMainSceneView(width: Double, height: Double)
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
                   GraphCanvasController.EditingMode.Node(Sink),
-                  graphContainer.canvas.redraw
+                  graphContainer.redraw
                 )
               accelerator = new KeyCodeCombination(
                 KeyCode.S,
@@ -124,10 +125,34 @@ class AppMainSceneView(width: Double, height: Double)
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
                   GraphCanvasController.EditingMode.BeginEdge,
-                  graphContainer.canvas.redraw
+                  graphContainer.redraw
                 )
               accelerator =
                 new KeyCodeCombination(KeyCode.E, KeyCombination.AltDown)
+            }
+          )
+        },
+        new Menu("Trace") {
+          items = List(
+            new MenuItem("Select") {
+              onAction = _ =>
+                controller.redrawMode(
+                  GraphCanvasController.EditingMode.SelectingTrace,
+                  graphContainer.redraw
+                )
+              accelerator = new KeyCodeCombination(
+                KeyCode.T,
+                KeyCombination.AltDown,
+                KeyCombination.ShiftDown
+              )
+            },
+            new MenuItem("Insert") {
+              onAction = _ => controller.loadTrace(graphContainer.redraw)
+              accelerator = new KeyCodeCombination(
+                KeyCode.T,
+                KeyCombination.ControlDown,
+                KeyCombination.ShiftDown
+              )
             }
           )
         }

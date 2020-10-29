@@ -18,18 +18,12 @@ object Sim {
   type Configuration = mutable.HashMap[String, Any]
 
   def empty: Sim = {
-    // TODO REMOVE, CURRENT TEST
-
-    val stream = new FileInputStream(
-      "/home/matthewross/Pictures/Screenshot from 2020-10-15 17-26-20.png"
-    )
-
     Sim(
       mutable.HashSet.empty,
       mutable.HashSet.empty,
       mutable.HashSet.empty,
       mutable.HashSet.empty,
-      mutable.HashSet(Trace(Trace.Image(stream))),
+      mutable.HashSet.empty,
       mutable.HashMap.empty
     )
   }

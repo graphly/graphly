@@ -5,7 +5,7 @@ import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.image.Image
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.ArcType
-import ui.canvas.GraphCanvas.DrawAction
+import ui.canvas.GraphingCanvas.DrawAction
 import util.Number.Implicit.DoubleExtensions
 
 object SimDrawAction {
@@ -32,6 +32,7 @@ object SimDrawAction {
         shape match {
           case node: sim.Node => Node.hits(node, hit)
           case connection: sim.Connection => Connection.hits(connection, hit)
+          case trace: sim.Trace => Trace.hits(trace, hit)
         }
     }
 
@@ -140,13 +141,32 @@ object SimDrawAction {
     }
 
     implicit object Trace extends this.Shape[sim.Trace] {
+      private val highlighting       = Color.GreenYellow
+      private val highlightingBorder = 3
+
+      override def hits(trace: sim.Trace, hit: Position): Boolean =
+        hit.inRectangle(trace.position, trace.end)
+
       override def apply(trace: sim.Trace, highlight: Boolean): DrawAction = {
         context =>
-          val image = new Image(trace.image.stream, 0, 0, true, true)
-          context.drawImage(image, 10, 10)
+          if (highlight) {
+            context.fill = highlighting
+            context.fillRect(
+              trace.x - highlightingBorder,
+              trace.y - highlightingBorder,
+              trace.width + 2 * highlightingBorder,
+              trace.height + 2 * highlightingBorder
+            )
+          }
+          val image = new Image(
+            trace.image.stream,
+            requestedWidth = trace.width,
+            requestedHeight = trace.height,
+            preserveRatio = false,
+            smooth = true
+          )
+          context.drawImage(image, trace.x, trace.y)
       }
-
-      override def hits(connection: sim.Trace, hit: Position): Boolean     = false
     }
   }
 }

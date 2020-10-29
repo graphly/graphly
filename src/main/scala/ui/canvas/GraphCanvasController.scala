@@ -95,14 +95,14 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
                 mode = EditingMode.SelectNode(
                   if (nodes contains node) nodes - node else nodes + node
                 )
-              case _ => mode = EditingMode.SelectNode(Set(node))
+              case _ => mode = EditingMode.SelectNode(node)
             }
           case Some(edge: sim.Connection) => select match {
               case EditingMode.SelectEdge(edges) if event.shiftDown =>
                 mode = EditingMode.SelectEdge(
                   if (edges contains edge) edges - edge else edges + edge
                 )
-              case _ => mode = EditingMode.SelectEdge(Set(edge))
+              case _ => mode = EditingMode.SelectEdge(edge)
             }
           case _ => mode = EditingMode.Selecting
         }
@@ -154,8 +154,8 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
   override def onKeyTyped(event: KeyEvent, state: Iterable[D] => Unit): Unit = {
     mode match {
       case active: EditingMode.SelectActive[_] => event.code match {
-          case KeyCode
-                .Undefined => // ScalaFX not recognising `delete` on local runtime
+          // ScalaFX not recognising `delete` on local runtime
+          case KeyCode.Undefined =>
             active match {
               case active: EditingMode.SelectActiveNode =>
                 model.nodes --= active.active
@@ -173,7 +173,7 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
     }
   }
 
-  def save(): Unit                                                           = {
+  def save(): Unit = {
     val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
     fileChooser.title = "Save Simulation"
@@ -209,6 +209,8 @@ object GraphCanvasController                {
     sealed trait Node extends Entry
 
     sealed trait Select extends State
+
+    case object Selecting extends Select with Entry
 
     sealed abstract class SelectActive[T: ClassTag] extends Select {
       toolbarStatusMnemonic = "Selecting"
@@ -248,25 +250,12 @@ object GraphCanvasController                {
     case class SelectNode(override val active: immutable.Set[sim.Node])
         extends SelectActiveNode
 
-    case class DragNode(
-        override val active: immutable.Set[sim.Node],
-        from: sim.Position
-    ) extends SelectActiveNode
+    object SelectNode {
+      def apply(shapes: immutable.Set[sim.Node]): Select =
+        if (shapes.isEmpty) Selecting else new SelectNode(shapes)
 
-    case class SelectEdge(override val active: immutable.Set[sim.Connection])
-        extends SelectActive[sim.Connection]
-
-    case object BeginEdge                  extends Edge with Entry
-
-    case object Source extends Node
-
-    case object Sink extends Node
-
-    case object Fork extends Node
-
-    case object Join extends Node
-
-    case object Selecting extends Select with Entry
+      def apply(shapes: sim.Node*): SelectNode = new SelectNode(shapes.toSet)
+    }
 
     object BoxSelect {
       def apply(
@@ -277,6 +266,32 @@ object GraphCanvasController                {
       def unapply(boxSelect: BoxSelect): Option[sim.Position] =
         Some(boxSelect.origin)
     }
+
+    case class DragNode(
+        override val active: immutable.Set[sim.Node],
+        from: sim.Position
+    ) extends SelectActiveNode
+
+    case class SelectEdge(override val active: immutable.Set[sim.Connection])
+        extends SelectActive[sim.Connection]
+
+    object SelectEdge {
+      def apply(shapes: immutable.Set[sim.Connection]): Select =
+        if (shapes.isEmpty) Selecting else new SelectEdge(shapes)
+
+      def apply(shapes: sim.Connection*): SelectEdge =
+        new SelectEdge(shapes.toSet)
+    }
+
+    case object BeginEdge                  extends Edge with Entry
+
+    case object Source extends Node
+
+    case object Sink extends Node
+
+    case object Fork extends Node
+
+    case object Join extends Node
 
     implicit val default: Default[State] = Selecting
   }

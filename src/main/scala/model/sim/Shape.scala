@@ -9,10 +9,25 @@ sealed trait Node                         extends Shape with Positioned {
   var position: Position
   var name: String
 }
-case class Source(var position: Position, var name: String) extends Node
-case class Queue(var position: Position, var name: String)  extends Node
-case class Sink(var position: Position, var name: String)   extends Node
-case class Fork(var position: Position, var name: String)   extends Node
-case class Join(var position: Position, var name: String)   extends Node
+
+case class Source(var name: String, var strategy: ServiceStrategy, var position: Position) extends Node
+
+case class Queue(var name: String, var position: Position) extends Node
+
+case class Sink(var name: String, var position: Position) extends Node
+
+case class Fork(var name: String, var position: Position) extends Node
+
+case class Join(var name: String, var position: Position) extends Node
 
 case class Connection(source: Node, target: Node) extends Shape
+
+sealed trait ServiceStrategy
+
+case class ServiceTimeStrategy(val distribution: Distribution) extends ServiceStrategy
+
+sealed trait Distribution
+
+case class Exponential(val lambda: Double) extends Distribution
+
+

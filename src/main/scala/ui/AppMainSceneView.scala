@@ -62,7 +62,7 @@ class AppMainSceneView(width: Double, height: Double)
             new MenuItem("Source") {
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node(Source),
+                  GraphCanvasController.EditingMode.Node((Source.apply _).curried("TODO name")(ServiceTimeStrategy(Exponential(1.0)))),
                   graphContainer.canvas.redraw
                 )
               accelerator = new KeyCodeCombination(
@@ -74,7 +74,7 @@ class AppMainSceneView(width: Double, height: Double)
             new MenuItem("Fork")   {
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node(Fork),
+                  GraphCanvasController.EditingMode.Node((Fork.apply _).curried("TODO name")),
                   graphContainer.canvas.redraw
                 )
               accelerator = new KeyCodeCombination(
@@ -86,7 +86,7 @@ class AppMainSceneView(width: Double, height: Double)
             new MenuItem("Join")   {
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node(Join),
+                  GraphCanvasController.EditingMode.Node((Join.apply _).curried("TODO name")),
                   graphContainer.canvas.redraw
                 )
               accelerator = new KeyCodeCombination(
@@ -98,7 +98,7 @@ class AppMainSceneView(width: Double, height: Double)
             new MenuItem("Queue")  {
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node(Queue),
+                  GraphCanvasController.EditingMode.Node((Queue.apply _).curried("TODO name")),
                   graphContainer.canvas.redraw
                 )
               accelerator = new KeyCodeCombination(
@@ -110,7 +110,7 @@ class AppMainSceneView(width: Double, height: Double)
             new MenuItem("Sink")   {
               onAction = (_: ActionEvent) =>
                 controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node(Sink),
+                  GraphCanvasController.EditingMode.Node((Sink.apply _).curried("TODO name")),
                   graphContainer.canvas.redraw
                 )
               accelerator = new KeyCodeCombination(

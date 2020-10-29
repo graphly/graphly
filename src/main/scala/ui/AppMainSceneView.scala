@@ -45,18 +45,22 @@ class AppMainSceneView(width: Double, height: Double)
               )
             },
             new SeparatorMenuItem(),
-            new MenuItem("Open") {
+            new MenuItem("Open")    {
               onAction = (_: ActionEvent) => {
                 val fileChooser = new FileChooser()
-                fileChooser.initialDirectory = new File(System.getProperty("user.home"))
+                fileChooser.initialDirectory =
+                  new File(System.getProperty("user.home"))
                 fileChooser.title = "Open Simulation"
-                fileChooser.extensionFilters.add(new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg"))
-                val xmlFile = fileChooser.showOpenDialog(new Stage)
+                fileChooser.extensionFilters.add(
+                  new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg")
+                )
+                val xmlFile     = fileChooser.showOpenDialog(new Stage)
                 //TODO: Update display
                 model = xml.XML.loadFile(xmlFile).toSim
               }
-              accelerator = new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)
-            },
+              accelerator =
+                new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)
+            }
           )
         },
         new Menu("Edit") {

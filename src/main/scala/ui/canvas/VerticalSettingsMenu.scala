@@ -16,7 +16,9 @@ class VerticalSettingsMenu(controller: GraphCanvasController[_]) extends GridPan
   controller.onSwitchMode +=
     {
       case GraphCanvasController.EditingMode.SelectNode(nodes) =>
-        setTitle(nodes.head.getClass.getSimpleName)
+        clearAll()
+        setTitle(nodes.head.name)
+        nodes.head.metadata.foreach((addTextField _).tupled)
         show()
       case _: GraphCanvasController.EditingMode.SelectEdge =>
         setTitle("Edge")
@@ -50,10 +52,9 @@ class VerticalSettingsMenu(controller: GraphCanvasController[_]) extends GridPan
     rowCounter += 1
   }
 
-  this.setTitle("test 1")
-  this.addTextField("TestField 1", "this is testing")
-  this.addDropdown("Dropdown 1", List("testing 1", "testing 2", "testing 3"), "Select something")
-  this.addTextField("TestField 2", "this is testing 2")
+  def clearAll(): Unit = {
+    children.removeAll()
+  }
 }
 
 object VerticalSettingsMenu {

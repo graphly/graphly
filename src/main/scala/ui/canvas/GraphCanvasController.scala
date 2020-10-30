@@ -20,27 +20,28 @@ import util.Default
 import scala.collection.{View, immutable, mutable}
 import scala.reflect.ClassTag
 
-class GraphCanvasController[D](val model: sim.Sim)(implicit
+class GraphCanvasController[D](var model: sim.Sim)(implicit
     val draw: Draw[D, sim.Shape]
 ) extends Controller[Iterable[D] => Unit] {
   // Callbacks to run when we switch the mode
-  val onSwitchMode = new Event[EditingMode.State]
-  private val counters: mutable.Map[(Metadata, String, Position) => Node, Int] = mutable.Map(
-    sim.Source -> 0,
-    sim.Queue -> 0,
-    sim.Sink -> 0,
-    sim.Fork -> 0,
-    sim.Join -> 0
-  )
+  val onSwitchMode                                                             = new Event[EditingMode.State]
+  private val counters: mutable.Map[(Metadata, String, Position) => Node, Int] =
+    mutable.Map(
+      sim.Source -> 0,
+      sim.Queue -> 0,
+      sim.Sink -> 0,
+      sim.Fork -> 0,
+      sim.Join -> 0
+    )
 
   // What state is the view in - whether we are creating nodes and connections,
   // moving objects, etc.
   private var _mode: EditingMode.State = Default.default
 
   final def redrawMode(
-                        state: EditingMode.State,
-                        update: Iterable[D] => Unit
-                      ): Unit = {
+      state: EditingMode.State,
+      update: Iterable[D] => Unit
+  ): Unit = {
     mode = state
     update(drawables)
   }
@@ -72,14 +73,14 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
     val position = event.position.model
     mode match {
       case EditingMode.Node(mkNode) => hitShape(position) match {
-        case None =>
-          counters(mkNode) += 1
-          val name = s"$mkNode ${counters(mkNode)}"
-          model.nodes += mkNode(mutable.Map.empty, name, position)
-        case Some(node: sim.Node) => mode = EditingMode.SelectNode(Set(node))
-        case Some(edge: sim.Connection) =>
-          mode = EditingMode.SelectEdge(Set(edge))
-      }
+          case None =>
+            counters(mkNode) += 1
+            val name = s"$mkNode ${counters(mkNode)}"
+            model.nodes += mkNode(mutable.Map.empty, name, position)
+          case Some(node: sim.Node) => mode = EditingMode.SelectNode(Set(node))
+          case Some(edge: sim.Connection) =>
+            mode = EditingMode.SelectEdge(Set(edge))
+        }
       case EditingMode.BeginEdge => hitNode(position) match {
           case Some(start) => mode = EditingMode.DrawingEdge(start)
           case None => mode = EditingMode.Selecting
@@ -214,7 +215,7 @@ object GraphCanvasController                {
 
     sealed trait Entry extends State
 
-    sealed trait Edge extends State {
+    sealed trait Edge     extends State {
       override def toolbarStatusMnemonic = "Create [Edge]"
     }
 
@@ -224,11 +225,13 @@ object GraphCanvasController                {
       override def highlights(shape: sim.Shape): Boolean = shape == from
     }
 
-    case class Node(constructor: (sim.Shape.Metadata, String, Position) => sim.Node) extends Entry {
+    case class Node(
+        constructor: (sim.Shape.Metadata, String, Position) => sim.Node
+    ) extends Entry {
       override def toolbarStatusMnemonic = "Create [Node]"
     }
 
-    sealed trait Select extends State
+    sealed trait Select                    extends State
 
     case object Selecting extends Select with Entry
 
@@ -245,7 +248,7 @@ object GraphCanvasController                {
       }
     }
 
-    sealed abstract class SelectActiveNode          extends SelectActive[sim.Node]
+    sealed abstract class SelectActiveNode extends SelectActive[sim.Node]
 
     /* This class is not immutable for efficiency reasons, although this means you have to play nice with it
        We should probably refactor more of the immutability out for efficiency, or stick to it, rather than the mix

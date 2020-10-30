@@ -61,6 +61,11 @@ class AppMainSceneView(width: Double, height: Double)
                 val xmlFile     = fileChooser.showOpenDialog(new Stage)
                 //TODO: Update display
                 model = xml.XML.loadFile(xmlFile).toSim
+                controller.model = model
+                controller.redrawMode(
+                  GraphCanvasController.EditingMode.Selecting,
+                  graphContainer.canvas.redraw
+                )
               }
               accelerator =
                 new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)

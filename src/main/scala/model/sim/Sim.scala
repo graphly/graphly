@@ -11,7 +11,7 @@ case class Sim(
 )
 
 object Sim {
-  type Configuration = mutable.HashMap[String, Any]
+  type Configuration = mutable.Map[String, Any]
 
   def empty: Sim = {
     Sim(

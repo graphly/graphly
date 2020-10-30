@@ -147,7 +147,7 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
           case EditingMode.DragTrace(traces, _) =>
             mode = EditingMode.SelectTrace(traces)
           case _ =>
-            mode = EditingMode.SelectingTrace;
+            mode = EditingMode.SelectingTrace
         }
         update(None, Some(background))
 

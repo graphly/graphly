@@ -16,11 +16,11 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       .format(ZonedDateTime.now)
     // TODO: This will almost certainly need it's own function once nodes are fully implemented
     val nodes: Array[xml.Elem] =
-      x.nodes.map((node: Node) => <node name="TODO" ></node>).toArray
+      x.nodes.map((node: Node) => <node name={node.name} ></node>).toArray
 
     val nodePositions: Array[xml.Elem] = x.nodes.map(
       (node: Node) =>
-        <station name="TODO">
+        <station name={node.name}>
         <position rotate="false" x={node.position.x.toString} y={
           node.position.y.toString
         }/>

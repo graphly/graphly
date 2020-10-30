@@ -11,15 +11,19 @@ import scalafx.scene.control._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
-import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
 import ui.canvas.SimDrawAction._
-import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
+import ui.canvas.{
+  GraphCanvasContainer,
+  GraphCanvasController,
+  VerticalSettingsMenu
+}
 
 class AppMainSceneView(width: Double, height: Double)
     extends Scene(width, height) {
   private var model: Sim     = Sim.empty
   private val controller     = new GraphCanvasController(model)
   private val graphContainer = new GraphCanvasContainer(controller)
+  private val rightMenu      = VerticalSettingsMenu(controller)
 
   private val statusBar =
     new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}" }
@@ -152,7 +156,7 @@ class AppMainSceneView(width: Double, height: Double)
     }
 
     center = graphContainer
-
     bottom = statusBar
+    right = rightMenu
   }
 }

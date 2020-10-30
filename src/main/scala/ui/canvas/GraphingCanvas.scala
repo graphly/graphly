@@ -1,25 +1,25 @@
 package ui.canvas
 
 import scalafx.scene.canvas.GraphicsContext
-import scalafx.scene.layout.StackPane
+import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
+import ui.Controlled
 import ui.canvas.GraphCanvasController.Redraw
 import ui.canvas.GraphingCanvas.{DrawAction, DrawActions}
 import ui.util.Background
-import ui.{Controlled, Controller}
 
 class GraphingCanvas(
     override val controller: GraphCanvasController[DrawAction]
 )(implicit draw: Draw[DrawAction, _])
-    extends StackPane
-    with Controlled[Redraw[DrawAction]]
-    with Controller[Unit] {
-  val canvas      = new GraphCanvas(this)
-  val traceCanvas = new GraphCanvas(this)
+    extends Pane
+    with Controlled[Redraw[DrawAction]] {
+  val canvas      = new GraphCanvas
+  val traceCanvas = new GraphCanvas
   canvas.width <== this.width
   canvas.height <== this.height
   traceCanvas.width <== this.width
   traceCanvas.height <== this.height
+
   background = Background(Color.White)
 
   children = List(traceCanvas, canvas)
@@ -35,7 +35,7 @@ class GraphingCanvas(
   override val state: Redraw[DrawAction] = redraw
 }
 
-object GraphingCanvas     {
+object GraphingCanvas                   {
   type DrawAction  = GraphicsContext => Unit
   type DrawActions = Iterable[DrawAction]
 }

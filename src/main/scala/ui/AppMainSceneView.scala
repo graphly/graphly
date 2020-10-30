@@ -12,15 +12,14 @@ import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
 import ui.canvas.SimDrawAction._
-import ui.canvas.{GraphCanvasController, GraphingCanvas, VerticalSettingsMenu}
+import ui.canvas.{GraphCanvasController, GraphingCanvas, PropertiesPanel}
 
 class AppMainSceneView(width: Double, height: Double)
     extends Scene(width, height) {
-  private var model: Sim     = Sim.empty
   private val controller     =
-    new GraphCanvasController[GraphingCanvas.DrawAction](model)
+    new GraphCanvasController[GraphingCanvas.DrawAction](Sim.empty)
   private val graphContainer = new GraphingCanvas(controller)
-  private val rightMenu      = VerticalSettingsMenu(controller)
+  private val rightMenu      = PropertiesPanel.Element(controller)
 
   private val statusBar =
     new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}" }
@@ -56,10 +55,8 @@ class AppMainSceneView(width: Double, height: Double)
                   new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg")
                 )
                 Option(fileChooser.showOpenDialog(new Stage)).foreach { file =>
-                  model = xml.XML.loadFile(file).toSim
+                  controller.model = xml.XML.loadFile(file).toSim
                 }
-                //TODO: Update display
-                controller.model = model
                 controller.redrawMode(
                   GraphCanvasController.EditingMode.Selecting,
                   graphContainer.redraw
@@ -186,5 +183,9 @@ class AppMainSceneView(width: Double, height: Double)
 
     bottom = statusBar
     right = rightMenu
+
+    rightMenu.managed.onChange {
+      controller.redrawMode(controller.mode, graphContainer.redraw)
+    }
   }
 }

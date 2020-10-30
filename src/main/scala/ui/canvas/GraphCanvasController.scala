@@ -200,8 +200,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
                 }
               case EditingMode.SelectEdge(edges) => model.connections --= edges
               case trace: EditingMode.ActiveTrace =>
-                // Unknown failure for `--=` to work
-                model.traces.filterInPlace(!trace.active(_))
+                model.traces --= trace.active
                 update(None, Some(background))
                 return
             }

@@ -12,7 +12,7 @@ import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
 import ui.canvas.SimDrawAction._
-import ui.canvas.{GraphCanvasController, GraphingCanvas}
+import ui.canvas.{GraphCanvasController, GraphingCanvas, VerticalSettingsMenu}
 
 class AppMainSceneView(width: Double, height: Double)
     extends Scene(width, height) {
@@ -20,6 +20,7 @@ class AppMainSceneView(width: Double, height: Double)
   private val controller     =
     new GraphCanvasController[GraphingCanvas.DrawAction](model)
   private val graphContainer = new GraphingCanvas(controller)
+  private val rightMenu      = VerticalSettingsMenu(controller)
 
   private val statusBar =
     new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}" }
@@ -58,7 +59,11 @@ class AppMainSceneView(width: Double, height: Double)
                   model = xml.XML.loadFile(file).toSim
                 }
                 //TODO: Update display
-
+                controller.model = model
+                controller.redrawMode(
+                  GraphCanvasController.EditingMode.Selecting,
+                  graphContainer.redraw
+                )
               }
               accelerator =
                 new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)
@@ -178,7 +183,7 @@ class AppMainSceneView(width: Double, height: Double)
     }
 
     center = graphContainer
-
     bottom = statusBar
+    right = rightMenu
   }
 }

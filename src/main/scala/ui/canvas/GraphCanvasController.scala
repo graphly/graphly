@@ -21,7 +21,7 @@ import util.Default
 import scala.collection.{View, immutable, mutable}
 import scala.reflect.{ClassTag, classTag}
 
-class GraphCanvasController[D](val model: sim.Sim)(implicit
+class GraphCanvasController[D](var model: sim.Sim)(implicit
     val draw: Draw[D, sim.Shape]
 ) extends Controller[Redraw[D]] {
   // Callbacks to run when we switch the mode

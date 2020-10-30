@@ -126,8 +126,11 @@ object SimDrawAction {
 
       override def hits(connection: sim.Connection, hit: Position): Boolean = {
         if (
-          !hit
-            .inRectangle(connection.source.position, connection.target.position)
+          !hit.inRectangle(
+            connection.source.position,
+            connection.target.position,
+            fuzzy = width
+          )
         ) return false
         val fromStart        = hit - connection.source.position
         val edgeDisplacement = connection.target.position -

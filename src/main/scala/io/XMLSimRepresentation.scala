@@ -3,9 +3,9 @@ package io
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
+import model.Position
 import model.sim.Shape.Metadata
 import model.sim._
-import model.{Position, sim}
 
 import scala.collection.mutable
 import scala.language.implicitConversions
@@ -186,12 +186,17 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     for {
       parameters     <- xmlParams.child.drop(1)
       parameterNames <- parameters.attribute("name")
-    } yield {
-      params.addAll(
-        //TODO: This is a temp fix for all the parsing needed
-        parameterNames.map(x => x.toString).zipAll(Iterable.empty, "", "")
-      )
+    } yield parameters.zip(parameterNames).foreach {
+      case (paramNode, paramNameNode) =>
+        val paramName        = paramNameNode.toString
+        val paramVal: String = paramName match {
+          case "size" => paramNode.child(1).text
+          case "FCFSstrategy" => "FCFSstrategy"
+          case _ => ""
+        }
+        params.put(paramName, paramVal)
     }
+
     params
   }
 
@@ -206,10 +211,12 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     } yield {
       className.toString match {
         //TODO: Add other node types
+        //TODO: Nodes appear to have multiple "sections",
+        // which can be handled in specific constructors
         case "Queue" =>
           (
             name.toString,
-            sim.Queue(
+            Queue(
               nodeMetadataFromXML(xmlNode.child(1)),
               name.toString,
               _: Position
@@ -218,7 +225,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         case "RandomSource" =>
           (
             name.toString,
-            sim.Source(
+            Source(
               nodeMetadataFromXML(xmlNode.child(1)),
               name.toString,
               _: Position
@@ -227,12 +234,13 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         case "JobSink" =>
           (
             name.toString,
-            sim.Sink(
+            Sink(
               nodeMetadataFromXML(xmlNode.child(1)),
               name.toString,
               _: Position
             )
           )
+        case _ => ???
       }
     }
 

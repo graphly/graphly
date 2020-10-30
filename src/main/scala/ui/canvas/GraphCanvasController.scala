@@ -101,30 +101,64 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
             }
           case _ => mode = EditingMode.Selecting
         }
-      case EditingMode.DragTrace(trace, _) =>
-        mode = EditingMode.SelectTrace(trace)
-      case select: EditingMode.Trace =>
-        hitTrace(position) match {
-          case Some(trace: sim.Trace) => select match {
-              case EditingMode.SelectTrace(traces) if event.shiftDown =>
-                mode = EditingMode.SelectTrace(
-                  if (traces contains trace) traces - trace else traces + trace
-                )
-              case _ => mode = EditingMode.SelectTrace(trace)
-            }
-          case _ =>
-            mode =
-              if (mode == EditingMode.SelectingTrace) EditingMode.Selecting
-              else EditingMode.SelectingTrace
-        }
-        update(None, Some(background))
-        return
+      case _ =>
     }
 
     update(Some(foreground), None)
   }
 
+  override def onMousePress(event: MouseEvent, update: Redraw[D]): Unit   = {
+    super.onMousePress(event, update)
+    val position = event.position.model
+
+    mode match {
+      case _: EditingMode.Trace =>
+        hitTrace(position) match {
+          case Some(trace: sim.Trace) => mode match {
+              case EditingMode.SelectingTrace =>
+                mode = EditingMode.DragTrace(Set(trace), position)
+              case EditingMode.SelectTrace(selectedTraces) =>
+                val newSelectionSet =
+                  if (event.isShiftDown)
+                    if (selectedTraces contains trace) selectedTraces - trace
+                    else selectedTraces + trace
+                  else Set(trace)
+                mode = EditingMode.DragTrace(newSelectionSet, position)
+              case _ =>
+              // Any other state is absolutely invalid here and we should throw an exception.
+            }
+          case _ => mode = EditingMode.SelectingTrace
+        }
+        update(None, Some(background))
+
+      // Other entry states are handled in onMouseClick. Since mouse click is handled after onMouseRelease,
+      // I think we should stop using onMouseClick and transition to these two.
+      case _ =>
+    }
+  }
+
+  override def onMouseRelease(event: MouseEvent, update: Redraw[D]): Unit = {
+    super.onMouseRelease(event, update)
+    val position = event.position.model
+
+    mode match {
+      case traceMode: EditingMode.Trace =>
+        traceMode match {
+          case EditingMode.DragTrace(traces, _) =>
+            mode = EditingMode.SelectTrace(traces)
+          case _ =>
+            mode = EditingMode.SelectingTrace;
+        }
+        update(None, Some(background))
+
+      // Other entry states are handled in onMouseClick.
+      // Eventually we'll move everything to mousePress and mouseRelease handlers.
+      case _ =>
+    }
+  }
+
   override def onMouseDragged(event: MouseEvent, update: Redraw[D]): Unit = {
+    println("Drag called")
     val position = event.position.model
     mode match {
       case EditingMode.DragNode(nodes, from) =>
@@ -156,14 +190,7 @@ class GraphCanvasController[D](val model: sim.Sim)(implicit
               trace.position += event.position.model - from
             }
             mode = EditingMode.DragTrace(traces, position)
-          case EditingMode.SelectTrace(traces)
-              if traces.exists(_.hits[D](position)) =>
-            mode = EditingMode.DragTrace(traces, position)
-          case _ => hitTrace(position) match {
-              case Some(trace) =>
-                mode = EditingMode.DragTrace(Set(trace), position)
-              case _ =>
-            }
+          case _ =>
         }
         update(None, Some(background))
         return

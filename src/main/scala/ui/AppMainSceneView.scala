@@ -1,20 +1,26 @@
 package ui
 
+import java.io.File
+
+import io.Implicit.SimableRepresention
+import io.XMLSimRepresentation.Implicit.xmlSimRepresentation
 import javafx.event.ActionEvent
 import model.sim._
 import scalafx.scene.Scene
 import scalafx.scene.control._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
+import scalafx.stage.{FileChooser, Stage}
 import ui.canvas.SimDrawAction._
-import ui.canvas.{GraphCanvasController, GraphingCanvas}
+import ui.canvas.{GraphCanvasController, GraphingCanvas, VerticalSettingsMenu}
 
 class AppMainSceneView(width: Double, height: Double)
     extends Scene(width, height) {
-  private val model: Sim     = Sim.empty
+  private var model: Sim     = Sim.empty
   private val controller     =
     new GraphCanvasController[GraphingCanvas.DrawAction](model)
   private val graphContainer = new GraphingCanvas(controller)
+  private val rightMenu      = VerticalSettingsMenu(controller)
 
   private val statusBar =
     new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}" }
@@ -41,7 +47,24 @@ class AppMainSceneView(width: Double, height: Double)
             },
             new SeparatorMenuItem(),
             new MenuItem("Open")    {
-              disable = true
+              onAction = (_: ActionEvent) => {
+                val fileChooser = new FileChooser()
+                fileChooser.initialDirectory =
+                  new File(System.getProperty("user.home"))
+                fileChooser.title = "Open Simulation"
+                fileChooser.extensionFilters.add(
+                  new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg")
+                )
+                Option(fileChooser.showOpenDialog(new Stage)).foreach { file =>
+                  model = xml.XML.loadFile(file).toSim
+                }
+                //TODO: Update display
+                controller.model = model
+                controller.redrawMode(
+                  GraphCanvasController.EditingMode.Selecting,
+                  graphContainer.redraw
+                )
+              }
               accelerator =
                 new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)
             }
@@ -160,7 +183,7 @@ class AppMainSceneView(width: Double, height: Double)
     }
 
     center = graphContainer
-
     bottom = statusBar
+    right = rightMenu
   }
 }

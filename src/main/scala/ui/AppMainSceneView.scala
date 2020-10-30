@@ -11,13 +11,12 @@ import scalafx.scene.control._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
-import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
 import ui.canvas.SimDrawAction._
 import ui.canvas.{GraphCanvasController, GraphingCanvas}
 
 class AppMainSceneView(width: Double, height: Double)
     extends Scene(width, height) {
-  private val model: Sim     = Sim.empty
+  private var model: Sim     = Sim.empty
   private val controller     =
     new GraphCanvasController[GraphingCanvas.DrawAction](model)
   private val graphContainer = new GraphingCanvas(controller)
@@ -55,9 +54,11 @@ class AppMainSceneView(width: Double, height: Double)
                 fileChooser.extensionFilters.add(
                   new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg")
                 )
-                val xmlFile     = fileChooser.showOpenDialog(new Stage)
+                Option(fileChooser.showOpenDialog(new Stage)).foreach { file =>
+                  model = xml.XML.loadFile(file).toSim
+                }
                 //TODO: Update display
-                model = xml.XML.loadFile(xmlFile).toSim
+
               }
               accelerator =
                 new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)

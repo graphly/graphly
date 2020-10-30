@@ -123,7 +123,8 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       mutable.HashSet.from(nodes.values),
       connections,
       mutable.HashSet.from(userClasses.values),
-      measures
+      measures,
+      mutable.HashSet.empty
     )
   }
 

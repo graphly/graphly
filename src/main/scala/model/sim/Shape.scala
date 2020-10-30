@@ -73,7 +73,7 @@ object Trace        {
     def stream: InputStream = { new ByteArrayInputStream(bytes) }
 
     override def equals(obj: Any): Boolean =
-      obj match { case t: Trace => eq(t); case _ => false }
+      obj match { case t: Image => eq(t); case _ => false }
   }
 
   object Image                  {

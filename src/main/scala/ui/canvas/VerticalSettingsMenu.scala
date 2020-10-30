@@ -50,7 +50,10 @@ class VerticalSettingsMenu(controller: GraphCanvasController[_])
     rowCounter += 1
   }
 
-  def clearAll(): Unit                                       = { children.retainAll(title) }
+  def clearAll(): Unit                                       = {
+    children.retainAll(title)
+    rowCounter = 1
+  }
 }
 
 object VerticalSettingsMenu {

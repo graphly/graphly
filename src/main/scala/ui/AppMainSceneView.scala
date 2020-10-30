@@ -1,11 +1,17 @@
 package ui
 
+import java.io.File
+
+import io.Implicit.SimableRepresention
+import io.XMLSimRepresentation.Implicit.xmlSimRepresentation
 import javafx.event.ActionEvent
 import model.sim._
 import scalafx.scene.Scene
 import scalafx.scene.control._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
+import scalafx.stage.{FileChooser, Stage}
+import ui.canvas.{GraphCanvasContainer, GraphCanvasController}
 import ui.canvas.SimDrawAction._
 import ui.canvas.{GraphCanvasController, GraphingCanvas}
 
@@ -41,7 +47,18 @@ class AppMainSceneView(width: Double, height: Double)
             },
             new SeparatorMenuItem(),
             new MenuItem("Open")    {
-              disable = true
+              onAction = (_: ActionEvent) => {
+                val fileChooser = new FileChooser()
+                fileChooser.initialDirectory =
+                  new File(System.getProperty("user.home"))
+                fileChooser.title = "Open Simulation"
+                fileChooser.extensionFilters.add(
+                  new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg")
+                )
+                val xmlFile     = fileChooser.showOpenDialog(new Stage)
+                //TODO: Update display
+                model = xml.XML.loadFile(xmlFile).toSim
+              }
               accelerator =
                 new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)
             }

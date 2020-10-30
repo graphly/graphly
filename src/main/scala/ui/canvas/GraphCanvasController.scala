@@ -171,7 +171,6 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   }
 
   override def onMouseDragged(event: MouseEvent, update: Redraw[D]): Unit = {
-    println("Drag called")
     val position = event.position.model
     mode match {
       case EditingMode.DragNode(nodes, from) =>

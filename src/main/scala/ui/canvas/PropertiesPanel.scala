@@ -16,27 +16,27 @@ class PropertiesPanel extends GridPane {
 
   def show(): Unit = { visible = true }
 
-  def setTitle(title: String): Unit = { this.title.text = title }
+  def title_=(title: String): Unit = { this.title.text = title }
 
-  def addTextField(title: String, placeholder: String): Unit = {
+  def textField(title: String, placeholder: String): Unit = {
     val textField = new TextField()
-    textField.setText(placeholder)
+    textField.text = placeholder
     this.addRow(rowCounter, new Label(title), textField)
     rowCounter += 1
   }
 
-  def addDropdown(
+  def dropdown(
       title: String,
       options: List[String],
       placeholder: String
-  ): Unit                                                    = {
-    val dropdown = new ComboBox[String](options)
-    dropdown.setValue(placeholder)
-    this.addRow(rowCounter, new Label(title), dropdown)
+  ): Unit                                                 = {
+    val box = new ComboBox[String](options)
+    box.setValue(placeholder)
+    this.addRow(rowCounter, new Label(title), box)
     rowCounter += 1
   }
 
-  def clearAll(): Unit                                       = {
+  def clearAll(): Unit                                    = {
     children.retainAll(title)
     rowCounter = 1
   }
@@ -50,11 +50,11 @@ object PropertiesPanel {
       controller.onSwitchMode += {
         case GraphCanvasController.EditingMode.SelectNode(nodes) =>
           menu.clearAll()
-          menu.setTitle(nodes.head.name)
-          nodes.head.metadata.foreach((menu.addTextField _).tupled)
+          menu.title_=(nodes.head.name)
+          nodes.head.metadata.foreach((menu.textField _).tupled)
           menu.show()
         case _: GraphCanvasController.EditingMode.SelectEdge =>
-          menu.setTitle("Edge")
+          menu.title_=("Edge")
           menu.show()
         case _ => menu.hide()
       }
@@ -70,10 +70,10 @@ object PropertiesPanel {
   object Sim     {
     def apply(controller: GraphCanvasController[_]): PropertiesPanel = {
       val panel = new PropertiesPanel
-      panel.setTitle("Sim")
+      panel.title_=("Sim")
       controller.model.configuration.foreach {
         case (title, configuration) =>
-          panel.addTextField(title, configuration.toString)
+          panel.textField(title, configuration.toString)
       }
       panel
     }

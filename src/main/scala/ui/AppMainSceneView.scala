@@ -183,6 +183,7 @@ class AppMainSceneView(width: Double, height: Double)
     }
 
     center = graphContainer
+
     bottom = statusBar
     right = rightMenu
   }

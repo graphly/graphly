@@ -54,6 +54,7 @@ class VerticalSettingsMenu(controller: GraphCanvasController[_]) extends GridPan
 
   def clearAll(): Unit = {
     children.retainAll(title)
+    rowCounter = 1
   }
 }
 

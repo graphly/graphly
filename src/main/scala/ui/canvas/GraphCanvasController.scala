@@ -61,43 +61,74 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     onSwitchMode.dispatch(state)
   }
 
-  /**
-    * Callback when we click inside the canvas.
-    *
-    * @param event  : MouseEvent for position and modifiers
-    * @param update : Display update function
-    */
-  override def onMouseClick(event: MouseEvent, update: Redraw[D]): Unit   = {
+  override def onMousePress(event: MouseEvent, update: Redraw[D]): Unit   = {
+    super.onMousePress(event, update)
     val position = event.position.model
+
     mode match {
+      case _: EditingMode.Trace =>
+        hitTrace(position) match {
+          // Clicked on a trace. What happens depends on the state we're in.
+          case Some(trace: sim.Trace) => mode match {
+              // Nothing is selected yet -> move to selected state with the trace we clicked on.
+              case EditingMode.SelectingTrace =>
+                mode = EditingMode.DragTrace(Set(trace), position)
+              // We have some traces selected. If we Shift+clicked then switch trace's selected status.
+              // Then start dragging all selected traces.
+              case EditingMode.SelectTrace(selectedTraces) =>
+                val newSelectionSet =
+                  if (event.isShiftDown)
+                    if (selectedTraces contains trace) selectedTraces - trace
+                    else selectedTraces + trace
+                  else Set(trace)
+                mode = EditingMode.DragTrace(newSelectionSet, position)
+              // Any other state is absolutely invalid here and we should throw an exception.
+              case _ =>
+            }
+
+          // Pressed a mouse button over an empty area -> deselect everything.
+          case _ => mode = EditingMode.SelectingTrace
+        }
+        update(None, Some(background))
+
+      // Other entry states are handled in onMouseClick. Since mouse click is handled after onMouseRelease,
+      // I think we should stop using onMouseClick and transition to these two.
+      case _ =>
+    }
+  }
+
+  override def onMouseRelease(event: MouseEvent, update: Redraw[D]): Unit = {
+    super.onMouseRelease(event, update)
+    val position = event.position.model
+
+    mode match {
+      case traceMode: EditingMode.Trace =>
+        traceMode match {
+          // Stopped dragging traces. Leave them selected.
+          case EditingMode.DragTrace(traces, _) =>
+            mode = EditingMode.SelectTrace(traces)
+          // Anything else then deselect all traces.
+          case _ => mode = EditingMode.SelectingTrace
+        }
+        update(None, Some(background))
+        return
+
       case EditingMode.Node(mkNode) => hitShape(position) match {
+          // If we clicked on nothing, make a new node.
           case None =>
             counters(mkNode) += 1
             val name = s"$mkNode ${counters(mkNode)}"
             model.nodes += mkNode(mutable.Map.empty, name, position)
+          // We clicked on a node, select it.
           case Some(node: sim.Node) => mode = EditingMode.SelectNode(Set(node))
+          // We clicked on an edge, select it.
+          // TODO: If ALT is pressed insert an elbow (meaningless node to tidy up the graph)?
           case Some(edge: sim.Connection) =>
             mode = EditingMode.SelectEdge(Set(edge))
         }
-      case EditingMode.BeginEdge => hitNode(position) match {
-          case Some(start) => mode = EditingMode.DrawingEdge(start)
-          case None => mode = EditingMode.Selecting
-        }
-      case EditingMode.DrawingEdge(start) => hitNode(position) match {
-          case Some(end) =>
-            model.connections += sim.Connection(start, end)
-            mode = EditingMode.DrawingEdge(end)
-          case None => mode = EditingMode.BeginEdge
-        }
-      case EditingMode.DragNode(nodes, _) =>
-        mode = EditingMode.SelectNode(nodes)
-      case boxSelect: EditingMode.BoxSelect =>
-        // Currently inefficient, may be made more efficient upon refactor
-        mode = EditingMode.SelectNode(
-          (boxSelect.active.toSet | boxSelect.prev) --
-            (boxSelect.active & boxSelect.prev)
-        )
+
       case select: EditingMode.Select => hitShape(position) match {
+          // Clicked on a node -> update node selection set and selecting nodes.
           case Some(node: sim.Node) => select match {
               case EditingMode.SelectNode(nodes) if event.shiftDown =>
                 mode = EditingMode.SelectNode(
@@ -105,6 +136,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
                 )
               case _ => mode = EditingMode.SelectNode(node)
             }
+          // Clicked on an edge -> update edge selection set and selecting edges.
           case Some(edge: sim.Connection) => select match {
               case EditingMode.SelectEdge(edges) if event.shiftDown =>
                 mode = EditingMode.SelectEdge(
@@ -114,24 +146,35 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
             }
           case _ => mode = EditingMode.Selecting
         }
-      case EditingMode.DragTrace(trace, _) =>
-        mode = EditingMode.SelectTrace(trace)
-      case select: EditingMode.Trace =>
-        hitTrace(position) match {
-          case Some(trace: sim.Trace) => select match {
-              case EditingMode.SelectTrace(traces) if event.shiftDown =>
-                mode = EditingMode.SelectTrace(
-                  if (traces contains trace) traces - trace else traces + trace
-                )
-              case _ => mode = EditingMode.SelectTrace(trace)
-            }
-          case _ =>
-            mode =
-              if (mode == EditingMode.SelectingTrace) EditingMode.Selecting
-              else EditingMode.SelectingTrace
+
+      // Drawing edges - establishing start node.
+      case EditingMode.BeginEdge => hitNode(position) match {
+          case Some(start) => mode = EditingMode.DrawingEdge(start)
+          case None => mode = EditingMode.Selecting
         }
-        update(None, Some(background))
-        return
+
+      // Drawing edges - start node is set, this is the end.
+      case EditingMode.DrawingEdge(start) => hitNode(position) match {
+          case Some(end) =>
+            model.connections += sim.Connection(start, end)
+            mode = EditingMode.DrawingEdge(end)
+          case None => mode = EditingMode.BeginEdge
+        }
+
+      // Finished dragging nodes.
+      case EditingMode.DragNode(nodes, _) =>
+        mode = EditingMode.SelectNode(nodes)
+
+      // Finished box selecting.
+      case boxSelect: EditingMode.BoxSelect =>
+        // Currently inefficient, may be made more efficient upon refactor
+        mode = EditingMode.SelectNode(
+          (boxSelect.active.toSet | boxSelect.prev) --
+            (boxSelect.active & boxSelect.prev)
+        )
+
+      // Other states are invalid when we release mouse.
+      case _ =>
     }
 
     update(Some(foreground), None)
@@ -169,14 +212,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
               trace.position += event.position.model - from
             }
             mode = EditingMode.DragTrace(traces, position)
-          case EditingMode.SelectTrace(traces)
-              if traces.exists(_.hits[D](position)) =>
-            mode = EditingMode.DragTrace(traces, position)
-          case _ => hitTrace(position) match {
-              case Some(trace) =>
-                mode = EditingMode.DragTrace(Set(trace), position)
-              case _ =>
-            }
+          case _ =>
         }
         update(None, Some(background))
         return
@@ -259,7 +295,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     model.connections.find(x => x.hits[D](hit))
 
   private def hitTrace(hit: Position): Option[sim.Trace] =
-    model.traces.find(x => x.hits[D](hit))
+    model.traces.findLast(x => x.hits[D](hit))
 }
 
 object GraphCanvasController      {

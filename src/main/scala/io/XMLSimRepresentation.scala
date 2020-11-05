@@ -124,7 +124,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       connections,
       mutable.HashSet.from(userClasses.values),
       measures,
-      mutable.HashSet.empty
+      mutable.ArrayBuffer.empty
     )
   }
 

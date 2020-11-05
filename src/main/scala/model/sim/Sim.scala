@@ -7,7 +7,7 @@ case class Sim(
     connections: mutable.Set[Connection],
     classes: mutable.Set[UserClass],
     measures: mutable.Set[Measure],
-    traces: mutable.Set[Trace],
+    traces: mutable.Buffer[Trace],
     configuration: Sim.Configuration = mutable.HashMap.empty
 )
 
@@ -20,7 +20,7 @@ object Sim {
       mutable.HashSet.empty,
       mutable.HashSet.empty,
       mutable.HashSet.empty,
-      mutable.HashSet.empty,
+      mutable.ArrayBuffer.empty,
       mutable.HashMap.empty
     )
   }

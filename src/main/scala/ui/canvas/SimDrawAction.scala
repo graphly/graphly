@@ -69,11 +69,11 @@ object SimDrawAction {
         context =>
           if (highlight)
             drawCircle(node.position, radius * 1.3, highlighting, context)
-          drawCircle(node.position, radius, classColor(node), context)
+          drawCircle(node.position, radius, classColor(node.nodeType), context)
           context.fill = Color.Black
           val textSizeOffset = 5
           context.fillText(
-            node.toString.substring(0, 2),
+            node.nodeType.toString.substring(0, 2),
             node.x - textSizeOffset * 1.5,
             node.y + textSizeOffset
           )

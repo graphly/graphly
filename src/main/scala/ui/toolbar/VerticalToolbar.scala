@@ -21,27 +21,27 @@ class VerticalToolbar extends ToolBar {
   private val sourceBtn                                        =
     new ToolbarButton("Create Source Nodes", "assets/icons/source-32.png") {
       toggleGroup = allButtonsTg
-      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Source)) }
+      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Source())) }
     }
   private val forkBtn                                          =
     new ToolbarButton("Create Fork Nodes", "assets/icons/fork-32.png") {
       toggleGroup = allButtonsTg
-      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Fork)) }
+      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Fork())) }
     }
   private val joinBtn                                          =
     new ToolbarButton("Create Join Nodes", "assets/icons/source-32.png") {
       toggleGroup = allButtonsTg
-      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Join)) }
+      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Join())) }
     }
   private val queueBtn                                         =
     new ToolbarButton("Create Queue Nodes", "assets/icons/queue-32.png") {
       toggleGroup = allButtonsTg
-      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Queue)) }
+      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Queue())) }
     }
   private val sinkBtn                                          =
     new ToolbarButton("Create Sink Nodes", "assets/icons/sink-32.png") {
       toggleGroup = allButtonsTg
-      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(JobSink)) }
+      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(JobSink())) }
     }
   private val edgesBtn                                         =
     new ToolbarButton("Create Edges", "assets/icons/edge-32.png") {

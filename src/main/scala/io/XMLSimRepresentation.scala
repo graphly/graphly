@@ -4,14 +4,13 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 import model.Position
-import model.sim.Shape.Metadata
 import model.sim._
 
 import scala.collection.mutable
 import scala.language.implicitConversions
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
-  override def represent(x: Sim): xml.Elem                       = {
+  override def represent(x: Sim): xml.Elem         = {
     val timestamp: String      = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u")
       .format(ZonedDateTime.now)
     // TODO: This will almost certainly need it's own function once nodes are fully implemented
@@ -53,14 +52,15 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     </archive>
   }
 
-  override def toSim(xmlSim: xml.Elem): Sim                      = {
+  override def toSim(xmlSim: xml.Elem): Sim        = {
     val xmlSimNodes = xmlSim.child
     val simulation  = xmlSimNodes(1)
     val jmodel      = xmlSimNodes(3)
     //TODO: Handle simulation results
     val results     = xmlSimNodes(5)
 
-    val positionlessNodes: mutable.HashMap[String, Position => Node] =
+    val positionlessNodes
+        : mutable.HashMap[String, Boolean => Position => Node] =
       mutable.HashMap.empty
 
     val nodes: mutable.HashMap[String, Node]            = mutable.HashMap.empty
@@ -84,11 +84,12 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
           for {
             stationName <- stationXML.attribute("name")
             position    <- stationXML.child(1).headOption
+            rotated     <- position.attribute("rotate")
             x           <- position.attribute("x")
             y           <- position.attribute("y")
           } yield nodes.put(
             stationName.toString,
-            positionlessNodes(stationName.toString)(
+            positionlessNodes(stationName.toString)(rotated.toString.toBoolean)(
               Position(x.toString.toDouble, y.toString.toDouble)
             )
           )
@@ -132,7 +133,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       xmlMeasure: xml.Node,
       nodes: collection.Map[String, Node],
       userClasses: collection.Map[String, UserClass]
-  ): Option[Measure]                                             =
+  ): Option[Measure]                               =
     for {
       classAlpha          <- xmlMeasure.attribute("alpha")
       classReferenceNode  <- xmlMeasure.attribute("referenceNode")
@@ -152,7 +153,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   private def userClassFromXML(
       xmlUserClass: xml.Node,
       nodes: collection.Map[String, Node]
-  ): Option[(String, UserClass)]                                 =
+  ): Option[(String, UserClass)]                   =
     for {
       className            <- xmlUserClass.attribute("name")
       classPriority        <- xmlUserClass.attribute("priority")
@@ -174,7 +175,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   private def connectionFromXML(
       xmlConnection: xml.Node,
       nodes: collection.Map[String, Node]
-  ): Option[Connection]                                          =
+  ): Option[Connection]                            =
     for {
       sourceName <- xmlConnection.attribute("source")
       targetName <- xmlConnection.attribute("target")
@@ -182,68 +183,15 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       targetNode <- nodes.get(targetName.toString)
     } yield Connection(sourceNode, targetNode)
 
-  private def nodeMetadataFromXML(xmlParams: xml.Node): Metadata = {
-    val params: mutable.HashMap[String, String] = mutable.HashMap.empty
-    for {
-      parameters     <- xmlParams.child.drop(1)
-      parameterNames <- parameters.attribute("name")
-    } yield parameters.zip(parameterNames).foreach {
-      case (paramNode, paramNameNode) =>
-        val paramName        = paramNameNode.toString
-        val paramVal: String = paramName match {
-          case "size" => paramNode.child(1).text
-          case "FCFSstrategy" => "FCFSstrategy"
-          case _ => ""
-        }
-        params.put(paramName, paramVal)
-    }
-
-    params
-  }
-
   private def nodeFromXML(
       xmlNode: xml.Node
-  ): Option[(String, Position => Node)]                          =
+  ): Option[(String, Boolean => Position => Node)] =
     for {
       classNames <- xmlNode.child(1).attribute("className")
       className  <- classNames.headOption
       names      <- xmlNode.attribute("name")
       name       <- names.headOption
-    } yield {
-      className.toString match {
-        //TODO: Add other node types
-        //TODO: Nodes appear to have multiple "sections",
-        // which can be handled in specific constructors
-        case "Queue" =>
-          (
-            name.toString,
-            Queue(
-              nodeMetadataFromXML(xmlNode.child(1)),
-              name.toString,
-              _: Position
-            )
-          )
-        case "RandomSource" =>
-          (
-            name.toString,
-            Source(
-              nodeMetadataFromXML(xmlNode.child(1)),
-              name.toString,
-              _: Position
-            )
-          )
-        case "JobSink" =>
-          (
-            name.toString,
-            JobSink(
-              nodeMetadataFromXML(xmlNode.child(1)),
-              name.toString,
-              _: Position
-            )
-          )
-        case _ => ???
-      }
-    }
+    } yield { ??? }
 
   object Implicit {
     implicit val xmlSimRepresentation: SimRepresentation[xml.Elem] =

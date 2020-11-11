@@ -4,9 +4,9 @@ import java.io.{File, FileInputStream, PrintWriter}
 
 import io.Implicit._
 import io.XMLSimRepresentation.Implicit._
+import model.sim.{Node, NodeType}
+//import model.sim.Shape.Metadata
 import model.sim.Trace.Image
-import model.sim.Node
-import model.sim.Shape.Metadata
 import model.{Position, sim}
 import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}
 import scalafx.stage.{FileChooser, Stage}
@@ -25,15 +25,37 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     val draw: Draw[D, sim.Shape]
 ) extends Controller[Redraw[D]] {
   // Callbacks to run when we switch the mode
-  val onSwitchMode                                                             = new Event[EditingMode.State]
-  private val counters: mutable.Map[(Metadata, String, Position) => Node, Int] =
-    mutable.Map(
-      sim.Source -> 0,
-      sim.Queue -> 0,
-      sim.JobSink -> 0,
-      sim.Fork -> 0,
-      sim.Join -> 0
-    )
+  val onSwitchMode = new Event[EditingMode.State]
+
+  private val counters: mutable.Map[Class[_ <: NodeType], Int] = mutable.Map(
+    classOf[sim.BlockingQueue] -> 0,
+    classOf[sim.BlockingRouter] -> 0,
+    classOf[sim.ClassSwitch] -> 0,
+    classOf[sim.Delay] -> 0,
+    classOf[sim.Enabling] -> 0,
+    classOf[sim.Firing] -> 0,
+    classOf[sim.Fork] -> 0,
+    classOf[sim.InputSection] -> 0,
+    classOf[sim.JobSink] -> 0,
+    classOf[sim.Join] -> 0,
+    classOf[sim.Linkage] -> 0,
+    classOf[sim.LogTunnel] -> 0,
+    classOf[sim.OutputSection] -> 0,
+    classOf[sim.PSServer] -> 0,
+    classOf[sim.PipeSection] -> 0,
+    classOf[sim.Queue] -> 0,
+    //classOf[sim.RandomSource] -> 0,
+    classOf[sim.Router] -> 0,
+    classOf[sim.Semaphore] -> 0,
+    classOf[sim.Server] -> 0,
+    classOf[sim.ServiceSection] -> 0,
+    classOf[sim.ServiceTunnel] -> 0,
+    classOf[sim.Storage] -> 0,
+    classOf[sim.Terminal] -> 0,
+    classOf[sim.Timing] -> 0,
+    //TODO: This is should be RandomSource as JMT has no 'Source' node
+    classOf[sim.Source] -> 0
+  )
 
   // What state is the view in - whether we are creating nodes and connections,
   // moving objects, etc.
@@ -113,12 +135,13 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
         update(None, Some(background))
         return
 
-      case EditingMode.Node(mkNode) => hitShape(position) match {
+      case EditingMode.Node(nodeType) => hitShape(position) match {
           // If we clicked on nothing, make a new node.
           case None =>
-            counters(mkNode) += 1
-            val name = s"$mkNode ${counters(mkNode)}"
-            model.nodes += mkNode(mutable.Map.empty, name, position)
+            counters(nodeType.getClass) += 1
+            val name =
+              s"${nodeType.getClass.getSimpleName} ${counters(nodeType.getClass)}"
+            model.nodes += Node(name, position, nodeType)
           // We clicked on a node, select it.
           case Some(node: sim.Node) => mode = EditingMode.SelectNode(Set(node))
           // We clicked on an edge, select it.
@@ -317,13 +340,11 @@ object GraphCanvasController      {
 
     case object BeginEdge extends Edge with Entry
 
-    case class DrawingEdge(from: sim.Node) extends Edge {
+    case class DrawingEdge(from: sim.Node) extends Edge  {
       override def highlights(shape: sim.Shape): Boolean = shape == from
     }
 
-    case class Node(
-        constructor: (sim.Shape.Metadata, String, Position) => sim.Node
-    ) extends Entry {
+    case class Node(nodeType: NodeType)    extends Entry {
       override def toolbarStatusMnemonic = "Create [Node]"
     }
 

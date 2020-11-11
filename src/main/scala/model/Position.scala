@@ -1,5 +1,6 @@
 package model
 
+import scala.language.implicitConversions
 import util.Number.Implicit.DoubleExtensions
 
 case class Position(x: Double, y: Double)                              {

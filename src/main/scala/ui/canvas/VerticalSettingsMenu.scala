@@ -5,38 +5,33 @@ import scalafx.scene.control.{ComboBox, Label, TextField}
 import scalafx.scene.text.{Font, Text}
 import scalafx.scene.layout.GridPane
 
-class VerticalSettingsMenu(controller: GraphCanvasController[_]) extends GridPane {
+class VerticalSettingsMenu(controller: GraphCanvasController[_])
+    extends GridPane        {
   private var rowCounter = 1
-  private val title = new Text("Placeholder")
+  private val title      = new Text("Placeholder")
   title.setFont(Font.font(20))
   addRow(0, title)
   managed <== visible
   visible = false
 
-  controller.onSwitchMode +=
-    {
-      case GraphCanvasController.EditingMode.SelectNode(nodes) =>
-        clearAll()
-        setTitle(nodes.head.name)
-        nodes.head.metadata.foreach((addTextField _).tupled)
-        show()
-      case _: GraphCanvasController.EditingMode.SelectEdge =>
-        setTitle("Edge")
-        show()
-      case _ => hide()
-    }
-
-  def hide(): Unit = {
-    visible = false
+  controller.onSwitchMode += {
+    case GraphCanvasController.EditingMode.SelectNode(nodes) =>
+      clearAll()
+      setTitle(nodes.head.name)
+//        TODO: Write a function to extract metadata from new format
+//        nodes.head.metadata.foreach((addTextField _).tupled)
+      show()
+    case _: GraphCanvasController.EditingMode.SelectEdge =>
+      setTitle("Edge")
+      show()
+    case _ => hide()
   }
 
-  def show(): Unit = {
-    visible = true
-  }
+  def hide(): Unit = { visible = false }
 
-  def setTitle(title: String): Unit = {
-    this.title.text = title
-  }
+  def show(): Unit = { visible = true }
+
+  def setTitle(title: String): Unit = { this.title.text = title }
 
   def addTextField(title: String, placeholder: String): Unit = {
     val textField = new TextField()
@@ -45,16 +40,18 @@ class VerticalSettingsMenu(controller: GraphCanvasController[_]) extends GridPan
     rowCounter += 1
   }
 
-  def addDropdown(title: String, options: List[String], placeholder: String): Unit = {
+  def addDropdown(
+      title: String,
+      options: List[String],
+      placeholder: String
+  ): Unit                                                    = {
     val dropdown = new ComboBox[String](options)
     dropdown.setValue(placeholder)
     this.addRow(rowCounter, new Label(title), dropdown)
     rowCounter += 1
   }
 
-  def clearAll(): Unit = {
-    children.removeAll()
-  }
+  def clearAll(): Unit                                       = { children.removeAll() }
 }
 
 object VerticalSettingsMenu {

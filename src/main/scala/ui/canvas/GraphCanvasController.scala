@@ -30,7 +30,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     mutable.Map(
       sim.Source -> 0,
       sim.Queue -> 0,
-      sim.Sink -> 0,
+      sim.JobSink -> 0,
       sim.Fork -> 0,
       sim.Join -> 0
     )

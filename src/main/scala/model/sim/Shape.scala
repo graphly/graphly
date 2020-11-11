@@ -31,34 +31,198 @@ sealed abstract class Node                        extends Element with Positione
   override def hashCode: Int             = uid.hashCode
 }
 
-case class Source(
+case class BlockingQueue(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position,
+    //Specifics
+    var classDrop: Array[Boolean],
+    var classWeights: Array[Double]
+) extends Node
+
+case class BlockingRouter(
     var metadata: Metadata,
     var name: String,
     var position: Position
 ) extends Node
 
-case class Queue(
+case class ClassSwitch(
     var metadata: Metadata,
     var name: String,
-    var position: Position
+    var position: Position,
+    //Specifics
+    var matrix: Array[Array[Float]]
 ) extends Node
 
-case class Sink(
+case class Delay(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position,
+    //Specifics
+    var coolStart: Boolean
+//    var serviceStrategies: Array[ServiceStrategy]
+) extends Node
+
+case class Enabling(
     var metadata: Metadata,
     var name: String,
     var position: Position
+    //Specifics
+//    var enablingConditions: Array[TransitionMatrix],
+//    var inhibitingConditions: Array[TransitionMatrix]
+) extends Node
+
+case class Firing(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+//    var firingOutcomes: Array[TransitionMatrix]
 ) extends Node
 
 case class Fork(
     var metadata: Metadata,
     var name: String,
+    var position: Position,
+    //Specifics
+    var block: Int,
+    var jobsPerLink: Int,
+    var isSimplifiedFork: Boolean
+    //    var forkStrategies: Array[ForkStrategy]
+) extends Node
+
+case class InputSection(
+    var metadata: Metadata,
+    var name: String,
     var position: Position
+    //Specifics
+) extends Node
+
+case class JobSink(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
 ) extends Node
 
 case class Join(
     var metadata: Metadata,
     var name: String,
     var position: Position
+    //Specifics
+) extends Node
+
+case class Linkage(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+case class LogTunnel(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+case class OutputSection(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+case class PSServer(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+case class PipeSection(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+case class Queue(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+//case class RandomSource(
+//    var metadata: Metadata,
+//    var name: String,
+//    var position: Position
+//    //Specifics
+//) extends Node
+
+case class Router(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+case class Semaphore(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+case class Server(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+case class ServiceSection(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+case class ServiceTunnel(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+case class Storage(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+case class Terminal(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+case class Timing(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
+) extends Node
+
+//TODO: This is should be RandomSource as JMT has no 'Source' node
+case class Source(
+    var metadata: Metadata,
+    var name: String,
+    var position: Position
+    //Specifics
 ) extends Node
 
 case class Connection(source: Node, target: Node) extends Element

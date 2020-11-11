@@ -41,7 +41,7 @@ class VerticalToolbar extends ToolBar {
   private val sinkBtn      =
     new ToolbarButton("Create Sink Nodes", "assets/icons/sink-32.png") {
       toggleGroup = allButtonsTg
-      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Sink)) }
+      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(JobSink)) }
     }
   private val edgesBtn     =
     new ToolbarButton("Create Edges", "assets/icons/edge-32.png") {

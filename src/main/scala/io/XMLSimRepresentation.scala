@@ -235,7 +235,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         case "JobSink" =>
           (
             name.toString,
-            Sink(
+            JobSink(
               nodeMetadataFromXML(xmlNode.child(1)),
               name.toString,
               _: Position

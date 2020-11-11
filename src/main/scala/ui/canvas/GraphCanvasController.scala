@@ -4,17 +4,19 @@ import java.io.{File, FileInputStream, PrintWriter}
 
 import io.Implicit._
 import io.XMLSimRepresentation.Implicit._
+import jdk.internal.org.jline.reader.LineReader
 import model.sim.Trace.Image
 import model.sim.Node
 import model.sim.Shape.Metadata
 import model.{Position, sim}
-import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}
+import scalafx.scene.input.{Clipboard, ClipboardContent, KeyCode, KeyEvent, MouseEvent}
 import scalafx.stage.{FileChooser, Stage}
 import ui.Controller
 import ui.Position.Implicit.MouseEventPosition
 import ui.canvas.Draw.Implicit.DrawShape
 import ui.canvas.GraphCanvasController.EditingMode.default
 import ui.canvas.GraphCanvasController.{EditingMode, Redraw}
+import ui.canvas.GraphingCanvas.DrawActions
 import ui.util.Event
 import util.Default
 
@@ -283,6 +285,39 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
       model.traces += trace
       redrawMode(EditingMode.SelectTrace(trace), update)
     }
+  }
+
+  def copySelectedNodes(): Unit = {
+    mode match {
+      case EditingMode.SelectNode(nodes) => {
+
+  def copySelectedNodes(update: Redraw[D]): Unit = {
+    println(mode)
+    mode match {
+      case EditingMode.SelectNode(nodes) => {
+        val content = new ClipboardContent()
+        content.putString(s"Copying ${nodes.size} nodes")
+        Clipboard.systemClipboard.content = content
+      }
+      case _ =>
+    }
+    println(mode)
+  }
+
+  def cutSelectedNodes(update: Redraw[D]): Unit = {
+    mode match {
+      case EditingMode.SelectNode(nodes) => {
+        val content = new ClipboardContent()
+        content.putString(s"Cutting ${nodes.size} nodes")
+        Clipboard.systemClipboard.content = content
+      }
+      case _ =>
+    }
+  }
+
+  def pasteSelectedNodes(update: Redraw[D]): Unit = {
+    val content = Clipboard.systemClipboard.content
+    println(s"Pasting from clipboard: ${content.getString}")
   }
 
   private def hitShape(hit: Position): Option[sim.Element] =

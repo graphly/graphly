@@ -28,8 +28,7 @@ class AppMainSceneView(width: Double, height: Double)
     new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}" }
   controller.onSwitchMode +=
     (state => statusBar.text = s"Status: ${state.toolbarStatusMnemonic}")
-  controller.onSwitchMode +=
-    (state => toolbar.controllerUpdatedMode(state))
+  controller.onSwitchMode += (state => toolbar.controllerUpdatedMode(state))
   toolbar.itemSelected +=
     (state => controller.redrawMode(state, graphContainer.redraw))
 
@@ -77,15 +76,21 @@ class AppMainSceneView(width: Double, height: Double)
           )
         },
         new Menu("Edit")  {
-          items = List(new MenuItem("Select") {
-            onAction = (_: ActionEvent) =>
-              controller.redrawMode(
-                GraphCanvasController.EditingMode.Selecting,
-                graphContainer.redraw
-              )
-            accelerator =
-              new KeyCodeCombination(KeyCode.M, KeyCombination.AltDown)
-          })
+          items = List(
+            new MenuItem("Copy") {
+              onAction = (_: ActionEvent) => controller.copySelectedNodes(graphContainer.redraw)
+              accelerator =
+                new KeyCodeCombination(KeyCode.C, KeyCombination.ControlDown)
+            },
+            new MenuItem("Paste") {
+              onAction = (_: ActionEvent) => controller.pasteSelectedNodes(graphContainer.redraw)
+              accelerator = new KeyCodeCombination(KeyCode.P, KeyCombination.ControlDown)
+            },
+            new MenuItem("Cut") {
+              onAction = (_: ActionEvent) => controller.cutSelectedNodes(graphContainer.redraw);
+              accelerator = new KeyCodeCombination(KeyCode.X, KeyCombination.ControlDown)
+            },
+          )
         },
         new Menu("Trace") {
           items = List(

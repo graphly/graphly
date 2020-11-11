@@ -127,6 +127,18 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
             mode = EditingMode.SelectEdge(Set(edge))
         }
 
+      // Finished box selecting.
+      case boxSelect: EditingMode.BoxSelect =>
+        // Currently inefficient, may be made more efficient upon refactor
+        mode = EditingMode.SelectNode(
+          (boxSelect.active.toSet | boxSelect.prev) --
+            (boxSelect.active & boxSelect.prev)
+        )
+
+      // Finished dragging nodes.
+      case EditingMode.DragNode(nodes, _) =>
+        mode = EditingMode.SelectNode(nodes)
+
       case select: EditingMode.Select => hitShape(position) match {
           // Clicked on a node -> update node selection set and selecting nodes.
           case Some(node: sim.Node) => select match {
@@ -161,18 +173,6 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
           case None => mode = EditingMode.BeginEdge
         }
 
-      // Finished dragging nodes.
-      case EditingMode.DragNode(nodes, _) =>
-        mode = EditingMode.SelectNode(nodes)
-
-      // Finished box selecting.
-      case boxSelect: EditingMode.BoxSelect =>
-        // Currently inefficient, may be made more efficient upon refactor
-        mode = EditingMode.SelectNode(
-          (boxSelect.active.toSet | boxSelect.prev) --
-            (boxSelect.active & boxSelect.prev)
-        )
-
       // Other states are invalid when we release mouse.
       case _ =>
     }
@@ -202,9 +202,9 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
         )
         return
       case _: EditingMode.Select => hitNode(position) match {
-          case Some(node) => mode = EditingMode.DragNode(Set(node), position)
-          case None => mode = EditingMode.BoxSelect(position)
-        }
+        case Some(node) => mode = EditingMode.DragNode(Set(node), position)
+        case None => mode = EditingMode.BoxSelect(position)
+      }
       case trace: EditingMode.Trace =>
         trace match {
           case EditingMode.DragTrace(traces, from) =>

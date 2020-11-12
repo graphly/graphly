@@ -33,7 +33,7 @@ case class Node(
 
 sealed trait NodeType
 
-case class Source() extends NodeType
+case class Source(var userClasses: Seq[UserClass]) extends NodeType
 
 case class Sink() extends NodeType
 

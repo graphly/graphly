@@ -281,25 +281,28 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     update(Some(foreground), None)
   }
 
+  private def putModelToClipboard(model: sim.Sim): Unit = {
+    val content = new ClipboardContent()
+    content.putString(modelToString(model))
+    Clipboard.systemClipboard.content = content
+  }
+
   def copySelectedNodes(update: Redraw[D]): Unit = {
-    println(mode)
     mode match {
       case EditingMode.SelectNode(nodes) => {
-        val content = new ClipboardContent()
-        content.putString(s"Copying ${nodes.size} nodes")
-        Clipboard.systemClipboard.content = content
+        val modelFromSelected = new sim.Sim(mutable.Set(nodes.toArray: _*), mutable.Set.empty, mutable.Set.empty, mutable.Set.empty, mutable.Buffer.empty)
+        putModelToClipboard(modelFromSelected)
       }
-      case _ =>
+      case _ => println("Finish selecting nodes to copy them")
     }
-    println(mode)
   }
 
   def cutSelectedNodes(update: Redraw[D]): Unit = {
     mode match {
       case EditingMode.SelectNode(nodes) => {
-        val content = new ClipboardContent()
-        content.putString(s"Cutting ${nodes.size} nodes")
-        Clipboard.systemClipboard.content = content
+        val modelFromSelected = new sim.Sim(mutable.Set(nodes.toArray: _*), mutable.Set.empty, mutable.Set.empty, mutable.Set.empty, mutable.Buffer.empty)
+        putModelToClipboard(modelFromSelected);
+        deleteSelected(update)
       }
       case _ =>
     }
@@ -307,7 +310,11 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
 
   def pasteSelectedNodes(update: Redraw[D]): Unit = {
     val content = Clipboard.systemClipboard.content
-    println(s"Pasting from clipboard: ${content.getString}")
+    val pastedModel = xml.XML.loadString(content.getString).toSim
+    model.merge(pastedModel)
+    mode = EditingMode.SelectNode(pastedModel.nodes.toSet)
+
+    update(Some(foreground), Some(background))
   }
 
   private def hitShape(hit: Position): Option[sim.Element] =

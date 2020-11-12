@@ -4,7 +4,8 @@ case class UserClass(
     name: String,
     priority: Int,
     referenceSource: Node,
-    `type`: UserClass.Type
+    `type`: UserClass.Type,
+    population: Int
 )
 
 object UserClass {

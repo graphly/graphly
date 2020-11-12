@@ -33,76 +33,104 @@ case class Node(
 
 sealed trait NodeType
 
-case class BlockingQueue(
-    var classDrop: Array[Boolean],
-    var classWeights: Array[Double]
-) extends NodeType
+case class Source() extends NodeType
 
-case class BlockingRouter() extends NodeType
-
-case class ClassSwitch(var matrix: Array[Array[Float]]) extends NodeType
-
-case class Delay(
-    var coolStart: Boolean
-//    var serviceStrategies: Array[ServiceStrategy]
-) extends NodeType
-
-case class Enabling(
-//    var enablingConditions: Array[TransitionMatrix],
-//    var inhibitingConditions: Array[TransitionMatrix]
-) extends NodeType
-
-case class Firing(
-//    var firingOutcomes: Array[TransitionMatrix]
-) extends NodeType
-
-case class Fork(
-    var block: Int = -1,
-    var jobsPerLink: Int = 1,
-    var isSimplifiedFork: Boolean = false
-    //    var forkStrategies: Array[ForkStrategy]
-) extends NodeType
-
-case class InputSection() extends NodeType
-
-case class JobSink() extends NodeType
-
-case class Join() extends NodeType
-
-case class Linkage() extends NodeType
-
-case class LogTunnel() extends NodeType
-
-case class OutputSection() extends NodeType
-
-case class PSServer() extends NodeType
-
-case class PipeSection() extends NodeType
-
-case class Queue() extends NodeType
-
-//case class RandomSource(
-//    //Specifics
-//) extends NodeType
-
-case class Router() extends NodeType
-
-case class Semaphore() extends NodeType
-
-case class Server() extends NodeType
-
-case class ServiceSection() extends NodeType
-
-case class ServiceTunnel() extends NodeType
-
-case class Storage() extends NodeType
+case class Sink() extends NodeType
 
 case class Terminal() extends NodeType
 
-case class Timing() extends NodeType
+case class Router() extends NodeType
 
-//TODO: This is should be RandomSource as JMT has no 'Source' node
-case class Source() extends NodeType
+case class Delay() extends NodeType
+
+case class Server() extends NodeType
+
+case class Fork() extends NodeType
+
+case class Join() extends NodeType
+
+case class Logger() extends NodeType
+
+case class ClassSwitch() extends NodeType
+
+case class Semaphore() extends NodeType
+
+case class Scalar() extends NodeType
+
+case class Place() extends NodeType
+
+case class Transition() extends NodeType
+
+//case class BlockingQueue(
+//    var classDrop: Array[Boolean],
+//    var classWeights: Array[Double]
+//) extends NodeType
+//
+//case class BlockingRouter() extends NodeType
+//
+//case class ClassSwitch(var matrix: Array[Array[Float]]) extends NodeType
+//
+//case class Delay(
+//    var coolStart: Boolean
+////    var serviceStrategies: Array[ServiceStrategy]
+//) extends NodeType
+//
+//case class Enabling(
+////    var enablingConditions: Array[TransitionMatrix],
+////    var inhibitingConditions: Array[TransitionMatrix]
+//) extends NodeType
+//
+//case class Firing(
+////    var firingOutcomes: Array[TransitionMatrix]
+//) extends NodeType
+//
+//case class Fork(
+//    var block: Int = -1,
+//    var jobsPerLink: Int = 1,
+//    var isSimplifiedFork: Boolean = false
+//    //    var forkStrategies: Array[ForkStrategy]
+//) extends NodeType
+//
+//case class InputSection() extends NodeType
+//
+//case class JobSink() extends NodeType
+//
+//case class Join() extends NodeType
+//
+//case class Linkage() extends NodeType
+//
+//case class LogTunnel() extends NodeType
+//
+//case class OutputSection() extends NodeType
+//
+//case class PSServer() extends NodeType
+//
+//case class PipeSection() extends NodeType
+//
+//case class Queue() extends NodeType
+//
+////case class RandomSource(
+////    //Specifics
+////) extends NodeType
+//
+//case class Router() extends NodeType
+//
+//case class Semaphore() extends NodeType
+//
+//case class Server() extends NodeType
+//
+//case class ServiceSection() extends NodeType
+//
+//case class ServiceTunnel() extends NodeType
+//
+//case class Storage() extends NodeType
+//
+//case class Terminal() extends NodeType
+//
+//case class Timing() extends NodeType
+//
+////TODO: This is should be RandomSource as JMT has no 'Source' node
+//case class Source() extends NodeType
 
 case class Connection(source: Node, target: Node) extends Element
 

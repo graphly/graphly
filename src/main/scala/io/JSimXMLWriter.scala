@@ -2,8 +2,9 @@ package io
 
 import io.XMLConstantNames._
 import javax.xml.parsers.DocumentBuilderFactory
-import model.sim.Sim
-import org.w3c.dom.Document
+import model.sim.UserClass.{Closed, Open}
+import model.sim.{Sim, _}
+import org.w3c.dom.{Document, Element, Node}
 
 object JSimXMLWriter extends SimRepresentation[Document] {
 
@@ -73,4 +74,41 @@ object JSimXMLWriter extends SimRepresentation[Document] {
 //    writeBlockingRegions(modelDoc, elem, model)
 //    writePreload(modelDoc, elem, model)
   }
+
+  protected def writeClasses(
+      doc: Document,
+      simNode: Element,
+      model: Sim
+  ): Unit                                                       = {
+
+    for (userClass <- model.classes) {
+      val classType: String = userClass.`type` match {
+        case Open => "open"
+        case Closed => "closed"
+      }
+
+      val userClassElem: Element     = doc.createElement(XML_E_CLASS)
+      val attrsNames: Array[String]  = Array(
+        XML_A_CLASS_NAME,
+        XML_A_CLASS_TYPE,
+        XML_A_CLASS_PRIORITY,
+        XML_A_CLASS_CUSTOMERS,
+        XML_A_CLASS_REFSOURCE
+      )
+      val attrsValues: Array[String] = Array(
+        userClass.name,
+        classType,
+        String.valueOf(userClass.priority),
+        String.valueOf(userClass.population),
+        userClass.referenceSource
+      )
+      for (j <- attrsNames.indices) {
+        if (attrsValues(j) != null && !("null" == attrsValues(j))) {
+          userClassElem.setAttribute(attrsNames(j), attrsValues(j))
+        }
+      }
+      simNode.appendChild(userClassElem)
+    }
+  }
+
 }

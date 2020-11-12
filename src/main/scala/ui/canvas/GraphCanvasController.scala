@@ -233,7 +233,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
         }
         update(None, Some(background))
         return
-      case _ =>
+      case _ => return
     }
 
     update(Some(foreground), None)

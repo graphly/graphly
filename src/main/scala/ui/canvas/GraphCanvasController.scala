@@ -6,7 +6,7 @@ import io.Implicit._
 import io.XMLSimRepresentation.Implicit._
 import jdk.internal.org.jline.reader.LineReader
 import model.sim.Trace.Image
-import model.sim.Node
+import model.sim.{Connection, Node}
 import model.sim.Shape.Metadata
 import model.{Position, sim}
 import scalafx.scene.input.{Clipboard, ClipboardContent, KeyCode, KeyEvent, MouseEvent}
@@ -287,11 +287,30 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     Clipboard.systemClipboard.content = content
   }
 
+  private def getEdgesWithBothEndpoints(nodes: Set[Node]): mutable.Set[Connection] = {
+    val out = mutable.Set[Connection]()
+    model.connections.foreach(c => if (nodes.contains(c.source) && nodes.contains(c.target)) out.add(c))
+    out
+  }
+
+  private def modelFromSelectedNodes(nodes: Set[Node]): sim.Sim = {
+    val simNodes = mutable.Set(nodes.toArray: _*)
+    val simEdges = getEdgesWithBothEndpoints(nodes)
+
+    val modelFromSelected = new sim.Sim(
+      simNodes,             // nodes
+      simEdges,             // connections
+      mutable.Set.empty,    // classes
+      mutable.Set.empty,    // measures
+      mutable.Buffer.empty  // traces
+    )
+    modelFromSelected
+  }
+
   def copySelectedNodes(update: Redraw[D]): Unit = {
     mode match {
       case EditingMode.SelectNode(nodes) => {
-        val modelFromSelected = new sim.Sim(mutable.Set(nodes.toArray: _*), mutable.Set.empty, mutable.Set.empty, mutable.Set.empty, mutable.Buffer.empty)
-        putModelToClipboard(modelFromSelected)
+        putModelToClipboard(modelFromSelectedNodes(nodes))
       }
       case _ => println("Finish selecting nodes to copy them")
     }
@@ -300,8 +319,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   def cutSelectedNodes(update: Redraw[D]): Unit = {
     mode match {
       case EditingMode.SelectNode(nodes) => {
-        val modelFromSelected = new sim.Sim(mutable.Set(nodes.toArray: _*), mutable.Set.empty, mutable.Set.empty, mutable.Set.empty, mutable.Buffer.empty)
-        putModelToClipboard(modelFromSelected);
+        putModelToClipboard(modelFromSelectedNodes(nodes))
         deleteSelected(update)
       }
       case _ =>

@@ -224,6 +224,11 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     update(Some(foreground), None)
   }
 
+  private def modelToString(model: sim.Sim): String = {
+    val header = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>"
+    s"$header\n${model.toRepresentation.toString}"
+  }
+
   def save(): Unit                                         = {
     val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
@@ -234,10 +239,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     Option(fileChooser.showSaveDialog(new Stage)).foreach { dest =>
       dest.createNewFile()
       new PrintWriter(dest) {
-        write(
-          "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>\n"
-        )
-        write(model.toRepresentation.toString)
+        write(modelToString(model))
         close()
       }
     }

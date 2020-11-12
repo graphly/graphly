@@ -5,7 +5,6 @@ import java.io.{File, FileInputStream, PrintWriter}
 import io.Implicit._
 import io.XMLSimRepresentation.Implicit._
 import model.sim.{Node, NodeType}
-//import model.sim.Shape.Metadata
 import model.sim.Trace.Image
 import model.{Position, sim}
 import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}

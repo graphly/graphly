@@ -224,32 +224,6 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     update(Some(foreground), None)
   }
 
-  override def onKeyTyped(event: KeyEvent, update: Redraw[D]): Unit       = {
-    mode match {
-      case active: EditingMode.Active[_] => event.code match {
-          // ScalaFX not recognising `delete` on local runtime
-          case KeyCode.Undefined =>
-            active match {
-              case active: EditingMode.SelectActiveNode =>
-                model.nodes --= active.active
-                model.connections.filterInPlace { connection =>
-                  !active.active(connection.source) &&
-                  !active.active(connection.target)
-                }
-              case EditingMode.SelectEdge(edges) => model.connections --= edges
-              case trace: EditingMode.ActiveTrace =>
-                model.traces --= trace.active
-                update(None, Some(background))
-                return
-            }
-            mode = EditingMode.Selecting
-            update(Some(foreground), None)
-          case _ =>
-        }
-      case _ =>
-    }
-  }
-
   def save(): Unit                                         = {
     val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
@@ -287,9 +261,23 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
   }
 
-  def copySelectedNodes(): Unit = {
+  def deleteSelected(update: Redraw[D]): Unit = {
     mode match {
-      case EditingMode.SelectNode(nodes) => {
+      case active: EditingMode.SelectActiveNode =>
+        model.nodes --= active.active
+        model.connections.filterInPlace { connection =>
+          !active.active(connection.source) &&
+            !active.active(connection.target)
+        }
+      case EditingMode.SelectEdge(edges) => model.connections --= edges
+      case trace: EditingMode.ActiveTrace =>
+        model.traces --= trace.active
+        update(None, Some(background))
+        return
+    }
+    mode = EditingMode.Selecting
+    update(Some(foreground), None)
+  }
 
   def copySelectedNodes(update: Redraw[D]): Unit = {
     println(mode)

@@ -77,6 +77,11 @@ class AppMainSceneView(width: Double, height: Double)
         },
         new Menu("Edit")  {
           items = List(
+            new MenuItem("Delete") {
+              onAction = (_: ActionEvent) => controller.deleteSelected(graphContainer.redraw)
+              accelerator = new KeyCodeCombination(KeyCode.Delete)
+            },
+            new SeparatorMenuItem(),
             new MenuItem("Copy") {
               onAction = (_: ActionEvent) => controller.copySelectedNodes(graphContainer.redraw)
               accelerator =

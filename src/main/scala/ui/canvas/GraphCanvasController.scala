@@ -297,14 +297,13 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     val simNodes = mutable.Set(nodes.toArray: _*)
     val simEdges = getEdgesWithBothEndpoints(nodes)
 
-    val modelFromSelected = new sim.Sim(
+    new sim.Sim(
       simNodes,             // nodes
       simEdges,             // connections
       mutable.Set.empty,    // classes
       mutable.Set.empty,    // measures
       mutable.Buffer.empty  // traces
     )
-    modelFromSelected
   }
 
   def copySelectedNodes(update: Redraw[D]): Unit = {

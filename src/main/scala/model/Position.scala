@@ -18,16 +18,20 @@ case class Position(x: Double, y: Double)                              {
   def min(other: Position): Position = Position(x min other.x, y min other.y)
   def max(other: Position): Position = Position(x max other.x, y max other.y)
 
-  def inRectangle(start: Position, finish: Position): Boolean = {
-    val xRect   = x - start.x
-    val yRect   = y - start.y
+  def inRectangle(
+      start: Position,
+      finish: Position,
+      fuzzy: Double = 0
+  ): Boolean                       = {
     val xFinish = finish.x - start.x
     val yFinish = finish.y - start.y
-    xRect.sign == xFinish.sign && yRect.sign == yFinish.sign &&
-    xRect.abs < xFinish.abs && yRect.abs < yFinish.abs
+    val xRect   = (x - start.x) * xFinish.sign
+    val yRect   = (y - start.y) * yFinish.sign
+    (-fuzzy <= xRect && xRect <= xFinish.abs + fuzzy) &&
+    (-fuzzy <= yRect && yRect <= yFinish.abs + fuzzy)
   }
 
-  def rotate(angle: Int): Position                            =
+  def rotate(angle: Int): Position =
     Position(x * math.cos(angle), y * math.sin(angle))
 
   def coords: (Double, Double) = (x, y)

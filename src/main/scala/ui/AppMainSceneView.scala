@@ -13,6 +13,7 @@ import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
 import ui.canvas.SimDrawAction._
 import ui.canvas.{GraphCanvasController, GraphingCanvas, VerticalSettingsMenu}
+import ui.toolbar.VerticalToolbar
 
 class AppMainSceneView(width: Double, height: Double)
     extends Scene(width, height) {
@@ -21,11 +22,16 @@ class AppMainSceneView(width: Double, height: Double)
     new GraphCanvasController[GraphingCanvas.DrawAction](model)
   private val graphContainer = new GraphingCanvas(controller)
   private val rightMenu      = VerticalSettingsMenu(controller)
+  private val toolbar        = new VerticalToolbar
 
   private val statusBar =
     new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}" }
   controller.onSwitchMode +=
     (state => statusBar.text = s"Status: ${state.toolbarStatusMnemonic}")
+  controller.onSwitchMode +=
+    (state => toolbar.controllerUpdatedMode(state))
+  toolbar.itemSelected +=
+    (state => controller.redrawMode(state, graphContainer.redraw))
 
   root = new BorderPane {
     top = new MenuBar {
@@ -81,80 +87,6 @@ class AppMainSceneView(width: Double, height: Double)
               new KeyCodeCombination(KeyCode.M, KeyCombination.AltDown)
           })
         },
-        new Menu("Draw")  {
-          items = List(
-            new MenuItem("Source") {
-              onAction = (_: ActionEvent) =>
-                controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node(Source),
-                  graphContainer.redraw
-                )
-              accelerator = new KeyCodeCombination(
-                KeyCode.N,
-                KeyCombination.ShiftDown,
-                KeyCombination.ControlDown
-              )
-            },
-            new MenuItem("Fork")   {
-              onAction = (_: ActionEvent) =>
-                controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node(Fork),
-                  graphContainer.redraw
-                )
-              accelerator = new KeyCodeCombination(
-                KeyCode.F,
-                KeyCombination.ShiftDown,
-                KeyCombination.ControlDown
-              )
-            },
-            new MenuItem("Join")   {
-              onAction = (_: ActionEvent) =>
-                controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node(Join),
-                  graphContainer.redraw
-                )
-              accelerator = new KeyCodeCombination(
-                KeyCode.J,
-                KeyCombination.ShiftDown,
-                KeyCombination.AltDown
-              )
-            },
-            new MenuItem("Queue")  {
-              onAction = (_: ActionEvent) =>
-                controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node(Queue),
-                  graphContainer.redraw
-                )
-              accelerator = new KeyCodeCombination(
-                KeyCode.Q,
-                KeyCombination.ShiftDown,
-                KeyCombination.AltDown
-              )
-            },
-            new MenuItem("Sink")   {
-              onAction = (_: ActionEvent) =>
-                controller.redrawMode(
-                  GraphCanvasController.EditingMode.Node(Sink),
-                  graphContainer.redraw
-                )
-              accelerator = new KeyCodeCombination(
-                KeyCode.S,
-                KeyCombination.ShiftDown,
-                KeyCombination.AltDown
-              )
-            },
-            new SeparatorMenuItem(),
-            new MenuItem("Edges")  {
-              onAction = (_: ActionEvent) =>
-                controller.redrawMode(
-                  GraphCanvasController.EditingMode.BeginEdge,
-                  graphContainer.redraw
-                )
-              accelerator =
-                new KeyCodeCombination(KeyCode.E, KeyCombination.AltDown)
-            }
-          )
-        },
         new Menu("Trace") {
           items = List(
             new MenuItem("Select") {
@@ -186,5 +118,6 @@ class AppMainSceneView(width: Double, height: Double)
 
     bottom = statusBar
     right = rightMenu
+    left = toolbar
   }
 }

@@ -111,4 +111,76 @@ object JSimXMLWriter extends SimRepresentation[Document] {
     }
   }
 
+  protected def writeStations(
+      doc: Document,
+      simNode: Node,
+      model: Sim
+  ): Unit = {
+    val stations      = model.nodes
+    var elem: Element = null
+
+    for (station <- stations) {
+      elem = doc.createElement(XML_E_STATION)
+      elem.setAttribute(XML_A_STATION_NAME, station.name)
+
+      station.nodeType match {
+        case Source() =>
+//          writeSourceSection(doc, elem, model, stationKey)
+//          writeTunnelSection(doc, elem, model, stationKey)
+//          writeRouterSection(doc, elem, model, stationKey)
+        case Sink() =>
+//          writeSinkSection(doc, elem, model, stationKey)
+        case Terminal() =>
+//          writeTerminalSection(doc, elem, model, stationKey)
+//          writeTunnelSection(doc, elem, model, stationKey)
+//          writeRouterSection(doc, elem, model, stationKey)
+        case Router() =>
+//          writeQueueSection(doc, elem, model, stationKey)
+//          writeTunnelSection(doc, elem, model, stationKey)
+//          writeRouterSection(doc, elem, model, stationKey)
+        case Delay() =>
+//          writeQueueSection(doc, elem, model, stationKey)
+//          writeDelaySection(doc, elem, model, stationKey)
+//          writeRouterSection(doc, elem, model, stationKey)
+        case Server() =>
+//          writeQueueSection(doc, elem, model, stationKey)
+//          writeServerSection(doc, elem, model, stationKey)
+//          writeRouterSection(doc, elem, model, stationKey)
+        case Fork() =>
+//          writeQueueSection(doc, elem, model, stationKey)
+//          writeTunnelSection(doc, elem, model, stationKey)
+//          writeForkSection(doc, elem, model, stationKey)
+        case Join() =>
+//          writeJoinSection(doc, elem, model, stationKey)
+//          writeTunnelSection(doc, elem, model, stationKey)
+//          writeRouterSection(doc, elem, model, stationKey)
+        case Logger() =>
+//          writeQueueSection(doc, elem, model, stationKey)
+//          writeLoggerSection(doc, elem, model, stationKey)
+//          writeRouterSection(doc, elem, model, stationKey)
+        case ClassSwitch() =>
+//          writeQueueSection(doc, elem, model, stationKey)
+//          writeClassSwitchSection(doc, elem, model, stationKey)
+//          writeRouterSection(doc, elem, model, stationKey)
+        case Semaphore() =>
+//          writeSemaphoreSection(doc, elem, model, stationKey)
+//          writeTunnelSection(doc, elem, model, stationKey)
+//          writeRouterSection(doc, elem, model, stationKey)
+        case Scalar() =>
+//          writeJoinSection(doc, elem, model, stationKey)
+//          writeTunnelSection(doc, elem, model, stationKey)
+//          writeForkSection(doc, elem, model, stationKey)
+        case Place() =>
+//          writeStorageSection(doc, elem, model, stationKey)
+//          writeTunnelSection(doc, elem, model, stationKey)
+//          writeLinkageSection(doc, elem, model, stationKey)
+        case Transition() =>
+//          writeEnablingSection(doc, elem, model, stationKey)
+//          writeTimingSection(doc, elem, model, stationKey)
+//          writeFiringSection(doc, elem, model, stationKey)
+      }
+      simNode.appendChild(elem)
+    }
+  }
+
 }

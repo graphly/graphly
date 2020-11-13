@@ -5,7 +5,8 @@ case class UserClass(
     priority: Int,
     referenceSource: Node,
     `type`: UserClass.Type,
-    population: Int
+    population: Int,
+    distribution: Distribution
 )
 
 object UserClass {
@@ -13,3 +14,10 @@ object UserClass {
   case object Open   extends Type
   case object Closed extends Type
 }
+
+sealed trait Distribution
+
+case class Uniform(min: Double, max: Double) extends Distribution
+case class Exponential(lambda: Double) extends Distribution
+case class Pareto(alpha: Double, k: Double) extends Distribution
+case class Poisson(mean: Double) extends Distribution

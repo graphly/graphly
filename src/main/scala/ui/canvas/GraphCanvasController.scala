@@ -4,17 +4,20 @@ import java.io.{File, FileInputStream, PrintWriter}
 
 import io.Implicit._
 import io.XMLSimRepresentation.Implicit._
-import model.sim.Node
+import jdk.internal.org.jline.reader.LineReader
+import model.sim.Trace.Image
+import model.sim.{Connection, Node}
 import model.sim.Shape.Metadata
 import model.sim.Trace.Image
 import model.{Position, sim}
-import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}
+import scalafx.scene.input.{Clipboard, ClipboardContent, KeyCode, KeyEvent, MouseEvent}
 import scalafx.stage.{FileChooser, Stage}
 import ui.Controller
 import ui.Position.Implicit.MouseEventPosition
 import ui.canvas.Draw.Implicit.DrawShape
 import ui.canvas.GraphCanvasController.EditingMode.default
 import ui.canvas.GraphCanvasController.{EditingMode, Redraw}
+import ui.canvas.GraphingCanvas.DrawActions
 import ui.util.Event
 import util.Default
 
@@ -239,30 +242,9 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     update(Some(foreground), None)
   }
 
-  override def onKeyTyped(event: KeyEvent, update: Redraw[D]): Unit       = {
-    mode match {
-      case active: EditingMode.Active[_] => event.code match {
-          // ScalaFX not recognising `delete` on local runtime
-          case KeyCode.Undefined =>
-            active match {
-              case active: EditingMode.SelectActiveNode =>
-                model.nodes --= active.active
-                model.connections.filterInPlace { connection =>
-                  !active.active(connection.source) &&
-                  !active.active(connection.target)
-                }
-              case EditingMode.SelectEdge(edges) => model.connections --= edges
-              case trace: EditingMode.ActiveTrace =>
-                model.traces --= trace.active
-                update(None, Some(background))
-                return
-            }
-            mode = EditingMode.Selecting
-            update(Some(foreground), None)
-          case _ =>
-        }
-      case _ =>
-    }
+  private def modelToString(model: sim.Sim): String = {
+    val header = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>"
+    s"$header\n${model.toRepresentation.toString}"
   }
 
   def save(): Unit                                         = {
@@ -275,10 +257,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     Option(fileChooser.showSaveDialog(new Stage)).foreach { dest =>
       dest.createNewFile()
       new PrintWriter(dest) {
-        write(
-          "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>\n"
-        )
-        write(model.toRepresentation.toString)
+        write(modelToString(model))
         close()
       }
     }
@@ -301,6 +280,77 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
       model.traces += trace
       redrawMode(EditingMode.SelectTrace(trace), update)
     }
+  }
+
+  def deleteSelected(update: Redraw[D]): Unit = {
+    mode match {
+      case active: EditingMode.SelectActiveNode =>
+        model.nodes --= active.active
+        model.connections.filterInPlace { connection =>
+          !active.active(connection.source) &&
+            !active.active(connection.target)
+        }
+      case EditingMode.SelectEdge(edges) => model.connections --= edges
+      case trace: EditingMode.ActiveTrace =>
+        model.traces --= trace.active
+        update(None, Some(background))
+        return
+    }
+    mode = EditingMode.Selecting
+    update(Some(foreground), None)
+  }
+
+  private def putModelToClipboard(model: sim.Sim): Unit = {
+    val content = new ClipboardContent()
+    content.putString(modelToString(model))
+    Clipboard.systemClipboard.content = content
+  }
+
+  private def getEdgesWithBothEndpoints(nodes: Set[Node]): mutable.Set[Connection] = {
+    val out = mutable.Set[Connection]()
+    model.connections.foreach(c => if (nodes.contains(c.source) && nodes.contains(c.target)) out.add(c))
+    out
+  }
+
+  private def modelFromSelectedNodes(nodes: Set[Node]): sim.Sim = {
+    val simNodes = mutable.Set(nodes.toArray: _*)
+    val simEdges = getEdgesWithBothEndpoints(nodes)
+
+    new sim.Sim(
+      simNodes,             // nodes
+      simEdges,             // connections
+      mutable.Set.empty,    // classes
+      mutable.Set.empty,    // measures
+      mutable.Buffer.empty  // traces
+    )
+  }
+
+  def copySelectedNodes(update: Redraw[D]): Unit = {
+    mode match {
+      case EditingMode.SelectNode(nodes) => {
+        putModelToClipboard(modelFromSelectedNodes(nodes))
+      }
+      case _ => println("Finish selecting nodes to copy them")
+    }
+  }
+
+  def cutSelectedNodes(update: Redraw[D]): Unit = {
+    mode match {
+      case EditingMode.SelectNode(nodes) => {
+        putModelToClipboard(modelFromSelectedNodes(nodes))
+        deleteSelected(update)
+      }
+      case _ =>
+    }
+  }
+
+  def pasteSelectedNodes(update: Redraw[D]): Unit = {
+    val content = Clipboard.systemClipboard.content
+    val pastedModel = xml.XML.loadString(content.getString).toSim
+    model.merge(pastedModel)
+    mode = EditingMode.SelectNode(pastedModel.nodes.toSet)
+
+    update(Some(foreground), Some(background))
   }
 
   private def hitShape(hit: Position): Option[sim.Element] =

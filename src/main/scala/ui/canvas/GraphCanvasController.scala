@@ -63,6 +63,14 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     onSwitchMode.dispatch(state)
   }
 
+  private val history = mutable.Stack.empty[sim.Sim]
+
+  def save_history(): Unit = {
+    if (history.isEmpty || !history.top.equals(model)){
+      history.push(model.clone().asInstanceOf[sim.Sim])
+    }
+  }
+
   override def onMousePress(event: MouseEvent, update: Redraw[D]): Unit   = {
     super.onMousePress(event, update)
     val position = event.position.model
@@ -100,6 +108,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   }
 
   override def onMouseRelease(event: MouseEvent, update: Redraw[D]): Unit = {
+    save_history()
     super.onMouseRelease(event, update)
     val position = event.position.model
 
@@ -264,6 +273,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   }
 
   def deleteSelected(update: Redraw[D]): Unit = {
+    save_history()
     mode match {
       case active: EditingMode.SelectActiveNode =>
         model.nodes --= active.active
@@ -316,6 +326,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   }
 
   def cutSelectedNodes(update: Redraw[D]): Unit = {
+    save_history()
     mode match {
       case EditingMode.SelectNode(nodes) => {
         putModelToClipboard(modelFromSelectedNodes(nodes))
@@ -326,12 +337,20 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   }
 
   def pasteSelectedNodes(update: Redraw[D]): Unit = {
+    save_history()
     val content = Clipboard.systemClipboard.content
     val pastedModel = xml.XML.loadString(content.getString).toSim
     model.merge(pastedModel)
     mode = EditingMode.SelectNode(pastedModel.nodes.toSet)
 
     update(Some(foreground), Some(background))
+  }
+
+  def undo(update: Redraw[D]): Unit = {
+    if (history.nonEmpty){
+      model = history.pop()
+      update(Some(foreground), Some(background))
+    }
   }
 
   private def hitShape(hit: Position): Option[sim.Element] =

@@ -95,6 +95,10 @@ class AppMainSceneView(width: Double, height: Double)
               onAction = (_: ActionEvent) => controller.cutSelectedNodes(graphContainer.redraw);
               accelerator = new KeyCodeCombination(KeyCode.X, KeyCombination.ControlDown)
             },
+            new MenuItem("Undo") {
+              onAction = (_: ActionEvent) => controller.undo(graphContainer.redraw);
+              accelerator = new KeyCodeCombination(KeyCode.Z, KeyCombination.ControlDown)
+            },
           )
         },
         new Menu("Trace") {

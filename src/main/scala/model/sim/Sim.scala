@@ -19,6 +19,26 @@ case class Sim(
     traces.addAll(other.traces)
     configuration.addAll(other.configuration)
   }
+
+  override def clone(): AnyRef = {
+    Sim(
+      this.nodes.clone(),
+      this.connections.clone(),
+      this.classes.clone(),
+      this.measures.clone(),
+      this.traces.clone(),
+      this.configuration.clone(),
+    )
+  }
+
+  override def equals(obj: Any): Boolean = {
+    obj match {
+      case sim: Sim =>
+        nodes.equals(sim.nodes) && connections.equals(sim.connections)
+      case _ =>
+        false
+    }
+  }
 }
 
 object Sim {

@@ -8,7 +8,7 @@ import model.sim.Trace.Image
 import model.sim.Node
 import model.sim.Shape.Metadata
 import model.{Position, sim}
-import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}
+import scalafx.scene.input.{KeyCode, KeyEvent, MouseButton, MouseEvent}
 import scalafx.stage.{FileChooser, Stage}
 import ui.Controller
 import ui.Position.Implicit.MouseEventPosition
@@ -146,7 +146,10 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
                 mode = EditingMode.SelectNode(
                   if (nodes contains node) nodes - node else nodes + node
                 )
-              case _ => mode = EditingMode.SelectNode(node)
+              case _ if event.button == MouseButton.Secondary =>
+                mode = EditingMode.FloatingMenu(node)
+              case _ =>
+                mode = EditingMode.SelectNode(node)
             }
           // Clicked on an edge -> update edge selection set and selecting edges.
           case Some(edge: sim.Connection) => select match {
@@ -355,6 +358,16 @@ object GraphCanvasController      {
         if (shapes.isEmpty) Selecting else new SelectNode(shapes)
 
       def apply(shapes: sim.Node*): SelectNode = new SelectNode(shapes.toSet)
+    }
+
+    case class FloatingMenu(override val active: immutable.Set[sim.Node])
+      extends SelectActiveNode
+
+    object FloatingMenu            {
+      def apply(shapes: immutable.Set[sim.Node]): Select =
+        if (shapes.isEmpty) Selecting else new FloatingMenu(shapes)
+
+      def apply(shapes: sim.Node*): FloatingMenu = new FloatingMenu(shapes.toSet)
     }
 
     /* This class is not immutable for efficiency reasons, although this means you have to play nice with it

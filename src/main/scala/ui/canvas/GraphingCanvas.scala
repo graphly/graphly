@@ -22,7 +22,7 @@ class GraphingCanvas(
 
   background = Background(Color.White)
 
-  children = List(traceCanvas, canvas)
+  children = List(traceCanvas, canvas, FloatingPropertiesPanel.Element(controller))
 
   def redraw(
       shapes: Option[DrawActions],

@@ -135,4 +135,13 @@ object XMLConstantNames {
   val NAMESPACES_FEATURE_ID                = "http://xml.org/sax/features/namespaces"
   val EXTERNAL_SCHEMA_LOCATION_PROPERTY_ID =
     "http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation"
+
+  val strategiesClasspathBase        = "jmt.engine.NetStrategies."
+  val psStrategiesSuffix             = "PSStrategies."
+  val queueGetStrategiesSuffix       = "QueueGetStrategies."
+  val queuePutStrategiesSuffix       = "QueuePutStrategies."
+  val serviceStrategiesSuffix        = "ServiceStrategies."
+  val routingStrategiesSuffix        = "RoutingStrategies."
+  val transitionUtilitiesSuffix      = "TransitionUtilities."
+  val distributionContainerClasspath = "jmt.engine.random.DistributionContainer"
 }

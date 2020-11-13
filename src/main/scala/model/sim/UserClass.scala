@@ -5,7 +5,9 @@ case class UserClass(
     priority: Int,
     referenceSource: Node,
     `type`: UserClass.Type,
-    population: Int
+    population: Int,
+    distribution: Any
+//    distribution: Distribution
 )
 
 object UserClass {

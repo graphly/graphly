@@ -18,7 +18,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         <userClass name={userClass.name} priority={
           userClass.priority.toString
         } referenceSource={userClass.referenceSource.name} type={
-          userClass.`type`
+          userClass.`type`.getClass.getSimpleName
         } />
     ).toArray
 

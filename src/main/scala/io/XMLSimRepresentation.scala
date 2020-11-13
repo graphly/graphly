@@ -11,11 +11,23 @@ import scala.language.implicitConversions
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   override def represent(x: Sim): xml.Elem         = {
-    val timestamp: String      = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u")
+    val timestamp: String            = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u")
       .format(ZonedDateTime.now)
+    val userClasses: Array[xml.Elem] = x.classes.map(
+      (userClass: UserClass) =>
+        <userClass name={userClass.name} priority={
+          userClass.priority.toString
+        } referenceSource={userClass.referenceSource.name} type={
+          userClass.`type`
+        } />
+    ).toArray
+
     // TODO: This will almost certainly need it's own function once nodes are fully implemented
     val nodes: Array[xml.Elem] =
-      x.nodes.map((node: Node) => <node name={node.name} ></node>).toArray
+      x.nodes.map((node: Node) => <node name={node.name}>
+        <section className={node.nodeType.getClass.getSimpleName}>
+        </section>
+      </node>).toArray
 
     val nodePositions: Array[xml.Elem] = x.nodes.map(
       (node: Node) =>
@@ -38,7 +50,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       timestamp
     } xsi:noNamespaceSchemaLocation="Archive.xsd">
       <sim disableStatisticStop="false" logDecimalSeparator="." logDelimiter="," logPath="~/JMT/" logReplaceMode="0" maxEvents="-1" maxSamples="1000000" name="TODO" polling="1.0" xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
-        <userClass name="Class1" priority="0" referenceSource="Source 1" type="open"/>
+        {userClasses}
         {nodes}
         <measure alpha="0.01" name="Queue 1_Class1_Number of Customers" nodeType="station" precision="0.03" referenceNode="Queue 1" referenceUserClass="Class1" type="Number of Customers" verbose="false"/>
         {connections}

@@ -99,6 +99,10 @@ class AppMainSceneView(width: Double, height: Double)
               onAction = (_: ActionEvent) => controller.undo(graphContainer.redraw);
               accelerator = new KeyCodeCombination(KeyCode.Z, KeyCombination.ControlDown)
             },
+            new MenuItem("Redo") {
+              onAction = (_: ActionEvent) => controller.redo(graphContainer.redraw);
+              accelerator = new KeyCodeCombination(KeyCode.Z, KeyCombination.ControlDown, KeyCombination.ShiftDown)
+            },
           )
         },
         new Menu("Trace") {

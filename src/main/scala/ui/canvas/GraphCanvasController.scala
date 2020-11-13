@@ -64,8 +64,10 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   }
 
   private val history = mutable.Stack.empty[sim.Sim]
+  private val future = mutable.Stack.empty[sim.Sim]
 
   def save_history(): Unit = {
+    future.popAll()
     if (history.isEmpty || !history.top.equals(model)){
       history.push(model.clone().asInstanceOf[sim.Sim])
     }
@@ -348,7 +350,16 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
 
   def undo(update: Redraw[D]): Unit = {
     if (history.nonEmpty){
+      future.push(model.clone().asInstanceOf[sim.Sim])
       model = history.pop()
+      update(Some(foreground), Some(background))
+    }
+  }
+
+  def redo(update: Redraw[D]): Unit = {
+    if (future.nonEmpty){
+      history.push(model.clone().asInstanceOf[sim.Sim])
+      model = future.pop()
       update(Some(foreground), Some(background))
     }
   }

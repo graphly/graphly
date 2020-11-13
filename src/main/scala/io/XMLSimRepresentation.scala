@@ -180,7 +180,9 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         priority.toString.toInt,
         referenceSource,
         if (classUserClassType.toString.equals("open")) UserClass.Open
-        else UserClass.Closed
+        else UserClass.Closed,
+        -1,
+        Exponential(0.5)
       )
     )
 

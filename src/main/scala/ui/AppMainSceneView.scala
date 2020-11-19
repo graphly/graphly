@@ -12,7 +12,8 @@ import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
 import ui.canvas.SimDrawAction._
-import ui.canvas.{GraphCanvasController, GraphingCanvas, PropertiesPanel}
+import ui.canvas.widgetPanel.WidgetPanel
+import ui.canvas.{GraphCanvasController, GraphingCanvas}
 import ui.toolbar.VerticalToolbar
 
 class AppMainSceneView(width: Double, height: Double)
@@ -21,7 +22,8 @@ class AppMainSceneView(width: Double, height: Double)
   private val controller     =
     new GraphCanvasController[GraphingCanvas.DrawAction](model)
   private val graphContainer = new GraphingCanvas(controller)
-  private val rightMenu      = PropertiesPanel.Element(controller)
+  private val rightMenu      = WidgetPanel.Element(controller)
+  rightMenu.prefWidth <== graphContainer.width / 3
   private val toolbar        = new VerticalToolbar
 
   private val statusBar =

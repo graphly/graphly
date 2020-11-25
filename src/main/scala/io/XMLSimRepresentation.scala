@@ -8,15 +8,14 @@ import java.time.format.DateTimeFormatter
 import io.XMLConstantNames._
 import model.Position
 import model.sim._
-import scalafx.scene.paint.Color
-//import org.w3c.dom.{Element, NodeList}
 import scalafx.scene.paint
+import scalafx.scene.paint.Color
 
 import scala.collection.mutable
 import scala.language.implicitConversions
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
-  override def represent(x: Sim): xml.Elem         = {
+  override def represent(x: Sim): xml.Elem              = {
     val timestamp: String            = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u")
       .format(ZonedDateTime.now)
     val userClasses: Array[xml.Elem] = x.classes.map(
@@ -70,7 +69,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     </archive>
   }
 
-  override def toSim(xmlSim: xml.Elem): Sim        = {
+  override def toSim(xmlSim: xml.Elem): Sim             = {
     val xmlSimNodes = xmlSim.child
     val simulation  = xmlSimNodes(1)
     val jmodel      = xmlSimNodes(3)
@@ -152,7 +151,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       xmlMeasure: xml.Node,
       nodes: collection.Map[String, Node],
       userClasses: collection.Map[String, UserClass]
-  ): Option[Measure]                               =
+  ): Option[Measure]                                    =
     for {
       classAlpha          <- xmlMeasure.attribute("alpha")
       classReferenceNode  <- xmlMeasure.attribute("referenceNode")
@@ -171,7 +170,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
   private def userClassesFromXML(
       root: Element
-  ): mutable.HashMap[String, UserClass]            = {
+  ): mutable.HashMap[String, UserClass]                 = {
     val classes: NodeList = root.getElementsByTagName(XML_E_CLASS)
 
     for (i <- 0 until classes.getLength) {
@@ -214,7 +213,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   private def connectionFromXML(
       xmlConnection: xml.Node,
       nodes: collection.Map[String, Node]
-  ): Option[Connection]                            =
+  ): Option[Connection]                                 =
     for {
       sourceName <- xmlConnection.attribute("source")
       targetName <- xmlConnection.attribute("target")
@@ -228,7 +227,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       // to see if it's the refClass. Then we can get
       // the distribution
       distributions: mutable.Map[String, Distribution]
-  ): Option[(String, Boolean => Position => Node)] =
+  ): Option[(String, Boolean => Position => Node)]      =
     for {
       classNames <- xmlNode.child(1).attribute("className")
       className  <- classNames.headOption
@@ -241,7 +240,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       XMLSimRepresentation
   }
 
-  def parseXML(root: xml.Elem): Sim                = {
+  def parseXML(root: xml.Elem): Sim                     = {
     var model = Sim.empty
 
     // Gets optional parameter simulation seed
@@ -432,7 +431,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       root: xml.Elem,
       nodes: collection.Map[String, Node],
       distributions: mutable.Map[String, Distribution]
-  ): mutable.Map[String, UserClass]                = {
+  ): mutable.Map[String, UserClass]                     = {
     // Initialize classes and refStations data structure
     val unfinishedClasses
         : mutable.Map[String, (Distribution, paint.Color) => UserClass] =
@@ -499,4 +498,176 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
     finishedClasses
   }
+
+  private def makeNodeType(station: xml.Elem): NodeType = {
+    val sections     =
+      station.child.filter(node => node.label.equals(XML_E_STATION_SECTION))
+    val sectionNames = sections.map(section => section.label)
+
+    // Finds station type, basing on section names
+    if (
+      sectionNames(0) == CLASSNAME_SOURCE &&
+      sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
+    )
+      Source(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//      Source(makeSourceSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
+    else if (sectionNames(0) == CLASSNAME_SINK)
+      Sink(makeUnimplementedSection(sections(0)))
+//      Sink(makeSinkSection(sections(0)))
+    else if (
+      sectionNames(0) == CLASSNAME_TERMINAL &&
+      sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
+    )
+      Terminal(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//      Terminal(makeTerminalSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
+    else if (
+      sectionNames(0) == CLASSNAME_QUEUE &&
+      sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
+    )
+      Router(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//    Router(makeQueueSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
+    else if (
+      sectionNames(0) == CLASSNAME_QUEUE &&
+      sectionNames(1) == CLASSNAME_DELAY && sectionNames(2) == CLASSNAME_ROUTER
+    )
+      Delay(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//    Delay(makeQueueSection(sections(0)), makeDelaySection(sections(1)), makeRouterSection(sections(2)))
+    else if (
+      sectionNames(0) == CLASSNAME_QUEUE &&
+      (sectionNames(1) == CLASSNAME_SERVER ||
+      //TODO: PSSERVER seems to be a priority flag
+      sectionNames(1) == CLASSNAME_PSSERVER) &&
+      sectionNames(2) == CLASSNAME_ROUTER
+    )
+      Server(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//    Server(makeQueueSection(sections(0)), makeServerSection(sections(1)), makeRouterSection(sections(2)))
+    else if (
+      sectionNames(0) == CLASSNAME_QUEUE &&
+      sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_FORK
+    )
+      Fork(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//      Fork(makeQueueSection(sections(0)), makeTunnelSection(sections(1)), makeForkSection(sections(2)))
+    else if (
+      sectionNames(0) == CLASSNAME_JOIN &&
+      sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
+    )
+      Join(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//    Join(makeJoinSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
+    else if (
+      sectionNames(0) == CLASSNAME_QUEUE &&
+      sectionNames(1) == CLASSNAME_LOGGER && sectionNames(2) == CLASSNAME_ROUTER
+    )
+      Logger(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//      Logger(makeQueueSection(sections(0)), makeLoggerSection(sections(1)), makeRouterSection(sections(2)))
+    else if (
+      sectionNames(0) == CLASSNAME_QUEUE &&
+      sectionNames(1) == CLASSNAME_CLASSSWITCH &&
+      sectionNames(2) == CLASSNAME_ROUTER
+    )
+      ClassSwitch(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//     ClassSwitch(makeQueueSection(sections(0)), makeClassSwitchSection(sections(1)), makeRouterSection(sections(2)))
+    else if (
+      sectionNames(0) == CLASSNAME_SEMAPHORE &&
+      sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
+    )
+      Semaphore(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//    Semaphore(makeSemaphoreSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
+    else if (
+      sectionNames(0) == CLASSNAME_JOIN &&
+      sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_FORK
+    )
+      Scalar(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//    Scalar(makeJoinSection(sections(0)), makeTunnelSection(sections(1)), makeForkSection(sections(2)))
+    else if (
+      sectionNames(0) == CLASSNAME_STORAGE &&
+      sectionNames(1) == CLASSNAME_TUNNEL &&
+      sectionNames(2) == CLASSNAME_LINKAGE
+    )
+      Place(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//    Place(makeStorageSection(sections(0)), makeTunnelSection(sections(1)), makeLinkageSection(sections(2)))
+    else if (
+      sectionNames(0) == CLASSNAME_ENABLING &&
+      sectionNames(1) == CLASSNAME_TIMING && sectionNames(2) == CLASSNAME_FIRING
+    )
+      Transition(
+        makeUnimplementedSection(sections(0)),
+        makeUnimplementedSection(sections(1)),
+        makeUnimplementedSection(sections(2))
+      )
+//      Transition(makeEnablingSection(sections(0)), makeTimingSection(sections(1)), makeFiringSection(sections(2)))
+
+    Unimplemented(sections.map(section => makeUnimplementedSection(section)))
+  }
+
+  private def makeUnimplementedSection(
+      sectionXml: xml.Node
+  ): UnimplementedSection                               = UnimplementedSection(sectionXml)
+
+  private def makeSourceSection(sectionXml: xml.Node): SourceSection           = ???
+  private def makeTunnelSection(sectionXml: xml.Node): TunnelSection           = ???
+  private def makeRouterSection(sectionXml: xml.Node): RouterSection           = ???
+  private def makeSinkSection(sectionXml: xml.Node): SinkSection               = ???
+  private def makeTerminalSection(sectionXml: xml.Node): TerminalSection       = ???
+  private def makeQueueSection(sectionXml: xml.Node): QueueSection             = ???
+  private def makeDelaySection(sectionXml: xml.Node): DelaySection             = ???
+  private def makeServerSection(sectionXml: xml.Node): ServerSection           = ???
+  private def makeForkSection(sectionXml: xml.Node): ForkSection               = ???
+  private def makeJoinSection(sectionXml: xml.Node): JoinSection               = ???
+  private def makeLoggerSection(sectionXml: xml.Node): LoggerSection           = ???
+  private def makeClassSwitchSection(sectionXml: xml.Node): ClassSwitchSection =
+    ???
+  private def makeSemaphoreSection(sectionXml: xml.Node): SemaphoreSection     = ???
+  private def makeStorageSection(sectionXml: xml.Node): StorageSection         = ???
+  private def makeLinkageSection(sectionXml: xml.Node): LinkageSection         = ???
+  private def makeEnablingSection(sectionXml: xml.Node): EnablingSection       = ???
+  private def makeTimingSection(sectionXml: xml.Node): TimingSection           = ???
+  private def makeFiringSection(sectionXml: xml.Node): FiringSection           = ???
 }

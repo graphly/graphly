@@ -1,12 +1,16 @@
 package model.sim
 
+import scalafx.scene.paint.Color
+import xml.Elem
+
 case class UserClass(
     name: String,
-    priority: Int,
+    priority: Int = 0,
     referenceSource: Node,
     `type`: UserClass.Type,
-    population: Int,
-    distribution: Distribution
+    population: Int = 0,
+    distribution: Distribution,
+    color: Color
 )
 
 object UserClass {

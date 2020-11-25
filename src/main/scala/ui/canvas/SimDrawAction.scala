@@ -6,6 +6,7 @@ import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.image.Image
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.{ArcType, SVGPath}
+import scalafx.scene.text.{Text, TextAlignment}
 import ui.canvas.GraphingCanvas.DrawAction
 import util.Number.Implicit.DoubleExtensions
 
@@ -106,6 +107,20 @@ object SimDrawAction {
         context.translate(-svgPath.translateX(), -svgPath.translateY())
       }
 
+      final private def drawName(context: GraphicsContext, node: sim.Node): Unit = {
+        val textObj = new Text(node.name)
+        textObj.font = context.font
+
+        val (x, y) = node.position.coords
+        val textY = y + 2 * radius
+        val (tw, th) = (textObj.layoutBounds().getWidth, textObj.layoutBounds().getHeight)
+        context.fill = Color.Black
+        context.clearRect(x - tw / 2 - 5, textY - th / 2 - 5, tw + 10, th + 5)
+
+        context.textAlign = TextAlignment.Center
+        context.fillText(node.name, x, textY)
+      }
+
       override def apply(node: sim.Node, highlight: Boolean): DrawAction = {
         context =>
           if (highlight)
@@ -119,6 +134,8 @@ object SimDrawAction {
           icon.translateY = node.y - radius + offset.y
           icon.resize(100, 100)
           icon.fill = Color.Black
+
+          drawName(context, node)
           drawSVG(context, icon)
       }
 

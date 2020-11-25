@@ -27,33 +27,22 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   val onSwitchMode = new Event[EditingMode.State]
 
   private val counters: mutable.Map[Class[_ <: NodeType], Int] = mutable.Map(
-    classOf[sim.BlockingQueue] -> 0,
-    classOf[sim.BlockingRouter] -> 0,
-    classOf[sim.ClassSwitch] -> 0,
-    classOf[sim.Delay] -> 0,
-    classOf[sim.Enabling] -> 0,
-    classOf[sim.Firing] -> 0,
-    classOf[sim.Fork] -> 0,
-    classOf[sim.InputSection] -> 0,
-    classOf[sim.JobSink] -> 0,
-    classOf[sim.Join] -> 0,
-    classOf[sim.Linkage] -> 0,
-    classOf[sim.LogTunnel] -> 0,
-    classOf[sim.OutputSection] -> 0,
-    classOf[sim.PSServer] -> 0,
-    classOf[sim.PipeSection] -> 0,
-    classOf[sim.Queue] -> 0,
-    //classOf[sim.RandomSource] -> 0,
-    classOf[sim.Router] -> 0,
-    classOf[sim.Semaphore] -> 0,
-    classOf[sim.Server] -> 0,
-    classOf[sim.ServiceSection] -> 0,
-    classOf[sim.ServiceTunnel] -> 0,
-    classOf[sim.Storage] -> 0,
+    classOf[sim.Source] -> 0,
+    classOf[sim.Sink] -> 0,
     classOf[sim.Terminal] -> 0,
-    classOf[sim.Timing] -> 0,
-    //TODO: This is should be RandomSource as JMT has no 'Source' node
-    classOf[sim.Source] -> 0
+    classOf[sim.Router] -> 0,
+    classOf[sim.Delay] -> 0,
+    classOf[sim.Server] -> 0,
+    classOf[sim.Fork] -> 0,
+    classOf[sim.Join] -> 0,
+    classOf[sim.Logger] -> 0,
+    classOf[sim.ClassSwitch] -> 0,
+    classOf[sim.Semaphore] -> 0,
+    classOf[sim.Scalar] -> 0,
+    classOf[sim.Place] -> 0,
+    classOf[sim.Transition] -> 0,
+    // Should never hit this case
+    classOf[sim.Unimplemented] -> 0
   )
 
   // What state is the view in - whether we are creating nodes and connections,

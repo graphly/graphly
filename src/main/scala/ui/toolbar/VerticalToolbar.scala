@@ -36,12 +36,12 @@ class VerticalToolbar extends ToolBar {
   private val queueBtn                                         =
     new ToolbarButton("Create Queue Nodes", "assets/icons/queue-32.png") {
       toggleGroup = allButtonsTg
-      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Queue())) }
+      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Server())) }
     }
   private val sinkBtn                                          =
     new ToolbarButton("Create Sink Nodes", "assets/icons/sink-32.png") {
       toggleGroup = allButtonsTg
-      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(JobSink())) }
+      onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Sink())) }
     }
   private val edgesBtn                                         =
     new ToolbarButton("Create Edges", "assets/icons/edge-32.png") {

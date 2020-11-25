@@ -9,15 +9,19 @@ case class Sim(
     measures: mutable.Set[Measure],
     traces: mutable.Buffer[Trace],
     configuration: Sim.Configuration = mutable.HashMap.empty,
-    seed: Long = 23000,
-    useRandomSeed: Boolean = true,
-    maximumDuration: Double = -1,
-    maxSimulatedTime: Double = -1,
-    maxSamples: Int = 1000000,
-    disableStatistic: Boolean = false,
-    maxEvents: Int = -1,
-    pollingInterval: Double = 1,
-    parametricAnalysisEnabled: Boolean = false
+    var seed: Long = 23000,
+    var useRandomSeed: Boolean = true,
+    var maximumDuration: Double = -1,
+    var maxSimulatedTime: Double = -1,
+    var maxSamples: Int = 1000000,
+    var disableStatistic: Boolean = false,
+    var maxEvents: Int = -1,
+    var pollingInterval: Double = 1,
+    var parametricAnalysisEnabled: Boolean = false,
+    var loggingPath: String = "~/JMT",
+    var loggingAutoAppend: String = "0",
+    var loggingDelim: String = ",",
+    var loggingdecimalSeparator: String = "."
 )
 
 object Sim {

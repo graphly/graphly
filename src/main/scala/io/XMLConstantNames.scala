@@ -144,4 +144,43 @@ object XMLConstantNames {
   val routingStrategiesSuffix        = "RoutingStrategies."
   val transitionUtilitiesSuffix      = "TransitionUtilities."
   val distributionContainerClasspath = "jmt.engine.random.DistributionContainer"
+
+//GUI Constants
+  val XML_A_CLASS_COLOR = "color"
+
+  val XML_E_POSITION        = "position"
+  val XML_A_POSITION_X      = "x"
+  val XML_A_POSITION_Y      = "y"
+  val XML_A_POSITION_ROTATE = "rotate"
+  val XML_A_POSITION_ANGLE  = "angle"
+
+  val XML_E_PARAMETRIC           = "parametric"
+  val XML_A_PARAMETRIC_CLASSPATH = "classPath"
+  val XML_A_PARAMETRIC_ENABLED   = "enabled"
+  val XML_E_FIELD                = "field"
+  val XML_A_FIELD_NAME           = "name"
+  val XML_A_FIELD_VALUE          = "value"
+
+  val XML_ARCHIVE_DOCUMENT_XSD  = "Archive.xsd"
+  val XML_ARCHIVE_DOCUMENT_ROOT = "archive"
+
+  val XML_ARCHIVE_A_NAME      = "name"
+  val XML_ARCHIVE_A_TIMESTAMP = "timestamp"
+
+  val XML_E_CONNECTION_SHAPE = "connectionShape"
+
+  val XML_E_ARC = "arc"
+
+  val XML_E_POINT   = "point"
+  val XML_A_POINT_X = "x"
+  val XML_A_POINT_Y = "y"
+
+  val XML_E_SOURCE   = "source"
+  val XML_A_SOURCE_X = "x"
+  val XML_A_SOURCE_Y = "y"
+
+  val XML_E_TARGET   = "target"
+  val XML_A_TARGET_X = "x"
+  val XML_A_TARGET_Y = "y"
+
 }

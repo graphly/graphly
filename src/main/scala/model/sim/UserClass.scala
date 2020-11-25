@@ -21,7 +21,8 @@ object UserClass {
 
 sealed trait Distribution
 
-case class Uniform(min: Double, max: Double) extends Distribution
-case class Exponential(lambda: Double)       extends Distribution
-case class Pareto(alpha: Double, k: Double)  extends Distribution
-case class Poisson(mean: Double)             extends Distribution
+case class Uniform(min: Double, max: Double)    extends Distribution
+case class Exponential(lambda: Double)          extends Distribution
+case class Pareto(alpha: Double, k: Double)     extends Distribution
+case class Poisson(mean: Double)                extends Distribution
+case class UnimplementedDistribution(xml: Elem) extends Distribution

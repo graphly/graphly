@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter
 import io.XMLConstantNames._
 import model.Position
 import model.sim._
+import scalafx.scene.paint.Color
 //import org.w3c.dom.{Element, NodeList}
 import scalafx.scene.paint
 
@@ -240,72 +241,72 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       XMLSimRepresentation
   }
 
-  def parseXML(root: Element): Sim                 = {
+  def parseXML(root: xml.Elem): Sim                = {
     var model = Sim.empty
 
     // Gets optional parameter simulation seed
-    val seed = root.getAttribute(XML_A_ROOT_SEED)
-    if (seed != null && (seed ne "")) {
+    val seed = root.attribute(XML_A_ROOT_SEED)
+    if (seed.isDefined) {
       model.useRandomSeed = false
-      model.seed = seed.toInt
+      model.seed = seed.get.head.toString.toInt
     }
 
     // Gets optional parameter maximum time
-    val maxTime = root.getAttribute(XML_A_ROOT_DURATION)
-    if (maxTime != null && (maxTime ne "")) {
-      model.maximumDuration = maxTime.toDouble
+    val maxTime = root.attribute(XML_A_ROOT_DURATION)
+    if (maxTime.isDefined) {
+      model.maximumDuration = maxTime.get.head.toString.toDouble
     }
 
     // Gets optional parameter maximum simulated time
-    val maxSimulated = root.getAttribute(XML_A_ROOT_SIMULATED)
-    if (maxSimulated != null && (maxSimulated ne "")) {
-      model.maxSimulatedTime = maxSimulated.toDouble
+    val maxSimulated = root.attribute(XML_A_ROOT_SIMULATED)
+    if (maxSimulated.isDefined) {
+      model.maxSimulatedTime = maxSimulated.get.head.toString.toDouble
     }
 
     // Gets optional parameter polling interval
-    val polling = root.getAttribute(XML_A_ROOT_POLLING)
-    if (polling != null && (polling ne "")) {
-      model.pollingInterval = polling.toDouble
+    val polling = root.attribute(XML_A_ROOT_POLLING)
+    if (polling.isDefined) {
+      model.pollingInterval = polling.get.head.toString.toDouble
     }
 
     // Gets optional parameter maximum samples
-    val maxSamples = root.getAttribute(XML_A_ROOT_MAXSAMPLES)
-    if (maxSamples != null && (maxSamples ne "")) {
-      model.maxSamples = maxSamples.toInt
+    val maxSamples = root.attribute(XML_A_ROOT_MAXSAMPLES)
+    if (maxSamples.isDefined) {
+      model.maxSamples = maxSamples.get.head.toString.toInt
     }
 
     // Gets optional parameter disable statistic
-    val disableStatistic = root.getAttribute(XML_A_ROOT_DISABLESTATISTIC)
-    if (disableStatistic != null && (disableStatistic ne "")) {
-      model.disableStatistic = disableStatistic.toBoolean
+    val disableStatistic = root.attribute(XML_A_ROOT_DISABLESTATISTIC)
+    if (disableStatistic.isDefined) {
+      model.disableStatistic = disableStatistic.get.head.toString.toBoolean
     }
 
     // Gets optional parameter maximum events
-    val maxEvents = root.getAttribute(XML_A_ROOT_MAXEVENTS)
-    if (maxEvents != null && (maxEvents ne "")) {
-      model.maxEvents = maxEvents.toInt
+    val maxEvents = root.attribute(XML_A_ROOT_MAXEVENTS)
+    if (maxEvents.isDefined) {
+      model.maxEvents = maxEvents.get.head.toString.toInt
     }
 
     // Gets optional parameters log path, replace policy, and delimiter#
-    val logPath        = root.getAttribute(XML_A_ROOT_LOGPATH)
-    if (logPath != null && (logPath ne "")) {
-      val dir = new File(logPath)
+    val logPath        = root.attribute(XML_A_ROOT_LOGPATH)
+    if (logPath.isDefined) {
+      val dir = new File(logPath.toString)
       if (dir.isDirectory) model.loggingPath = dir.getAbsolutePath
     }
 
-    val logReplaceMode = root.getAttribute(XML_A_ROOT_LOGREPLACE)
-    if (logReplaceMode != null && (logReplaceMode ne "")) {
-      model.loggingAutoAppend = logReplaceMode
+    val logReplaceMode = root.attribute(XML_A_ROOT_LOGREPLACE)
+    if (logReplaceMode.isDefined) {
+      model.loggingAutoAppend = logReplaceMode.get.head.toString
     }
 
-    val logDelimiter = root.getAttribute(XML_A_ROOT_LOGDELIM)
-    if (logDelimiter != null && (logDelimiter ne "")) {
-      model.loggingDelim = logDelimiter
+    val logDelimiter = root.attribute(XML_A_ROOT_LOGDELIM)
+    if (logDelimiter.isDefined) {
+      model.loggingDelim = logDelimiter.get.head.toString
     }
 
-    val logDecimalSeparator = root.getAttribute(XML_A_ROOT_LOGDECIMALSEPARATOR)
-    if (logDecimalSeparator != null && (logDecimalSeparator ne "")) {
-      model.loggingdecimalSeparator = logDecimalSeparator
+    val logDecimalSeparator = root.attribute(XML_A_ROOT_LOGDECIMALSEPARATOR)
+    if (logDecimalSeparator.isDefined) {
+      model.loggingdecimalSeparator = logDecimalSeparator.get.head.toString
     }
 
     parseClasses(root, model)
@@ -428,37 +429,43 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   }
 
   protected def parseClasses(
-      root: Element,
-      nodes: collection.Map[String, Node]
-  ): mutable.HashMap[String, UserClass]            = {
+      root: xml.Elem,
+      nodes: collection.Map[String, Node],
+      distributions: mutable.Map[String, Distribution]
+  ): mutable.Map[String, UserClass]                = {
     // Initialize classes and refStations data structure
     val unfinishedClasses
         : mutable.Map[String, (Distribution, paint.Color) => UserClass] =
       mutable.HashMap.empty
 
-    val nodeclasses = root.getElementsByTagName(XML_E_CLASS)
+    val finishedClasses: mutable.Map[String, UserClass] = mutable.HashMap.empty
+
+    val nodeclasses = root.find(node => node.label.equals(XML_E_CLASS)).get
 
     // Now scans all elements
-    for (i <- 0 until nodeclasses.getLength) {
-      val currclass  = nodeclasses.item(i).asInstanceOf[Element]
-      val name       = currclass.getAttribute(XML_A_CLASS_NAME)
+    for (node <- nodeclasses) {
+      val currclass  = node.asInstanceOf[xml.Elem]
+      val name       = currclass.attribute(XML_A_CLASS_NAME).get.head.toString
       val `type`     =
-        if (currclass.getAttribute(XML_A_CLASS_TYPE) == "open") UserClass.Open
+        if (
+          currclass.attribute(XML_A_CLASS_TYPE).get.head.toString.equals("open")
+        ) UserClass.Open
         else UserClass.Closed
       var priority   = 0
       var population = 0
 
       // As these elements are not mandatory, sets them by default, then tries to parses them
-      var tmp = currclass.getAttribute(XML_A_CLASS_CUSTOMERS)
-      if (tmp != null && (tmp ne "")) { population = tmp.toInt }
-      tmp = currclass.getAttribute(XML_A_CLASS_PRIORITY)
-      if (tmp != null && (tmp ne "")) { priority = tmp.toInt }
+      var tmp = currclass.attribute(XML_A_CLASS_CUSTOMERS)
+      if (tmp.isDefined) { population = tmp.get.head.toString.toInt }
+      tmp = currclass.attribute(XML_A_CLASS_PRIORITY)
+      if (tmp.isDefined) { priority = tmp.get.head.toString.toInt }
 
       // Now adds user class. Note that distribution will be set later.
       val userClass = UserClass(
         name,
         priority,
-        referenceSource = nodes(currclass.getAttribute(XML_A_CLASS_REFSOURCE)),
+        referenceSource =
+          nodes(currclass.attribute(XML_A_CLASS_REFSOURCE).get.head.toString),
         `type`,
         population,
         _: Distribution,
@@ -468,7 +475,28 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       unfinishedClasses.put(name, userClass)
     }
 
-    val jmodel = root.getElementsByTagName("jmodel").item(0)
-    jmodel.getChildNodes.
+    val jmodel = root.find(node => node.label.equals("jmodel")).get
+    jmodel.child.filter(node => node.label.equals(XML_E_CLASS))
+      .foreach(classData => {
+        val colorString: String = classData.attribute(XML_A_CLASS_COLOR).get
+          .head.toString.stripPrefix("#")
+
+        //TODO: Scale by 1/255 ??
+        val r     = Integer.parseInt(colorString.substring(0, 2), 16)
+        val g     = Integer.parseInt(colorString.substring(2, 4), 16)
+        val b     = Integer.parseInt(colorString.substring(4, 6), 16)
+        val color = Color.color(r, g, b)
+
+        val classToComplete =
+          classData.attribute(XML_A_CLASS_NAME).get.head.toString
+        val finishedClass   = unfinishedClasses(classToComplete)(
+          distributions(classToComplete),
+          color
+        )
+
+        finishedClasses.put(classToComplete, finishedClass)
+      })
+
+    finishedClasses
   }
 }

@@ -333,7 +333,10 @@ object GraphCanvasController      {
     }
 
     case class Node(nodeType: NodeType)    extends Entry {
-      override def toolbarStatusMnemonic = "Create [Node]"
+      var typeName = nodeType.getClass.getSimpleName
+      if (typeName.equals("Server")) typeName = "Queue"
+
+      override def toolbarStatusMnemonic = s"Create [${typeName} Node]"
     }
 
     sealed trait Select                    extends State

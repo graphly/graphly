@@ -9,8 +9,8 @@ case class Sim(
     measures: mutable.Set[Measure],
     traces: mutable.Buffer[Trace],
     configuration: Sim.Configuration = mutable.HashMap.empty
-) {
-  def merge(other: Sim): Unit = {
+)          {
+  def +=(other: Sim): Unit = {
     // Add everything from the other sim to this new one. Might involve re-working UUIDs and shit like that.
     nodes.addAll(other.nodes)
     connections.addAll(other.connections)
@@ -27,7 +27,7 @@ case class Sim(
       this.classes.clone(),
       this.measures.clone(),
       this.traces.clone(),
-      this.configuration.clone(),
+      this.configuration.clone()
     )
   }
 
@@ -35,8 +35,7 @@ case class Sim(
     obj match {
       case sim: Sim =>
         nodes.equals(sim.nodes) && connections.equals(sim.connections)
-      case _ =>
-        false
+      case _ => false
     }
   }
 }
@@ -46,8 +45,8 @@ object Sim {
 
   def empty: Sim = {
     Sim(
-      mutable.HashSet.empty,
-      mutable.HashSet.empty,
+      mutable.Set.empty,
+      mutable.Set.empty,
       mutable.HashSet.empty,
       mutable.HashSet.empty,
       mutable.ArrayBuffer.empty,

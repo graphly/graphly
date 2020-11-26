@@ -4,7 +4,6 @@ import java.io.{File, FileInputStream, PrintWriter}
 
 import io.Implicit._
 import io.XMLSimRepresentation.Implicit._
-import jdk.internal.org.jline.reader.LineReader
 import model.sim.Trace.Image
 import model.sim.{Connection, Node}
 import model.sim.Shape.Metadata

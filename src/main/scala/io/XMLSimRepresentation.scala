@@ -11,7 +11,7 @@ import scala.language.implicitConversions
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   def representNode(node: Node): xml.Elem = {
-    val sections: Array[xml.Elem] = node.nodeType match {
+    val sections: Array[xml.Node] = node.nodeType match {
       case Source(source, tunnel, router) => Array(
         source.raw,
         tunnel.raw,

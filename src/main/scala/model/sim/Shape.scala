@@ -182,7 +182,7 @@ case class LinkageSection()                    extends TypeSection
 case class EnablingSection()                   extends TypeSection
 case class TimingSection()                     extends TypeSection
 case class FiringSection()                     extends TypeSection
-case class UnimplementedSection(raw: xml.Elem) extends TypeSection
+case class UnimplementedSection(raw: xml.Node) extends TypeSection
 
 case class Connection(source: Node, target: Node) extends Element
 

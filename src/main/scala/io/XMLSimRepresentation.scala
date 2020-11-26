@@ -12,7 +12,7 @@ import scala.language.implicitConversions
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   override def represent(x: Sim): xml.Elem                       = {
-    val timestamp: String      = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u")
+    val timestamp: String      = DateTimeFormatter.ofPattern("E LLL d H:m:s zz u")
       .format(ZonedDateTime.now)
     // TODO: This will almost certainly need it's own function once nodes are fully implemented
     val nodes: Array[xml.Elem] =

@@ -3,6 +3,7 @@ package model.sim
 import java.io.{ByteArrayInputStream, InputStream}
 import java.util.UUID
 
+import javax.imageio.ImageIO
 import model.{Position, Positioned}
 
 //TODO: This doesn't seem like it's needed anymore
@@ -189,11 +190,11 @@ case class Connection(source: Node, target: Node) extends Element
 case class Trace(
     var image: Trace.Image,
     var position: Position,
-    var height: Int,
-    var width: Int
+    var width: Double,
+    var height: Double
 ) extends Shape
     with Positioned {
-  def end: Position = position + Position(height, width)
+  def end: Position = position + Position(width, height)
   val uid: UUID     = UUID.randomUUID()
 
   override def equals(obj: Any): Boolean =
@@ -209,11 +210,16 @@ object Trace        {
      A better buffer system may be warranted later, but we can keep the interface consistent and provide a stream
      as necessary */
   class Image(raw: InputStream) {
-    private val bytes       = raw.readAllBytes()
+    private val bytes = raw.readAllBytes()
+    private val image = ImageIO.read(stream)
+
     def stream: InputStream = { new ByteArrayInputStream(bytes) }
 
     override def equals(obj: Any): Boolean =
       obj match { case t: Image => eq(t); case _ => false }
+
+    def height: Int = image.getHeight
+    def width: Int  = image.getWidth
   }
 
   object Image                  {

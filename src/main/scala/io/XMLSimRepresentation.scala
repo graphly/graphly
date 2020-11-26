@@ -15,7 +15,7 @@ import scala.collection.mutable
 import scala.language.implicitConversions
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
-  override def represent(x: Sim): xml.Elem              = {
+  override def represent(x: Sim): xml.Elem  = {
     val timestamp: String            = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u")
       .format(ZonedDateTime.now)
     val userClasses: Array[xml.Elem] = x.classes.map(
@@ -69,89 +69,48 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     </archive>
   }
 
-  override def toSim(xmlSim: xml.Elem): Sim             = {
+  override def toSim(xmlSim: xml.Elem): Sim = {
     val xmlSimNodes = xmlSim.child
     val simulation  = xmlSimNodes(1)
-    val jmodel      = xmlSimNodes(3)
     //TODO: Handle simulation results
     val results     = xmlSimNodes(5)
 
-    val positionlessNodes: mutable.Map[String, Boolean => Position => Node] =
-      mutable.HashMap.empty
-
     val distributions: mutable.Map[String, Distribution] = mutable.HashMap.empty
-
-    val nodes: mutable.HashMap[String, Node]            = mutable.HashMap.empty
-    val connections: mutable.HashSet[Connection]        = mutable.HashSet.empty
-    val userClasses: mutable.HashMap[String, UserClass] = mutable.HashMap.empty
-    val measures: mutable.HashSet[Measure]              = mutable.HashSet.empty
-
-    val simulationAssets = simulation.head.child
+    val measures: mutable.HashSet[Measure]               = mutable.HashSet.empty
+    val simulationAssets                                 = simulation.head.child
 
     // Nodes must be made first
-    simulationAssets.filter((node: xml.Node) => node.label == "node")
-      .foreach((nodeXML: xml.Node) => {
-        val (nodeName, node) = nodeFromXML(nodeXML, distributions).get
-        positionlessNodes.put(nodeName, node)
-      })
+    val nodes = parseNodes(xmlSim, distributions)
 
-    jmodel.child
-      .filter((XMLChildren: xml.Node) => XMLChildren.label.equals("station"))
-      .foreach(
-        (stationXML: xml.Node) =>
-          for {
-            stationName <- stationXML.attribute("name")
-            position    <- stationXML.child(1).headOption
-            rotated     <- position.attribute("rotate")
-            x           <- position.attribute("x")
-            y           <- position.attribute("y")
-          } yield nodes.put(
-            stationName.toString,
-            positionlessNodes(stationName.toString)(rotated.toString.toBoolean)(
-              Position(x.toString.toDouble, y.toString.toDouble)
-            )
-          )
-      )
+    val userClasses: mutable.Map[String, UserClass] =
+      parseClasses(xmlSim, nodes, distributions)
+    val connections: mutable.Set[Connection]        =
+      parseConnections(simulationAssets, nodes)
 
-    simulationAssets.foreach((simulationAsset: xml.Node) => {
-      simulationAsset.label match {
-        case "node" => () // Done already
-        case "connection" =>
-          connections.add(connectionFromXML(simulationAsset, nodes).get)
-        case "userClass" =>
-          val (userClassName, userClass) =
-            userClassFromXML(simulationAsset, nodes).get
-          userClasses.put(userClassName, userClass)
-        case "measure" =>
-          measures.add(measureFromXML(simulationAsset, nodes, userClasses).get)
-        case unimplementedName =>
-          if (unimplementedName != "#PCDATA") {
-            println(
-              "Found unimplemented simulation asset: " + unimplementedName
-            )
-            println(simulationAsset)
-          }
-      }
-    })
+    val unconfiguredSim = Sim(
+      mutable.HashSet.from(nodes.values),
+      connections,
+      mutable.HashSet.from(userClasses.values),
+      mutable.Set.empty,
+      mutable.ArrayBuffer.empty
+    )
+
+    val sim = parseSim(xmlSim, unconfiguredSim)
 
     nodes.values.foreach(println)
     connections.foreach(println)
     measures.foreach(println)
     userClasses.values.foreach(println)
-    Sim(
-      mutable.HashSet.from(nodes.values),
-      connections,
-      mutable.HashSet.from(userClasses.values),
-      measures,
-      mutable.ArrayBuffer.empty
-    )
+
+    sim
   }
 
+  //TODO: Figure this out
   private def measureFromXML(
       xmlMeasure: xml.Node,
       nodes: collection.Map[String, Node],
       userClasses: collection.Map[String, UserClass]
-  ): Option[Measure]                                    =
+  ): Option[Measure]                        =
     for {
       classAlpha          <- xmlMeasure.attribute("alpha")
       classReferenceNode  <- xmlMeasure.attribute("referenceNode")
@@ -168,80 +127,86 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       classVerbose.toString.toBoolean
     )
 
-  private def userClassesFromXML(
-      root: Element
-  ): mutable.HashMap[String, UserClass]                 = {
-    val classes: NodeList = root.getElementsByTagName(XML_E_CLASS)
-
-    for (i <- 0 until classes.getLength) {
-      val userClass: Element = classes.item(i).asInstanceOf[Element]
-
-      val name: String = userClass.getAttribute(XML_A_CLASS_NAME)
-
-      val str_color: String =
-        userClass.getAttribute(XML_A_CLASS_COLOR).stripPrefix("#")
-
-      val color = new Color(Integer.parseInt(str_color, 16), true)
-
-    }
-    ???
-  }
-//  private def userClassFromXML(
-//      xmlUserClass: xml.Node,
-//      nodes: collection.Map[String, Node]
-//  ): Option[(String, UserClass)]                   =
-//    for {
-//      className            <- xmlUserClass.attribute("name")
-//      classPriority        <- xmlUserClass.attribute("priority")
-//      classReferenceSource <- xmlUserClass.attribute("referenceSource")
-//      classUserClassType   <- xmlUserClass.attribute("type")
-//      priority             <- classPriority.headOption
-//      referenceSource      <- nodes.get(classReferenceSource.toString)
-//    } yield (
-//      className.toString,
-//      UserClass(
-//        className.toString,
-//        priority.toString.toInt,
-//        referenceSource,
-//        if (classUserClassType.toString.equals("open")) UserClass.Open
-//        else UserClass.Closed,
-//        -1,
-//        Exponential(0.5)
-//      )
-//    )
+  private def parseConnections(
+      simulationAssets: Seq[xml.Node],
+      nodes: mutable.Map[String, Node]
+  ): mutable.Set[Connection]                =
+    simulationAssets.filter(asset => asset.label.equals(XML_E_CONNECTION))
+      .flatMap(connectionAsset => connectionFromXML(connectionAsset, nodes))
+      .to(mutable.Set)
 
   private def connectionFromXML(
       xmlConnection: xml.Node,
       nodes: collection.Map[String, Node]
-  ): Option[Connection]                                 =
+  ): Option[Connection]        =
     for {
-      sourceName <- xmlConnection.attribute("source")
-      targetName <- xmlConnection.attribute("target")
+      sourceName <- xmlConnection.attribute(XML_E_SOURCE)
+      targetName <- xmlConnection.attribute(XML_E_TARGET)
       sourceNode <- nodes.get(sourceName.toString)
       targetNode <- nodes.get(targetName.toString)
     } yield Connection(sourceNode, targetNode)
 
+  private def parseNodes(
+      xmlSimNodes: xml.Elem,
+      distributions: mutable.Map[String, Distribution]
+  ): mutable.Map[String, Node] = {
+
+    val simulation                      = xmlSimNodes(1)
+    val jmodel                          = xmlSimNodes(3)
+    val simulationAssets: Seq[xml.Node] = simulation.head.child
+
+    val positionlessNodes: mutable.Map[String, (Position, Boolean) => Node] =
+      mutable.HashMap.empty
+
+    simulationAssets
+      .filter((node: xml.Node) => node.label.equals(XML_E_STATION))
+      .foreach((nodeXML: xml.Node) => {
+        val (nodeName, node) = nodeFromXML(nodeXML, distributions).get
+        positionlessNodes.put(nodeName, node)
+      })
+
+    // Finish the nodes
+    val nodes: mutable.HashMap[String, Node] = mutable.HashMap.empty
+
+    jmodel.child.filter(
+      (XMLChildren: xml.Node) => XMLChildren.label.equals(NODETYPE_STATION)
+    ).foreach(
+      (stationXML: xml.Node) =>
+        for {
+          stationName <- stationXML.attribute(XML_A_STATION_NAME)
+          position    <- stationXML.child(1).headOption
+          rotated     <- position.attribute(XML_A_POSITION_ROTATE)
+          x           <- position.attribute(XML_A_POSITION_X)
+          y           <- position.attribute(XML_A_POSITION_Y)
+        } yield nodes.put(
+          stationName.toString,
+          positionlessNodes(stationName.toString)(
+            Position(x.toString.toDouble, y.toString.toDouble),
+            rotated.toString.toBoolean
+          )
+        )
+    )
+
+    nodes
+  }
+
   private def nodeFromXML(
       xmlNode: xml.Node,
+      // TODO
       // If it's a source then we check the userclasses
       // to see if it's the refClass. Then we can get
       // the distribution
       distributions: mutable.Map[String, Distribution]
-  ): Option[(String, Boolean => Position => Node)]      =
+  ): Option[(String, (Position, Boolean) => Node)] =
     for {
-      classNames <- xmlNode.child(1).attribute("className")
-      className  <- classNames.headOption
-      names      <- xmlNode.attribute("name")
-      name       <- names.headOption
-    } yield { ??? }
+      names <- xmlNode.attribute(XML_A_STATION_NAME)
+      name  <- names.headOption
+    } yield (
+      name.toString,
+      Node(name.toString, _: Position, makeNodeType(xmlNode), _: Boolean)
+    )
 
-  object Implicit {
-    implicit val xmlSimRepresentation: SimRepresentation[xml.Elem] =
-      XMLSimRepresentation
-  }
-
-  def parseXML(root: xml.Elem): Sim                     = {
-    var model = Sim.empty
+  def parseSim(root: xml.Elem, model: Sim): Sim    = {
 
     // Gets optional parameter simulation seed
     val seed = root.attribute(XML_A_ROOT_SEED)
@@ -308,123 +273,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       model.loggingdecimalSeparator = logDecimalSeparator.get.head.toString
     }
 
-    parseClasses(root, model)
-    empiricalRouting = new HashMap[Array[AnyRef], Map[String, Double]]
-    empiricalLDRouting = new HashMap[Array[AnyRef], Map[String, Double]]
-    wrrRouting = new HashMap[Array[AnyRef], Map[String, Integer]]
-    empiricalFork = new HashMap[Array[AnyRef], Map[String, OutPath]]
-    combFork = new HashMap[Array[AnyRef], Map[String, Double]]
-    enablingConditionMap = new HashMap[Array[AnyRef], Integer]
-    inhibitingConditionMap = new HashMap[Array[AnyRef], Integer]
-    firingOutcomeMap = new HashMap[Array[AnyRef], Integer]
-    parseStations(root, model)
-    parseConnections(root, model)
-    parseBlockingRegions(root, model)
-    parseMeasures(root, model)
-    parsePreloading(root, model)
-    // Set reference station for each class
-    var keys = refStations.keySet.toArray
-    for (key <- keys) {
-      val name = refStations.get(key)
-      if (
-        STATION_TYPE_FORK == name || STATION_TYPE_CLASSSWITCH == name ||
-        STATION_TYPE_SCALER == name || STATION_TYPE_TRANSITION == name
-      ) model.setClassRefStation(key, name)
-      else model.setClassRefStation(key, stations.get(name))
-    }
-    // Sets correct station key into every empiricalRouting element
-    // Now each key is an Object[] where (0) is station key and (1) class key
-    keys = empiricalRouting.keySet.toArray
-    for (key <- keys) {
-      val dualkey = key.asInstanceOf[Array[AnyRef]]
-      val rs      = model.getRoutingStrategy(dualkey(0), dualkey(1))
-        .asInstanceOf[RoutingStrategy]
-      val routing = rs.getValues
-      val values  = empiricalRouting.get(key)
-      val names   = values.keySet.toArray
-      for (name <- names) { routing.put(stations.get(name), values.get(name)) }
-    }
-    keys = empiricalLDRouting.keySet.toArray
-    for (key <- keys) {
-      val triplekey = key.asInstanceOf[Array[AnyRef]]
-      val ldr       = model.getRoutingStrategy(triplekey(0), triplekey(1))
-        .asInstanceOf[LoadDependentRouting]
-      val values    = empiricalLDRouting.get(key)
-      val names     = values.keySet.toArray
-      for (name <- names) {
-        ldr.addEmpiricalEntry(
-          triplekey(2).asInstanceOf[Integer],
-          stations.get(name),
-          values.get(name)
-        )
-      }
-    }
-    keys = wrrRouting.keySet.toArray
-    for (key <- keys) {
-      val dualkey = key.asInstanceOf[Array[AnyRef]]
-      val rs      = model.getRoutingStrategy(dualkey(0), dualkey(1))
-        .asInstanceOf[WeightedRoundRobinRouting]
-      val routing = rs.getWeights
-      val values  = wrrRouting.get(key)
-      val names   = values.keySet.toArray
-      for (name <- names) { routing.put(stations.get(name), values.get(name)) }
-    }
-    keys = empiricalFork.keySet.toArray
-    for (key <- keys) {
-      val dualkey  = key.asInstanceOf[Array[AnyRef]]
-      val fs       =
-        model.getForkStrategy(dualkey(0), dualkey(1)).asInstanceOf[ForkStrategy]
-      val outPaths = fs.getOutDetails.asInstanceOf[Map[AnyRef, OutPath]]
-      val values   = empiricalFork.get(key)
-      val names    = values.keySet.toArray
-      for (name <- names) { outPaths.put(stations.get(name), values.get(name)) }
-    }
-    keys = combFork.keySet.toArray
-    for (key <- keys) {
-      val dualkey = key.asInstanceOf[Array[AnyRef]]
-      val fs      =
-        model.getForkStrategy(dualkey(0), dualkey(1)).asInstanceOf[ForkStrategy]
-      val fork    = fs.getOutDetails.asInstanceOf[Map[AnyRef, Double]]
-      val values  = combFork.get(key)
-      val names   = values.keySet.toArray
-      for (name <- names) { fork.put(name, values.get(name)) }
-    }
-    keys = enablingConditionMap.keySet.toArray
-    for (key <- keys) {
-      val quadkey = key.asInstanceOf[Array[AnyRef]]
-      val value   = enablingConditionMap.get(key)
-      model.setEnablingCondition(
-        quadkey(0),
-        quadkey(1).asInstanceOf[Integer].intValue,
-        stations.get(quadkey(2).asInstanceOf[String]),
-        quadkey(3),
-        value
-      )
-    }
-    keys = inhibitingConditionMap.keySet.toArray
-    for (key <- keys) {
-      val quadkey = key.asInstanceOf[Array[AnyRef]]
-      val value   = inhibitingConditionMap.get(key)
-      model.setInhibitingCondition(
-        quadkey(0),
-        quadkey(1).asInstanceOf[Integer].intValue,
-        stations.get(quadkey(2).asInstanceOf[String]),
-        quadkey(3),
-        value
-      )
-    }
-    keys = firingOutcomeMap.keySet.toArray
-    for (key <- keys) {
-      val quadkey = key.asInstanceOf[Array[AnyRef]]
-      val value   = firingOutcomeMap.get(key)
-      model.setFiringOutcome(
-        quadkey(0),
-        quadkey(1).asInstanceOf[Integer].intValue,
-        stations.get(quadkey(2).asInstanceOf[String]),
-        quadkey(3),
-        value
-      )
-    }
+    model
   }
 
   protected def parseClasses(
@@ -499,22 +348,24 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     finishedClasses
   }
 
-  private def makeNodeType(station: xml.Elem): NodeType = {
-    val sections     =
+  private def makeNodeType(station: xml.Node): NodeType = {
+    val sections: Seq[xml.Node] =
       station.child.filter(node => node.label.equals(XML_E_STATION_SECTION))
-    val sectionNames = sections.map(section => section.label)
+    val sectionNames            = sections.map(section => section.label)
 
     // Finds station type, basing on section names
     if (
       sectionNames(0) == CLASSNAME_SOURCE &&
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
-    )
+    ) {
+      //TODO: Set distributions here
       Source(
         makeUnimplementedSection(sections(0)),
         makeUnimplementedSection(sections(1)),
         makeUnimplementedSection(sections(2))
       )
-//      Source(makeSourceSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
+    }
+    //      Source(makeSourceSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
     else if (sectionNames(0) == CLASSNAME_SINK)
       Sink(makeUnimplementedSection(sections(0)))
 //      Sink(makeSinkSection(sections(0)))
@@ -670,4 +521,9 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   private def makeEnablingSection(sectionXml: xml.Node): EnablingSection       = ???
   private def makeTimingSection(sectionXml: xml.Node): TimingSection           = ???
   private def makeFiringSection(sectionXml: xml.Node): FiringSection           = ???
+
+  object Implicit {
+    implicit val xmlSimRepresentation: SimRepresentation[xml.Elem] =
+      XMLSimRepresentation
+  }
 }

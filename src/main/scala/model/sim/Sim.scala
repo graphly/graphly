@@ -20,7 +20,7 @@ case class Sim(
     var loggingPath: String = "~/JMT",
     var loggingAutoAppend: String = "0",
     var loggingDelim: String = ",",
-    var loggingdecimalSeparator: String = "."
+    var loggingDecimalSeparator: String = "."
 
 ) {
   def merge(other: Sim): Unit = {

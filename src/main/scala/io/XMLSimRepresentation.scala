@@ -74,28 +74,26 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     val nodePositions: Array[xml.Elem] = x.nodes.map(
       (node: Node) =>
         <station name={node.name}>
-          <position rotate="false" x={node.position.x.toString} y={
-          node.position.y.toString
-        }/>
+          <position rotate="false" x={node.position.x.toString} y={node.position.y.toString}/>
         </station>
     ).toArray
 
     val connections: Array[xml.Elem] = x.connections.map(
       (connection: Connection) =>
-        <connection source={connection.source.toString} target={
-          connection.target.toString
-        }/>
+          <connection source={connection.source.toString} target={connection.target.toString}/>
     ).toArray
 
     // TODO: This is a temp hack :))
-    <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name={
-      filename
-    } timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">
-      <sim disableStatisticStop="false" logDecimalSeparator="." logDelimiter="," logPath="~/JMT/" logReplaceMode="0" maxEvents="-1" maxSamples="1000000" name="TODO" polling="1.0" xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
-        {userClasses}
-        {nodes}
-        <measure alpha="0.01" name="Queue 1_Class1_Number of Customers" nodeType="station" precision="0.03" referenceNode="Queue 1" referenceUserClass="Class1" type="Number of Customers" verbose="false"/>
-        {connections}
+
+    //TODO: Scale by 1/255 ??
+//    val colorr = x.classes.head.color
+
+//    val color = "#%02X%02X%02X%02X".format(colorr.red, colorr.green, colorr.blue, (colorr.opacity * 255).toInt);
+//    println(color)
+
+    <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name={filename} timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">
+      <sim disableStatisticStop={x.disableStatistic.toString} logDecimalSeparator={x.loggingDecimalSeparator} logDelimiter={x.loggingDelim} logPath={x.loggingPath} logReplaceMode={x.loggingAutoAppend} maxEvents={x.maxEvents.toString} maxSamples={x.maxSamples.toString} name={filename} polling={x.pollingInterval.toString} xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
+        {userClasses}{nodes}<measure alpha="0.01" name="Queue 1_Class1_Number of Customers" nodeType="station" precision="0.03" referenceNode="Queue 1" referenceUserClass="Class1" type="Number of Customers" verbose="false"/>{connections}
       </sim>
       <jmodel xsi:noNamespaceSchemaLocation="JModelGUI.xsd">
         <userClass color="#FF0000FF" name="Class1"/>
@@ -315,7 +313,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
     val logDecimalSeparator = root.attribute(XML_A_ROOT_LOGDECIMALSEPARATOR)
     if (logDecimalSeparator.isDefined) {
-      model.loggingdecimalSeparator = logDecimalSeparator.get.head.toString
+      model.loggingDecimalSeparator = logDecimalSeparator.get.head.toString
     }
 
     model
@@ -374,11 +372,12 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         val colorString: String = classData.attribute(XML_A_CLASS_COLOR).get
           .head.toString.stripPrefix("#")
 
-        val color = Color.web(colorString)
+        val alpha = Integer.parseInt(colorString.substring(6, 8), 16)
+        val color = Color.web(colorString, alpha / 255)
 
         val classToComplete =
           classData.attribute(XML_A_CLASS_NAME).get.head.toString
-        val finishedClass   = unfinishedClasses(classToComplete)(
+        val finishedClass = unfinishedClasses(classToComplete)(
           distributions(classToComplete),
           color
         )

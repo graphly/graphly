@@ -90,8 +90,8 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
                   position
                     .inRectangle(trace.`end` - Position(50, 50), trace.`end`)
                 ) {
-                  mode =
-                    EditingMode.ResizeTrace(selectedTraces, position, trace)
+                  mode = EditingMode
+                    .ResizeTrace(selectedTraces, position, trace, position)
                 } else {
                   val newSelectionSet =
                     if (event.isShiftDown)
@@ -125,9 +125,16 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
         traceMode match {
           // Stopped dragging traces. Leave them selected.
           case EditingMode.DragTrace(traces, _, origin) =>
-            timeline(history.Move(traces, origin, position), model)
+            timeline += history.Move(traces, position - origin)
             mode = EditingMode.SelectTrace(traces)
-          case EditingMode.ResizeTrace(traces, _, _) =>
+          case EditingMode.ResizeTrace(traces, position, base, origin) =>
+            val Position(x, y) = position - origin
+            timeline += history.ResizeTrace(
+              traces,
+              1 + (x / base.width),
+              1 + (y / base.height)
+            )
+            mode = EditingMode.SelectTrace(traces)
           // Anything else then deselect all traces.
           case _ => mode = EditingMode.SelectingTrace
         }
@@ -153,8 +160,8 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
         }
 
       // Finished dragging nodes.
-      case EditingMode.DragNode(nodes, _) =>
-        timeline(history.Move(nodes, origin, position), model)
+      case EditingMode.DragNode(nodes, _, origin) =>
+        timeline += history.Move(nodes, position - origin)
         mode = EditingMode.SelectNode(nodes)
 
       // Finished box selecting.
@@ -241,12 +248,12 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
               trace.position += event.position.model - from
             }
             mode = EditingMode.DragTrace(traces, position, origin)
-          case EditingMode.ResizeTrace(traces, start, base) =>
+          case EditingMode.ResizeTrace(traces, start, base, origin) =>
             traces.foreach { trace =>
               trace.width *= 1 - (start.x - position.x) / base.width
               trace.height *= 1 - (start.y - position.y) / base.height
             }
-            mode = EditingMode.ResizeTrace(traces, position, base)
+            mode = EditingMode.ResizeTrace(traces, position, base, origin)
           case _ =>
         }
         update(None, Some(background))
@@ -309,10 +316,6 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
             }.toSet),
           model
         )
-//        model.nodes --= active.active
-//        model.connections.filterInPlace { connection =>
-//          !active.active(connection.source) && !active.active(connection.target)
-//        }
       case EditingMode.SelectEdge(edges) => model.connections --= edges
       case trace: EditingMode.ActiveTrace =>
         timeline(history.Delete.trace(trace.active), model)
@@ -552,7 +555,8 @@ object GraphCanvasController      {
     case class ResizeTrace(
         override val active: immutable.Set[sim.Trace],
         from: Position,
-        base: sim.Trace
+        base: sim.Trace,
+        origin: Position
     ) extends ActiveTrace
 
   }

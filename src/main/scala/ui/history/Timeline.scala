@@ -45,11 +45,10 @@ case class CombinedAction(actions: Action*) extends Action {
 
 case class Move[A <: model.Positioned](
     elements: collection.Set[A],
-    start: model.Position,
-    end: model.Position
+    delta: model.Position
 ) extends Action {
-  override def commit(sim: Sim): Unit = elements.foreach(_.position = end)
-  override def revert(sim: Sim): Unit = elements.foreach(_.position = start)
+  override def commit(sim: Sim): Unit = elements.foreach(_.position += delta)
+  override def revert(sim: Sim): Unit = elements.foreach(_.position -= delta)
 }
 
 class Add[A](elements: collection.Set[A], projection: Sim => mutable.Set[A]) extends Action {
@@ -89,4 +88,17 @@ object Delete {
   def edge(elements: collection.Set[model.sim.Connection]): Delete[model.sim.Connection] = new Delete(elements, _.connections)
 
   def trace(elements: collection.Set[model.sim.Trace]): DeleteBuffer[model.sim.Trace] = new DeleteBuffer(elements, _.traces)
+}
+
+
+case class ResizeTrace(elements: collection.Set[model.sim.Trace], xFactor: Double, yFactor: Double) extends Action {
+  override def commit(sim: Sim): Unit = elements.foreach { element =>
+    element.width *= xFactor
+    element.height *= yFactor
+  }
+
+  override def revert(sim: Sim): Unit = elements.foreach { element =>
+    element.width /= xFactor
+    element.height /= yFactor
+  }
 }

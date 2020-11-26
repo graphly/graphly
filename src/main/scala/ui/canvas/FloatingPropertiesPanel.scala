@@ -6,8 +6,8 @@ import scalafx.scene.text.Text
 
 class FloatingPropertiesPanel extends GridPane {
   private var rowCounter = 0
-  private var x = 0
-  private var y = 0
+  private var x          = 0
+  private var y          = 0
   managed <== visible
 
   def x_=(x: Double): Unit = { layoutX = x }
@@ -19,15 +19,17 @@ class FloatingPropertiesPanel extends GridPane {
   def show(): Unit = { visible = true }
 
   def row(name: String, value: String): Unit = {
-    val shortenedName = if (name.length > 10) name.substring(0, 10) + "..." else name
-    val nameElem = new Text(shortenedName + ":")
-    val valueElem = if (value.strip().length == 0) new Text("null") else new Text(value)
+    val shortenedName =
+      if (name.length > 10) name.substring(0, 10) + "..." else name
+    val nameElem      = new Text(shortenedName + ":")
+    val valueElem     =
+      if (value.strip().length == 0) new Text("null") else new Text(value)
     this.addRow(rowCounter, nameElem, valueElem)
     GridPane.setHalignment(valueElem, HPos.Right)
     rowCounter += 1
   }
 
-  def text(text: String): Unit = {
+  def text(text: String): Unit               = {
     this.addRow(0, new Text(text))
     rowCounter += 1
   }
@@ -57,8 +59,7 @@ object FloatingPropertiesPanel {
 //          }
           box.x = node.position.x + 40
           box.y = node.position.y - 25
-        case _ =>
-          box.hide()
+        case _ => box.hide()
       }
       box.setStyle("-fx-background-color: lightgray;")
       box.setHgap(10)

@@ -4,19 +4,21 @@ import java.io.{File, FileInputStream, PrintWriter}
 
 import io.Implicit._
 import io.XMLSimRepresentation.Implicit._
-import model.sim.{Node, NodeType}
 import model.sim.Trace.Image
-import model.sim.{Connection, Node}
-import model.sim.Trace.Image
+import model.sim.{Connection, Node, NodeType}
 import model.{Position, sim}
-import scalafx.scene.input.{Clipboard, ClipboardContent, KeyCode, KeyEvent, MouseEvent, MouseButton}
+import scalafx.scene.input.{
+  Clipboard,
+  ClipboardContent,
+  MouseButton,
+  MouseEvent
+}
 import scalafx.stage.{FileChooser, Stage}
 import ui.Controller
 import ui.Position.Implicit.MouseEventPosition
 import ui.canvas.Draw.Implicit.DrawShape
 import ui.canvas.GraphCanvasController.EditingMode.default
 import ui.canvas.GraphCanvasController.{EditingMode, Redraw}
-import ui.canvas.GraphingCanvas.DrawActions
 import ui.util.Event
 import util.Default
 
@@ -173,8 +175,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
                 )
               case _ if event.button == MouseButton.Secondary =>
                 mode = EditingMode.FloatingMenu(node)
-              case _ =>
-                mode = EditingMode.SelectNode(node)
+              case _ => mode = EditingMode.SelectNode(node)
             }
           // Clicked on an edge -> update edge selection set and selecting edges.
           case Some(edge: sim.Connection) => select match {
@@ -256,12 +257,13 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     update(Some(foreground), None)
   }
 
-  private def modelToString(model: sim.Sim, filename: String): String = {
-    val header = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>"
+  private def modelToString(model: sim.Sim, filename: String): String     = {
+    val header =
+      "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>"
     s"$header\n${model.toRepresentation(filename).toString}"
   }
 
-  def save(): Unit                                         = {
+  def save(): Unit                                                        = {
     val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
     fileChooser.title = "Save Simulation"
@@ -279,7 +281,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
   }
 
-  def loadTrace(update: Redraw[D]): Unit                   = {
+  def loadTrace(update: Redraw[D]): Unit                                  = {
     val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.title = "Open Trace"
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
@@ -298,13 +300,12 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
   }
 
-  def deleteSelected(update: Redraw[D]): Unit = {
+  def deleteSelected(update: Redraw[D]): Unit                             = {
     mode match {
       case active: EditingMode.SelectActiveNode =>
         model.nodes --= active.active
         model.connections.filterInPlace { connection =>
-          !active.active(connection.source) &&
-            !active.active(connection.target)
+          !active.active(connection.source) && !active.active(connection.target)
         }
       case EditingMode.SelectEdge(edges) => model.connections --= edges
       case trace: EditingMode.ActiveTrace =>
@@ -316,15 +317,19 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     update(Some(foreground), None)
   }
 
-  private def putModelToClipboard(model: sim.Sim): Unit = {
+  private def putModelToClipboard(model: sim.Sim): Unit         = {
     val content = new ClipboardContent()
     content.putString(modelToString(model, "clipboard"))
     Clipboard.systemClipboard.content = content
   }
 
-  private def getEdgesWithBothEndpoints(nodes: Set[Node]): mutable.Set[Connection] = {
+  private def getEdgesWithBothEndpoints(
+      nodes: Set[Node]
+  ): mutable.Set[Connection]                                    = {
     val out = mutable.Set[Connection]()
-    model.connections.foreach(c => if (nodes.contains(c.source) && nodes.contains(c.target)) out.add(c))
+    model.connections.foreach(
+      c => if (nodes.contains(c.source) && nodes.contains(c.target)) out.add(c)
+    )
     out
   }
 
@@ -333,15 +338,15 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     val simEdges = getEdgesWithBothEndpoints(nodes)
 
     new sim.Sim(
-      simNodes,             // nodes
-      simEdges,             // connections
-      mutable.Set.empty,    // classes
-      mutable.Set.empty,    // measures
-      mutable.Buffer.empty  // traces
+      simNodes,            // nodes
+      simEdges,            // connections
+      mutable.Set.empty,   // classes
+      mutable.Set.empty,   // measures
+      mutable.Buffer.empty // traces
     )
   }
 
-  def copySelectedNodes(update: Redraw[D]): Unit = {
+  def copySelectedNodes(update: Redraw[D]): Unit                = {
     mode match {
       case EditingMode.SelectNode(nodes) => {
         putModelToClipboard(modelFromSelectedNodes(nodes))
@@ -360,8 +365,8 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
   }
 
-  def pasteSelectedNodes(update: Redraw[D]): Unit = {
-    val content = Clipboard.systemClipboard.content
+  def pasteSelectedNodes(update: Redraw[D]): Unit          = {
+    val content     = Clipboard.systemClipboard.content
     val pastedModel = xml.XML.loadString(content.getString).toSim
     model.merge(pastedModel)
     mode = EditingMode.SelectNode(pastedModel.nodes.toSet)
@@ -443,13 +448,14 @@ object GraphCanvasController      {
     }
 
     case class FloatingMenu(override val active: immutable.Set[sim.Node])
-      extends SelectActiveNode
+        extends SelectActiveNode
 
-    object FloatingMenu            {
+    object FloatingMenu          {
       def apply(shapes: immutable.Set[sim.Node]): Select =
         if (shapes.isEmpty) Selecting else new FloatingMenu(shapes)
 
-      def apply(shapes: sim.Node*): FloatingMenu = new FloatingMenu(shapes.toSet)
+      def apply(shapes: sim.Node*): FloatingMenu =
+        new FloatingMenu(shapes.toSet)
     }
 
     /* This class is not immutable for efficiency reasons, although this means you have to play nice with it

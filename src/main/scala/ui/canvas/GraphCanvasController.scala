@@ -271,6 +271,8 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     Option(fileChooser.showSaveDialog(new Stage)).foreach { dest =>
       dest.createNewFile()
       new PrintWriter(dest) {
+        //TODO: Check if conversion was successful
+        // We don't want to overwrite the file with null
         write(modelToString(model, dest.getName))
         close()
       }
@@ -404,7 +406,10 @@ object GraphCanvasController      {
     }
 
     case class Node(nodeType: NodeType)    extends Entry {
-      override def toolbarStatusMnemonic = "Create [Node]"
+      var typeName = nodeType.getClass.getSimpleName
+      if (typeName.equals("Server")) typeName = "Queue"
+
+      override def toolbarStatusMnemonic = s"Create [${typeName} Node]"
     }
 
     sealed trait Select                    extends State

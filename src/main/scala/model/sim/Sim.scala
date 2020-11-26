@@ -8,7 +8,6 @@ case class Sim(
     classes: mutable.Set[UserClass],
     measures: mutable.Set[Measure],
     traces: mutable.Buffer[Trace],
-    configuration: Sim.Configuration = mutable.HashMap.empty,
     var seed: Long = 23000,
     var useRandomSeed: Boolean = true,
     var maximumDuration: Double = -1,
@@ -25,7 +24,6 @@ case class Sim(
 )
 
 object Sim {
-  type Configuration = mutable.Map[String, Any]
 
   def empty: Sim = {
     Sim(
@@ -33,8 +31,7 @@ object Sim {
       mutable.HashSet.empty,
       mutable.HashSet.empty,
       mutable.HashSet.empty,
-      mutable.ArrayBuffer.empty,
-      mutable.HashMap.empty
+      mutable.ArrayBuffer.empty
     )
   }
 }

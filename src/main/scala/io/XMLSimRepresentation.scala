@@ -157,11 +157,11 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       userClasses: collection.Map[String, UserClass]
   ): Option[Measure]         =
     for {
-      classAlpha          <- xmlMeasure.attribute("alpha")
-      classReferenceNode  <- xmlMeasure.attribute("referenceNode")
-      classReferenceClass <- xmlMeasure.attribute("referenceUserClass")
-      classType           <- xmlMeasure.attribute("type")
-      classVerbose        <- xmlMeasure.attribute("verbose")
+      classAlpha          <- xmlMeasure.attribute(XML_A_MEASURE_ALPHA)
+      classReferenceNode  <- xmlMeasure.attribute(XML_A_MEASURE_STATION)
+      classReferenceClass <- xmlMeasure.attribute(XML_A_MEASURE_CLASS)
+      classType           <- xmlMeasure.attribute(XML_A_MEASURE_TYPE)
+      classVerbose        <- xmlMeasure.attribute(XML_A_MEASURE_VERBOSE)
       referenceNode       <- nodes.get(classReferenceNode.toString)
       referenceUserClass  <- userClasses.get(classReferenceClass.toString)
     } yield Measure(

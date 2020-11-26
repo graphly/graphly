@@ -272,6 +272,8 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
         write(
           "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>\n"
         )
+        //TODO: Check if conversion was successful
+        // We don't want to overwirte the file with null
         write(model.toRepresentation(dest.getName).toString)
         close()
       }

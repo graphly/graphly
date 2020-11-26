@@ -374,11 +374,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         val colorString: String = classData.attribute(XML_A_CLASS_COLOR).get
           .head.toString.stripPrefix("#")
 
-        //TODO: Scale by 1/255 ??
-        val r     = Integer.parseInt(colorString.substring(0, 2), 16)
-        val g     = Integer.parseInt(colorString.substring(2, 4), 16)
-        val b     = Integer.parseInt(colorString.substring(4, 6), 16)
-        val color = Color.color(r, g, b)
+        val color = Color.web(colorString)
 
         val classToComplete =
           classData.attribute(XML_A_CLASS_NAME).get.head.toString

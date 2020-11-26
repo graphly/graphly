@@ -113,7 +113,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     val results     = xmlSimNodes(5)
 
     val distributions: mutable.Map[String, Distribution] = mutable.HashMap.empty
-    val measures: mutable.HashSet[Measure]               = mutable.HashSet.empty
     val simulationAssets                                 = simulation.head.child
 
     // Nodes must be made first
@@ -123,12 +122,13 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       parseClasses(xmlSim, nodes, distributions)
     val connections: mutable.Set[Connection]        =
       parseConnections(simulationAssets, nodes)
+    val measures                                    = parseMeasures(simulationAssets, nodes, userClasses)
 
     val unconfiguredSim = Sim(
       mutable.HashSet.from(nodes.values),
       connections,
       mutable.HashSet.from(userClasses.values),
-      mutable.Set.empty,
+      measures,
       mutable.ArrayBuffer.empty
     )
 
@@ -142,12 +142,20 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     sim
   }
 
-  //TODO: Figure this out
+  private def parseMeasures(
+      simulationAssets: Seq[xml.Node],
+      nodes: mutable.Map[String, Node],
+      userClasses: mutable.Map[String, UserClass]
+  ): mutable.Set[Measure]                                    =
+    simulationAssets.filter(asset => asset.label.equals(XML_E_MEASURE))
+      .flatMap(measureAsset => measureFromXML(measureAsset, nodes, userClasses))
+      .to(mutable.Set)
+
   private def measureFromXML(
       xmlMeasure: xml.Node,
       nodes: collection.Map[String, Node],
       userClasses: collection.Map[String, UserClass]
-  ): Option[Measure]                                         =
+  ): Option[Measure]         =
     for {
       classAlpha          <- xmlMeasure.attribute("alpha")
       classReferenceNode  <- xmlMeasure.attribute("referenceNode")
@@ -167,7 +175,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   private def parseConnections(
       simulationAssets: Seq[xml.Node],
       nodes: mutable.Map[String, Node]
-  ): mutable.Set[Connection]                                 =
+  ): mutable.Set[Connection] =
     simulationAssets.filter(asset => asset.label.equals(XML_E_CONNECTION))
       .flatMap(connectionAsset => connectionFromXML(connectionAsset, nodes))
       .to(mutable.Set)

@@ -11,7 +11,6 @@ case class Sim(
     configuration: Sim.Configuration = mutable.HashMap.empty
 )          {
   def +=(other: Sim): Unit = {
-    // Add everything from the other sim to this new one. Might involve re-working UUIDs and shit like that.
     nodes.addAll(other.nodes)
     connections.addAll(other.connections)
     classes.addAll(other.classes)

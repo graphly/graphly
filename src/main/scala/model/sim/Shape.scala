@@ -51,10 +51,10 @@ case class Sink(
 ) extends NodeType
 
 case class Terminal(
-//    terminal: Terminal,
-//    tunnelSection: TunnelSection,
-//    routerSection: RouterSection
-    terminal: UnimplementedSection,
+    //    terminalSection: Terminal,
+    //    tunnelSection: TunnelSection,
+    //    routerSection: RouterSection
+    terminalSection: UnimplementedSection,
     tunnelSection: UnimplementedSection,
     routerSection: UnimplementedSection
 ) extends NodeType

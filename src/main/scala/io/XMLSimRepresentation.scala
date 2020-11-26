@@ -16,10 +16,11 @@ import scala.language.implicitConversions
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   def representNode(node: Node): xml.Elem                    = {
     val sections: Array[xml.Node] = node.nodeType match {
-      case Source(source, tunnel, router) =>
-        Array(source.raw, tunnel.raw, router.raw)
-      case Terminal(terminal, tunnelSection, routerSection) =>
-        Array(terminal.raw, tunnelSection.raw, routerSection.raw)
+      case Source(sourceSection, tunnelSection, routerSection) =>
+        Array(sourceSection.raw, tunnelSection.raw, routerSection.raw)
+      case Sink(sinkSection) => Array(sinkSection.raw)
+      case Terminal(terminalSection, tunnelSection, routerSection) =>
+        Array(terminalSection.raw, tunnelSection.raw, routerSection.raw)
       case Router(queueSection, tunnelSection, routerSection) =>
         Array(queueSection.raw, tunnelSection.raw, routerSection.raw)
       case Delay(queueSection, delaySection, routerSection) =>

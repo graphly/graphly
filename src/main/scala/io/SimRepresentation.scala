@@ -13,7 +13,7 @@ object Implicit {
       simRepresentation: SimRepresentation[W]
   ) {
     def toRepresentation(name: String): W = {
-      sim.toRepresentation(name)
+      simRepresentation.represent(sim, name)
     }
   }
 

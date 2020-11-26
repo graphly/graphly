@@ -3,7 +3,7 @@ package io
 import model.sim.Sim
 
 trait SimRepresentation[A] {
-  def represent(sim: Sim): A
+  def represent(sim: Sim, name: String): A
 
   def toSim(xmlSim: A): Sim
 }
@@ -12,7 +12,9 @@ object Implicit {
   implicit class RepresentableSim[W](sim: Sim)(implicit
       simRepresentation: SimRepresentation[W]
   ) {
-    def toRepresentation: W = simRepresentation.represent(sim)
+    def toRepresentation(name: String): W = {
+      sim.toRepresentation(name)
+    }
   }
 
   implicit class SimableRepresention[R](xmlSim: R)(implicit

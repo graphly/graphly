@@ -10,7 +10,7 @@ import scala.collection.mutable
 import scala.language.implicitConversions
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
-  override def represent(x: Sim): xml.Elem         = {
+  override def represent(x: Sim, filename: String): xml.Elem         = {
     val timestamp: String            = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u")
       .format(ZonedDateTime.now)
     val userClasses: Array[xml.Elem] = x.classes.map(
@@ -46,7 +46,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     ).toArray
 
     // TODO: This is a temp hack :))
-    <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="TODO" timestamp={
+    <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name={filename} timestamp={
       timestamp
     } xsi:noNamespaceSchemaLocation="Archive.xsd">
       <sim disableStatisticStop="false" logDecimalSeparator="." logDelimiter="," logPath="~/JMT/" logReplaceMode="0" maxEvents="-1" maxSamples="1000000" name="TODO" polling="1.0" xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">

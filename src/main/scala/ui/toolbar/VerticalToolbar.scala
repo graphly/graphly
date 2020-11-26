@@ -14,37 +14,37 @@ class VerticalToolbar extends ToolBar {
 
   private val allButtonsTg = new ToggleGroup()
   private val selectBtn    =
-    new ToolbarButton("Select Nodes or Edges", "assets/icons/select-32.png") {
+    new ToolbarButton("Select Nodes or Edges", "/assets/icons/select.svg") {
       toggleGroup = allButtonsTg
       onAction = e => { itemSelected.dispatch(GCC.EditingMode.Selecting) }
     }
   private val sourceBtn    =
-    new ToolbarButton("Create Source Nodes", "assets/icons/source-32.png") {
+    new ToolbarButton("Create Source Nodes", "/assets/icons/source.svg") {
       toggleGroup = allButtonsTg
       onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Source)) }
     }
   private val forkBtn      =
-    new ToolbarButton("Create Fork Nodes", "assets/icons/fork-32.png") {
+    new ToolbarButton("Create Fork Nodes", "/assets/icons/fork.svg") {
       toggleGroup = allButtonsTg
       onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Fork)) }
     }
   private val joinBtn      =
-    new ToolbarButton("Create Join Nodes", "assets/icons/source-32.png") {
+    new ToolbarButton("Create Join Nodes", "/assets/icons/source.svg") {
       toggleGroup = allButtonsTg
       onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Join)) }
     }
   private val queueBtn     =
-    new ToolbarButton("Create Queue Nodes", "assets/icons/queue-32.png") {
+    new ToolbarButton("Create Queue Nodes", "/assets/icons/queue.svg") {
       toggleGroup = allButtonsTg
       onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Queue)) }
     }
   private val sinkBtn      =
-    new ToolbarButton("Create Sink Nodes", "assets/icons/sink-32.png") {
+    new ToolbarButton("Create Sink Nodes", "/assets/icons/sink.svg") {
       toggleGroup = allButtonsTg
       onAction = e => { itemSelected.dispatch(GCC.EditingMode.Node(Sink)) }
     }
   private val edgesBtn     =
-    new ToolbarButton("Create Edges", "assets/icons/edge-32.png") {
+    new ToolbarButton("Create Edges", "/assets/icons/edge.svg") {
       toggleGroup = allButtonsTg
       onAction = e => { itemSelected.dispatch(GCC.EditingMode.BeginEdge) }
     }

@@ -6,14 +6,17 @@ import io.Implicit._
 import io.XMLSimRepresentation.Implicit._
 import model.sim.{Node, NodeType}
 import model.sim.Trace.Image
+import model.sim.{Connection, Node}
+import model.sim.Trace.Image
 import model.{Position, sim}
-import scalafx.scene.input.{KeyCode, KeyEvent, MouseEvent}
+import scalafx.scene.input.{Clipboard, ClipboardContent, KeyCode, KeyEvent, MouseEvent, MouseButton}
 import scalafx.stage.{FileChooser, Stage}
 import ui.Controller
 import ui.Position.Implicit.MouseEventPosition
 import ui.canvas.Draw.Implicit.DrawShape
 import ui.canvas.GraphCanvasController.EditingMode.default
 import ui.canvas.GraphCanvasController.{EditingMode, Redraw}
+import ui.canvas.GraphingCanvas.DrawActions
 import ui.util.Event
 import util.Default
 
@@ -76,22 +79,31 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     val position = event.position.model
 
     mode match {
-      case _: EditingMode.Trace =>
+      case traceMode: EditingMode.Trace =>
         hitTrace(position) match {
           // Clicked on a trace. What happens depends on the state we're in.
-          case Some(trace: sim.Trace) => mode match {
+          case Some(trace: sim.Trace) => traceMode match {
               // Nothing is selected yet -> move to selected state with the trace we clicked on.
               case EditingMode.SelectingTrace =>
                 mode = EditingMode.DragTrace(Set(trace), position)
               // We have some traces selected. If we Shift+clicked then switch trace's selected status.
               // Then start dragging all selected traces.
               case EditingMode.SelectTrace(selectedTraces) =>
-                val newSelectionSet =
-                  if (event.isShiftDown)
-                    if (selectedTraces contains trace) selectedTraces - trace
-                    else selectedTraces + trace
-                  else Set(trace)
-                mode = EditingMode.DragTrace(newSelectionSet, position)
+                if (
+                  (selectedTraces contains trace) &&
+                  position
+                    .inRectangle(trace.`end` - Position(50, 50), trace.`end`)
+                ) {
+                  mode =
+                    EditingMode.ResizeTrace(selectedTraces, position, trace)
+                } else {
+                  val newSelectionSet =
+                    if (event.isShiftDown)
+                      if (selectedTraces contains trace) selectedTraces - trace
+                      else selectedTraces + trace
+                    else Set(trace)
+                  mode = EditingMode.DragTrace(newSelectionSet, position)
+                }
               // Any other state is absolutely invalid here and we should throw an exception.
               case _ =>
             }
@@ -117,6 +129,8 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
           // Stopped dragging traces. Leave them selected.
           case EditingMode.DragTrace(traces, _) =>
             mode = EditingMode.SelectTrace(traces)
+          case EditingMode.ResizeTrace(traces, _, _) =>
+            mode = EditingMode.SelectTrace(traces)
           // Anything else then deselect all traces.
           case _ => mode = EditingMode.SelectingTrace
         }
@@ -138,6 +152,18 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
             mode = EditingMode.SelectEdge(Set(edge))
         }
 
+      // Finished dragging nodes.
+      case EditingMode.DragNode(nodes, _) =>
+        mode = EditingMode.SelectNode(nodes)
+
+      // Finished box selecting.
+      case boxSelect: EditingMode.BoxSelect =>
+        // Currently inefficient, may be made more efficient upon refactor
+        mode = EditingMode.SelectNode(
+          (boxSelect.active.toSet | boxSelect.prev) --
+            (boxSelect.active & boxSelect.prev)
+        )
+
       case select: EditingMode.Select => hitShape(position) match {
           // Clicked on a node -> update node selection set and selecting nodes.
           case Some(node: sim.Node) => select match {
@@ -145,7 +171,10 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
                 mode = EditingMode.SelectNode(
                   if (nodes contains node) nodes - node else nodes + node
                 )
-              case _ => mode = EditingMode.SelectNode(node)
+              case _ if event.button == MouseButton.Secondary =>
+                mode = EditingMode.FloatingMenu(node)
+              case _ =>
+                mode = EditingMode.SelectNode(node)
             }
           // Clicked on an edge -> update edge selection set and selecting edges.
           case Some(edge: sim.Connection) => select match {
@@ -171,18 +200,6 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
             mode = EditingMode.DrawingEdge(end)
           case None => mode = EditingMode.BeginEdge
         }
-
-      // Finished dragging nodes.
-      case EditingMode.DragNode(nodes, _) =>
-        mode = EditingMode.SelectNode(nodes)
-
-      // Finished box selecting.
-      case boxSelect: EditingMode.BoxSelect =>
-        // Currently inefficient, may be made more efficient upon refactor
-        mode = EditingMode.SelectNode(
-          (boxSelect.active.toSet | boxSelect.prev) --
-            (boxSelect.active & boxSelect.prev)
-        )
 
       // Other states are invalid when we release mouse.
       case _ =>
@@ -223,6 +240,12 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
               trace.position += event.position.model - from
             }
             mode = EditingMode.DragTrace(traces, position)
+          case EditingMode.ResizeTrace(traces, start, base) =>
+            traces.foreach { trace =>
+              trace.width *= 1 - (start.x - position.x) / base.width
+              trace.height *= 1 - (start.y - position.y) / base.height
+            }
+            mode = EditingMode.ResizeTrace(traces, position, base)
           case _ =>
         }
         update(None, Some(background))
@@ -233,30 +256,9 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     update(Some(foreground), None)
   }
 
-  override def onKeyTyped(event: KeyEvent, update: Redraw[D]): Unit       = {
-    mode match {
-      case active: EditingMode.Active[_] => event.code match {
-          // ScalaFX not recognising `delete` on local runtime
-          case KeyCode.Undefined =>
-            active match {
-              case active: EditingMode.SelectActiveNode =>
-                model.nodes --= active.active
-                model.connections.filterInPlace { connection =>
-                  !active.active(connection.source) &&
-                  !active.active(connection.target)
-                }
-              case EditingMode.SelectEdge(edges) => model.connections --= edges
-              case trace: EditingMode.ActiveTrace =>
-                model.traces --= trace.active
-                update(None, Some(background))
-                return
-            }
-            mode = EditingMode.Selecting
-            update(Some(foreground), None)
-          case _ =>
-        }
-      case _ =>
-    }
+  private def modelToString(model: sim.Sim, filename: String): String = {
+    val header = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>"
+    s"$header\n${model.toRepresentation(filename).toString}"
   }
 
   def save(): Unit                                         = {
@@ -269,12 +271,9 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     Option(fileChooser.showSaveDialog(new Stage)).foreach { dest =>
       dest.createNewFile()
       new PrintWriter(dest) {
-        write(
-          "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>\n"
-        )
         //TODO: Check if conversion was successful
-        // We don't want to overwirte the file with null
-        write(model.toRepresentation(dest.getName).toString)
+        // We don't want to overwrite the file with null
+        write(modelToString(model, dest.getName))
         close()
       }
     }
@@ -292,23 +291,95 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     fileChooser.initialFileName = ".png"
     Option(fileChooser.showOpenDialog(new Stage)).foreach { dest =>
       val image = Image(new FileInputStream(dest))
-      val trace = sim.Trace(image, Position.Zero, 750, 750)
+      val trace = sim
+        .Trace(image, Position.Zero, height = image.height, width = image.width)
       model.traces += trace
       redrawMode(EditingMode.SelectTrace(trace), update)
     }
+  }
+
+  def deleteSelected(update: Redraw[D]): Unit = {
+    mode match {
+      case active: EditingMode.SelectActiveNode =>
+        model.nodes --= active.active
+        model.connections.filterInPlace { connection =>
+          !active.active(connection.source) &&
+            !active.active(connection.target)
+        }
+      case EditingMode.SelectEdge(edges) => model.connections --= edges
+      case trace: EditingMode.ActiveTrace =>
+        model.traces --= trace.active
+        update(None, Some(background))
+        return
+    }
+    mode = EditingMode.Selecting
+    update(Some(foreground), None)
+  }
+
+  private def putModelToClipboard(model: sim.Sim): Unit = {
+    val content = new ClipboardContent()
+    content.putString(modelToString(model, "clipboard"))
+    Clipboard.systemClipboard.content = content
+  }
+
+  private def getEdgesWithBothEndpoints(nodes: Set[Node]): mutable.Set[Connection] = {
+    val out = mutable.Set[Connection]()
+    model.connections.foreach(c => if (nodes.contains(c.source) && nodes.contains(c.target)) out.add(c))
+    out
+  }
+
+  private def modelFromSelectedNodes(nodes: Set[Node]): sim.Sim = {
+    val simNodes = mutable.Set(nodes.toArray: _*)
+    val simEdges = getEdgesWithBothEndpoints(nodes)
+
+    new sim.Sim(
+      simNodes,             // nodes
+      simEdges,             // connections
+      mutable.Set.empty,    // classes
+      mutable.Set.empty,    // measures
+      mutable.Buffer.empty  // traces
+    )
+  }
+
+  def copySelectedNodes(update: Redraw[D]): Unit = {
+    mode match {
+      case EditingMode.SelectNode(nodes) => {
+        putModelToClipboard(modelFromSelectedNodes(nodes))
+      }
+      case _ => println("Finish selecting nodes to copy them")
+    }
+  }
+
+  def cutSelectedNodes(update: Redraw[D]): Unit = {
+    mode match {
+      case EditingMode.SelectNode(nodes) => {
+        putModelToClipboard(modelFromSelectedNodes(nodes))
+        deleteSelected(update)
+      }
+      case _ =>
+    }
+  }
+
+  def pasteSelectedNodes(update: Redraw[D]): Unit = {
+    val content = Clipboard.systemClipboard.content
+    val pastedModel = xml.XML.loadString(content.getString).toSim
+    model.merge(pastedModel)
+    mode = EditingMode.SelectNode(pastedModel.nodes.toSet)
+
+    update(Some(foreground), Some(background))
   }
 
   private def hitShape(hit: Position): Option[sim.Element] =
     hitNode(hit) orElse hitConnection(hit)
 
   private def hitNode(hit: Position): Option[sim.Node] =
-    model.nodes.find(_.hits[D](hit))
+    model.nodes.find(_.hits(hit))
 
   private def hitConnection(hit: Position): Option[sim.Connection] =
-    model.connections.find(x => x.hits[D](hit))
+    model.connections.find(_.hits[D](hit))
 
   private def hitTrace(hit: Position): Option[sim.Trace] =
-    model.traces.findLast(x => x.hits[D](hit))
+    model.traces.findLast(_.hits(hit))
 }
 
 object GraphCanvasController      {
@@ -369,6 +440,16 @@ object GraphCanvasController      {
         if (shapes.isEmpty) Selecting else new SelectNode(shapes)
 
       def apply(shapes: sim.Node*): SelectNode = new SelectNode(shapes.toSet)
+    }
+
+    case class FloatingMenu(override val active: immutable.Set[sim.Node])
+      extends SelectActiveNode
+
+    object FloatingMenu            {
+      def apply(shapes: immutable.Set[sim.Node]): Select =
+        if (shapes.isEmpty) Selecting else new FloatingMenu(shapes)
+
+      def apply(shapes: sim.Node*): FloatingMenu = new FloatingMenu(shapes.toSet)
     }
 
     /* This class is not immutable for efficiency reasons, although this means you have to play nice with it
@@ -442,6 +523,12 @@ object GraphCanvasController      {
     case class DragTrace(
         override val active: immutable.Set[sim.Trace],
         from: Position
+    ) extends ActiveTrace
+
+    case class ResizeTrace(
+        override val active: immutable.Set[sim.Trace],
+        from: Position,
+        base: sim.Trace
     ) extends ActiveTrace
 
   }

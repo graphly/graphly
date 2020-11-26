@@ -2,12 +2,9 @@ package ui.canvas
 
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import ui.canvas.GraphCanvas.DrawAction
-import ui.{Controlled, Controller}
 
-class GraphCanvas(override val controller: Controller[Unit]) extends Canvas with Controlled[Unit] {
+class GraphCanvas extends Canvas {
   onMousePressed = _ => requestFocus()
-
-  override val state: Unit = ()
 
   def redraw(shapes: Iterable[DrawAction]): Unit = {
     graphicsContext2D.clearRect(0, 0, width(), height())

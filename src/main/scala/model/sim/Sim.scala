@@ -21,7 +21,17 @@ case class Sim(
     var loggingAutoAppend: String = "0",
     var loggingDelim: String = ",",
     var loggingdecimalSeparator: String = "."
-)
+
+) {
+  def merge(other: Sim): Unit = {
+    // Add everything from the other sim to this new one. Might involve re-working UUIDs and shit like that.
+    nodes.addAll(other.nodes)
+    connections.addAll(other.connections)
+    classes.addAll(other.classes)
+    measures.addAll(other.measures)
+    traces.addAll(other.traces)
+  }
+}
 
 object Sim {
 

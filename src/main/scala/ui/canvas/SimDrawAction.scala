@@ -146,6 +146,7 @@ object SimDrawAction {
     implicit object Trace extends this.Shape[sim.Trace] {
       private val highlighting       = Color.GreenYellow
       private val highlightingBorder = 3
+      private val resizeToggleSize   = 10
 
       override def hits(trace: sim.Trace, hit: Position): Boolean =
         hit.inRectangle(trace.position, trace.end)
@@ -169,6 +170,13 @@ object SimDrawAction {
             smooth = true
           )
           context.drawImage(image, trace.x, trace.y)
+          if (highlight) {
+            context.fill = highlighting
+            var Position(x, y) = trace.`end`
+            x -= resizeToggleSize
+            y -= resizeToggleSize
+            context.fillRect(x, y, resizeToggleSize, resizeToggleSize)
+          }
       }
     }
   }

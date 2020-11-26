@@ -51,7 +51,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   }
 
   override def represent(x: Sim, filename: String): xml.Elem = {
-    val timestamp: String            = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u")
+    val timestamp: String            = DateTimeFormatter.ofPattern("E LLL d H:m:s zz u")
       .format(ZonedDateTime.now)
     val userClasses: Array[xml.Elem] = x.classes.map(
       (userClass: UserClass) =>

@@ -12,7 +12,7 @@ import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
 import ui.canvas.SimDrawAction._
-import ui.canvas.{GraphCanvasController, GraphingCanvas, VerticalSettingsMenu}
+import ui.canvas.{GraphCanvasController, GraphingCanvas, PropertiesPanel}
 import ui.toolbar.VerticalToolbar
 
 class AppMainSceneView(width: Double, height: Double)
@@ -21,15 +21,14 @@ class AppMainSceneView(width: Double, height: Double)
   private val controller     =
     new GraphCanvasController[GraphingCanvas.DrawAction](model)
   private val graphContainer = new GraphingCanvas(controller)
-  private val rightMenu      = VerticalSettingsMenu(controller)
+  private val rightMenu      = PropertiesPanel.Element(controller)
   private val toolbar        = new VerticalToolbar
 
   private val statusBar =
     new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}" }
   controller.onSwitchMode +=
     (state => statusBar.text = s"Status: ${state.toolbarStatusMnemonic}")
-  controller.onSwitchMode +=
-    (state => toolbar.controllerUpdatedMode(state))
+  controller.onSwitchMode += (state => toolbar.controllerUpdatedMode(state))
   toolbar.itemSelected +=
     (state => controller.redrawMode(state, graphContainer.redraw))
 
@@ -77,15 +76,26 @@ class AppMainSceneView(width: Double, height: Double)
           )
         },
         new Menu("Edit")  {
-          items = List(new MenuItem("Select") {
-            onAction = (_: ActionEvent) =>
-              controller.redrawMode(
-                GraphCanvasController.EditingMode.Selecting,
-                graphContainer.redraw
-              )
-            accelerator =
-              new KeyCodeCombination(KeyCode.M, KeyCombination.AltDown)
-          })
+          items = List(
+            new MenuItem("Delete") {
+              onAction = (_: ActionEvent) => controller.deleteSelected(graphContainer.redraw)
+              accelerator = new KeyCodeCombination(KeyCode.Delete)
+            },
+            new SeparatorMenuItem(),
+            new MenuItem("Copy") {
+              onAction = (_: ActionEvent) => controller.copySelectedNodes(graphContainer.redraw)
+              accelerator =
+                new KeyCodeCombination(KeyCode.C, KeyCombination.ControlDown)
+            },
+            new MenuItem("Paste") {
+              onAction = (_: ActionEvent) => controller.pasteSelectedNodes(graphContainer.redraw)
+              accelerator = new KeyCodeCombination(KeyCode.P, KeyCombination.ControlDown)
+            },
+            new MenuItem("Cut") {
+              onAction = (_: ActionEvent) => controller.cutSelectedNodes(graphContainer.redraw);
+              accelerator = new KeyCodeCombination(KeyCode.X, KeyCombination.ControlDown)
+            },
+          )
         },
         new Menu("Trace") {
           items = List(
@@ -115,8 +125,13 @@ class AppMainSceneView(width: Double, height: Double)
     }
 
     center = graphContainer
+
     bottom = statusBar
     right = rightMenu
     left = toolbar
+
+    rightMenu.managed.onChange {
+      controller.redrawMode(controller.mode, graphContainer.redraw)
+    }
   }
 }

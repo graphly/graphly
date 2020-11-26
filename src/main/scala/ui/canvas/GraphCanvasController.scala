@@ -272,7 +272,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
         write(
           "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" standalone=\"no\"?>\n"
         )
-        write(model.toRepresentation.toString)
+        write(model.toRepresentation(dest.getName).toString)
         close()
       }
     }

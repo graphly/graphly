@@ -1,6 +1,5 @@
 package io
 
-//import java.awt.Color
 import java.io.File
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -15,7 +14,42 @@ import scala.collection.mutable
 import scala.language.implicitConversions
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
-  override def represent(x: Sim): xml.Elem  = {
+  def representNode(node: Node): xml.Elem                    = {
+    val sections: Array[xml.Node] = node.nodeType match {
+      case Source(source, tunnel, router) =>
+        Array(source.raw, tunnel.raw, router.raw)
+      case Terminal(terminal, tunnelSection, routerSection) =>
+        Array(terminal.raw, tunnelSection.raw, routerSection.raw)
+      case Router(queueSection, tunnelSection, routerSection) =>
+        Array(queueSection.raw, tunnelSection.raw, routerSection.raw)
+      case Delay(queueSection, delaySection, routerSection) =>
+        Array(queueSection.raw, delaySection.raw, routerSection.raw)
+      case Server(queueSection, serverSection, routerSection) =>
+        Array(queueSection.raw, serverSection.raw, routerSection.raw)
+      case Fork(queueSection, tunnelSection, forkSection) =>
+        Array(queueSection.raw, tunnelSection.raw, forkSection.raw)
+      case Join(joinSection, tunnelSection, routerSection) =>
+        Array(joinSection.raw, tunnelSection.raw, routerSection.raw)
+      case Logger(queueSection, loggerSection, routerSection) =>
+        Array(queueSection.raw, loggerSection.raw, routerSection.raw)
+      case ClassSwitch(queueSection, classSwitch, routerSection) =>
+        Array(queueSection.raw, classSwitch.raw, routerSection.raw)
+      case Semaphore(semaphoreSection, tunnelSection, routerSection) =>
+        Array(semaphoreSection.raw, tunnelSection.raw, routerSection.raw)
+      case Scalar(joinSection, tunnelSection, forkSection) =>
+        Array(joinSection.raw, tunnelSection.raw, forkSection.raw)
+      case Place(storageSection, tunnelSection, linkageSection) =>
+        Array(storageSection.raw, tunnelSection.raw, linkageSection.raw)
+      case Transition(enablingSection, timingSection, firingSection) =>
+        Array(enablingSection.raw, timingSection.raw, firingSection.raw)
+    }
+
+    <node name={node.name}>
+      {sections}
+    </node>
+  }
+
+  override def represent(x: Sim, filename: String): xml.Elem = {
     val timestamp: String            = DateTimeFormatter.ofPattern("E LLL D H:m:s zz u")
       .format(ZonedDateTime.now)
     val userClasses: Array[xml.Elem] = x.classes.map(
@@ -24,23 +58,25 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
           userClass.priority.toString
         } referenceSource={userClass.referenceSource.name} type={
           userClass.`type`.getClass.getSimpleName
-        } />
+        }/>
     ).toArray
 
-    // TODO: This will almost certainly need it's own function once nodes are fully implemented
-    val nodes: Array[xml.Elem] =
-      x.nodes.map((node: Node) => <node name={node.name}>
-        <section className={node.nodeType.getClass.getSimpleName}>
-        </section>
-      </node>).toArray
+    // TODO delete this commented-out code before merging
+    //
+    //    val nodes: Array[xml.Elem] =
+    //      x.nodes.map((node: Node) => <node name={node.name}>
+    //        <section className={node.nodeType.getClass.getSimpleName}>
+    //        </section>
+    //      </node>).toArray
+    val nodes: Array[xml.Elem] = x.nodes.map(representNode).toArray;
 
     val nodePositions: Array[xml.Elem] = x.nodes.map(
       (node: Node) =>
         <station name={node.name}>
-        <position rotate="false" x={node.position.x.toString} y={
+          <position rotate="false" x={node.position.x.toString} y={
           node.position.y.toString
         }/>
-      </station>
+        </station>
     ).toArray
 
     val connections: Array[xml.Elem] = x.connections.map(
@@ -51,9 +87,9 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     ).toArray
 
     // TODO: This is a temp hack :))
-    <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="TODO" timestamp={
-      timestamp
-    } xsi:noNamespaceSchemaLocation="Archive.xsd">
+    <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name={
+      filename
+    } timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">
       <sim disableStatisticStop="false" logDecimalSeparator="." logDelimiter="," logPath="~/JMT/" logReplaceMode="0" maxEvents="-1" maxSamples="1000000" name="TODO" polling="1.0" xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
         {userClasses}
         {nodes}
@@ -69,7 +105,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     </archive>
   }
 
-  override def toSim(xmlSim: xml.Elem): Sim = {
+  override def toSim(xmlSim: xml.Elem): Sim                  = {
     val xmlSimNodes = xmlSim.child
     val simulation  = xmlSimNodes(1)
     //TODO: Handle simulation results
@@ -110,7 +146,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       xmlMeasure: xml.Node,
       nodes: collection.Map[String, Node],
       userClasses: collection.Map[String, UserClass]
-  ): Option[Measure]                        =
+  ): Option[Measure]                                         =
     for {
       classAlpha          <- xmlMeasure.attribute("alpha")
       classReferenceNode  <- xmlMeasure.attribute("referenceNode")
@@ -130,7 +166,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   private def parseConnections(
       simulationAssets: Seq[xml.Node],
       nodes: mutable.Map[String, Node]
-  ): mutable.Set[Connection]                =
+  ): mutable.Set[Connection]                                 =
     simulationAssets.filter(asset => asset.label.equals(XML_E_CONNECTION))
       .flatMap(connectionAsset => connectionFromXML(connectionAsset, nodes))
       .to(mutable.Set)

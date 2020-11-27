@@ -107,19 +107,20 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   }
 
   override def toSim(xmlSim: xml.Elem): Sim                  = {
-    val xmlSimNodes = xmlSim.child
-    val simulation  = xmlSimNodes(1)
+    val xmlSimNodes               = xmlSim.child
+    val simulation                = xmlSimNodes(1)
     //TODO: Handle simulation results
-    val results     = xmlSimNodes(5)
+    var results: Option[xml.Node] = Option.empty
+    if (xmlSimNodes.length > 5) { results = Some(xmlSimNodes(5)) }
 
     val distributions: mutable.Map[String, Distribution] = mutable.HashMap.empty
     val simulationAssets                                 = simulation.head.child
 
     // Nodes must be made first
-    val nodes = parseNodes(xmlSim, distributions)
+    val nodes = parseNodes(xmlSimNodes, distributions)
 
     val userClasses: mutable.Map[String, UserClass] =
-      parseClasses(xmlSim, nodes, distributions)
+      parseClasses(xmlSimNodes, nodes, distributions)
     val connections: mutable.Set[Connection]        =
       parseConnections(simulationAssets, nodes)
     val measures                                    = parseMeasures(simulationAssets, nodes, userClasses)
@@ -192,7 +193,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     } yield Connection(sourceNode, targetNode)
 
   private def parseNodes(
-      xmlSimNodes: xml.Elem,
+      xmlSimNodes: Seq[xml.Node],
       distributions: mutable.Map[String, Distribution]
   ): mutable.Map[String, Node] = {
 
@@ -322,7 +323,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   }
 
   protected def parseClasses(
-      root: xml.Elem,
+      root: Seq[xml.Node],
       nodes: collection.Map[String, Node],
       distributions: mutable.Map[String, Distribution]
   ): mutable.Map[String, UserClass]                     = {
@@ -333,7 +334,8 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
     val finishedClasses: mutable.Map[String, UserClass] = mutable.HashMap.empty
 
-    val nodeclasses = root.find(node => node.label.equals(XML_E_CLASS)).get
+    val nodeclasses = root.find(node => node.label.equals("sim")).get.child
+      .find(node => node.label.equals(XML_E_CLASS)).get
 
     // Now scans all elements
     for (node <- nodeclasses) {
@@ -357,6 +359,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       val userClass = UserClass(
         name,
         priority,
+        //TODO: This needs to be optional
         referenceSource =
           nodes(currclass.attribute(XML_A_CLASS_REFSOURCE).get.head.toString),
         `type`,
@@ -379,7 +382,9 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         val classToComplete =
           classData.attribute(XML_A_CLASS_NAME).get.head.toString
         val finishedClass   = unfinishedClasses(classToComplete)(
-          distributions(classToComplete),
+          //TODO: Implement distributions
+          UnimplementedDistribution(<TODO/>),
+//          distributions(classToComplete),
           color
         )
 

@@ -50,17 +50,25 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     </node>
   }
 
+  def representClass(u: UserClass): xml.Elem = {
+      <userClass name={u.name} priority={u.priority.toString} referenceSource={u.referenceSource.name} type={u.`type`.getClass.getSimpleName}/>
+  }
+
+  def representClassGui(u: UserClass): xml.Elem = {
+    val r = (u.color.red * 255).toInt
+    val g = (u.color.green * 255).toInt
+    val b = (u.color.blue * 255).toInt
+    val opacity = (u.color.opacity * 255).toInt
+
+    val color = "#%02X%02X%02X%02X".format(r, g, b, opacity)
+    println(color)
+      <userClass color={color} name={u.name}/>
+  }
+
   override def represent(x: Sim, filename: String): xml.Elem = {
-    val timestamp: String            = DateTimeFormatter.ofPattern("E LLL d H:m:s zz u")
+    val timestamp: String = DateTimeFormatter.ofPattern("E LLL d H:m:s zz u")
       .format(ZonedDateTime.now)
-    val userClasses: Array[xml.Elem] = x.classes.map(
-      (userClass: UserClass) =>
-        <userClass name={userClass.name} priority={
-          userClass.priority.toString
-        } referenceSource={userClass.referenceSource.name} type={
-          userClass.`type`.getClass.getSimpleName
-        }/>
-    ).toArray
+    val userClasses: Array[xml.Elem] = x.classes.map(representClass).toArray
 
     // TODO delete this commented-out code before merging
     //
@@ -86,18 +94,19 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     // TODO: This is a temp hack :))
 
     //TODO: Scale by 1/255 ??
-//    val colorr = x.classes.head.color
+    //    val colorr = x.classes.head.color
 
-//    val color = "#%02X%02X%02X%02X".format(colorr.red, colorr.green, colorr.blue, (colorr.opacity * 255).toInt);
-//    println(color)
+    //    val color = "#%02X%02X%02X%02X".format(colorr.red, colorr.green, colorr.blue, (colorr.opacity * 255).toInt);
+    //    println(color)
+
+    val guiClasses = x.classes.map(representClassGui).toArray
 
     <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name={filename} timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">
       <sim disableStatisticStop={x.disableStatistic.toString} logDecimalSeparator={x.loggingDecimalSeparator} logDelimiter={x.loggingDelim} logPath={x.loggingPath} logReplaceMode={x.loggingAutoAppend} maxEvents={x.maxEvents.toString} maxSamples={x.maxSamples.toString} name={filename} polling={x.pollingInterval.toString} xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
         {userClasses}{nodes}<measure alpha="0.01" name="Queue 1_Class1_Number of Customers" nodeType="station" precision="0.03" referenceNode="Queue 1" referenceUserClass="Class1" type="Number of Customers" verbose="false"/>{connections}
       </sim>
       <jmodel xsi:noNamespaceSchemaLocation="JModelGUI.xsd">
-        <userClass color="#FF0000FF" name="Class1"/>
-        {nodePositions}
+        {guiClasses}{nodePositions}
       </jmodel>
       <results>
       </results>

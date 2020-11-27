@@ -94,8 +94,8 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
     val connections: Array[xml.Elem] = x.connections.map(
       (connection: Connection) =>
-        <connection source={connection.source.toString} target={
-          connection.target.toString
+        <connection source={connection.source.name} target={
+          connection.target.name
         }/>
     ).toArray
 

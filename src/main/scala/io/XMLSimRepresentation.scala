@@ -43,6 +43,8 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         Array(storageSection.raw, tunnelSection.raw, linkageSection.raw)
       case Transition(enablingSection, timingSection, firingSection) =>
         Array(enablingSection.raw, timingSection.raw, firingSection.raw)
+      case Unimplemented(sections) =>
+        sections.map(x => x.raw).toArray
     }
 
     <node name={node.name}>

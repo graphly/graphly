@@ -14,7 +14,7 @@ import scala.collection.mutable
 import scala.language.implicitConversions
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
-  def representNode(node: Node): xml.Elem                    = {
+  def representNode(node: Node): xml.Elem    = {
     val sections: Array[xml.Node] = node.nodeType match {
       case Source(sourceSection, tunnelSection, routerSection) =>
         Array(sourceSection.raw, tunnelSection.raw, routerSection.raw)
@@ -51,22 +51,24 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   }
 
   def representClass(u: UserClass): xml.Elem = {
-      <userClass name={u.name} priority={u.priority.toString} referenceSource={u.referenceSource.name} type={u.`type`.getClass.getSimpleName}/>
+    <userClass name={u.name} priority={u.priority.toString} referenceSource={
+      u.referenceSource.name
+    } type={u.`type`.getClass.getSimpleName}/>
   }
 
-  def representClassGui(u: UserClass): xml.Elem = {
-    val r = (u.color.red * 255).toInt
-    val g = (u.color.green * 255).toInt
-    val b = (u.color.blue * 255).toInt
+  def representClassGui(u: UserClass): xml.Elem              = {
+    val r       = (u.color.red * 255).toInt
+    val g       = (u.color.green * 255).toInt
+    val b       = (u.color.blue * 255).toInt
     val opacity = (u.color.opacity * 255).toInt
 
     val color = "#%02X%02X%02X%02X".format(r, g, b, opacity)
     println(color)
-      <userClass color={color} name={u.name}/>
+    <userClass color={color} name={u.name}/>
   }
 
   override def represent(x: Sim, filename: String): xml.Elem = {
-    val timestamp: String = DateTimeFormatter.ofPattern("E LLL d H:m:s zz u")
+    val timestamp: String            = DateTimeFormatter.ofPattern("E LLL d H:m:s zz u")
       .format(ZonedDateTime.now)
     val userClasses: Array[xml.Elem] = x.classes.map(representClass).toArray
 
@@ -82,13 +84,17 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     val nodePositions: Array[xml.Elem] = x.nodes.map(
       (node: Node) =>
         <station name={node.name}>
-          <position rotate="false" x={node.position.x.toString} y={node.position.y.toString}/>
+          <position rotate="false" x={node.position.x.toString} y={
+          node.position.y.toString
+        }/>
         </station>
     ).toArray
 
     val connections: Array[xml.Elem] = x.connections.map(
       (connection: Connection) =>
-          <connection source={connection.source.toString} target={connection.target.toString}/>
+        <connection source={connection.source.toString} target={
+          connection.target.toString
+        }/>
     ).toArray
 
     // TODO: This is a temp hack :))
@@ -115,19 +121,20 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   }
 
   override def toSim(xmlSim: xml.Elem): Sim                  = {
-    val xmlSimNodes = xmlSim.child
-    val simulation  = xmlSimNodes(1)
+    val xmlSimNodes               = xmlSim.child
+    val simulation                = xmlSimNodes(1)
     //TODO: Handle simulation results
-    val results     = xmlSimNodes(5)
+    var results: Option[xml.Node] = Option.empty
+    if (xmlSimNodes.length > 5) { results = Some(xmlSimNodes(5)) }
 
     val distributions: mutable.Map[String, Distribution] = mutable.HashMap.empty
     val simulationAssets                                 = simulation.head.child
 
     // Nodes must be made first
-    val nodes = parseNodes(xmlSim, distributions)
+    val nodes = parseNodes(xmlSimNodes, distributions)
 
     val userClasses: mutable.Map[String, UserClass] =
-      parseClasses(xmlSim, nodes, distributions)
+      parseClasses(xmlSimNodes, nodes, distributions)
     val connections: mutable.Set[Connection]        =
       parseConnections(simulationAssets, nodes)
     val measures                                    = parseMeasures(simulationAssets, nodes, userClasses)
@@ -200,7 +207,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     } yield Connection(sourceNode, targetNode)
 
   private def parseNodes(
-      xmlSimNodes: xml.Elem,
+      xmlSimNodes: Seq[xml.Node],
       distributions: mutable.Map[String, Distribution]
   ): mutable.Map[String, Node] = {
 
@@ -330,7 +337,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   }
 
   protected def parseClasses(
-      root: xml.Elem,
+      root: Seq[xml.Node],
       nodes: collection.Map[String, Node],
       distributions: mutable.Map[String, Distribution]
   ): mutable.Map[String, UserClass]                     = {
@@ -341,7 +348,8 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
     val finishedClasses: mutable.Map[String, UserClass] = mutable.HashMap.empty
 
-    val nodeclasses = root.find(node => node.label.equals(XML_E_CLASS)).get
+    val nodeclasses = root.find(node => node.label.equals("sim")).get.child
+      .find(node => node.label.equals(XML_E_CLASS)).get
 
     // Now scans all elements
     for (node <- nodeclasses) {
@@ -365,6 +373,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       val userClass = UserClass(
         name,
         priority,
+        //TODO: This needs to be optional
         referenceSource =
           nodes(currclass.attribute(XML_A_CLASS_REFSOURCE).get.head.toString),
         `type`,
@@ -387,8 +396,10 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
         val classToComplete =
           classData.attribute(XML_A_CLASS_NAME).get.head.toString
-        val finishedClass = unfinishedClasses(classToComplete)(
-          distributions(classToComplete),
+        val finishedClass   = unfinishedClasses(classToComplete)(
+          //TODO: Implement distributions
+          UnimplementedDistribution(<TODO/>),
+//          distributions(classToComplete),
           color
         )
 

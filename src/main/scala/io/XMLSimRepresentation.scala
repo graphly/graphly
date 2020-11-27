@@ -101,9 +101,10 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
     val guiClasses = x.classes.map(representClassGui).toArray
 
+    // <measure alpha="0.01" name="Queue 1_Class1_Number of Customers" nodeType="station" precision="0.03" referenceNode="Queue 1" referenceUserClass="Class1" type="Number of Customers" verbose="false"/>
     <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name={filename} timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">
       <sim disableStatisticStop={x.disableStatistic.toString} logDecimalSeparator={x.loggingDecimalSeparator} logDelimiter={x.loggingDelim} logPath={x.loggingPath} logReplaceMode={x.loggingAutoAppend} maxEvents={x.maxEvents.toString} maxSamples={x.maxSamples.toString} name={filename} polling={x.pollingInterval.toString} xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
-        {userClasses}{nodes}<measure alpha="0.01" name="Queue 1_Class1_Number of Customers" nodeType="station" precision="0.03" referenceNode="Queue 1" referenceUserClass="Class1" type="Number of Customers" verbose="false"/>{connections}
+        {userClasses}{nodes}{connections}
       </sim>
       <jmodel xsi:noNamespaceSchemaLocation="JModelGUI.xsd">
         {guiClasses}{nodePositions}

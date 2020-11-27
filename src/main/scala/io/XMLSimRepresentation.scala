@@ -14,7 +14,7 @@ import scala.collection.mutable
 import scala.language.implicitConversions
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
-  def representNode(node: Node): xml.Elem                    = {
+  def representNode(node: Node): xml.Elem    = {
     val sections: Array[xml.Node] = node.nodeType match {
       case Source(sourceSection, tunnelSection, routerSection) =>
         Array(sourceSection.raw, tunnelSection.raw, routerSection.raw)
@@ -50,17 +50,27 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     </node>
   }
 
+  def representClass(u: UserClass): xml.Elem = {
+    <userClass name={u.name} priority={u.priority.toString} referenceSource={
+      u.referenceSource.name
+    } type={u.`type`.getClass.getSimpleName}/>
+  }
+
+  def representClassGui(u: UserClass): xml.Elem              = {
+    val r       = (u.color.red * 255).toInt
+    val g       = (u.color.green * 255).toInt
+    val b       = (u.color.blue * 255).toInt
+    val opacity = (u.color.opacity * 255).toInt
+
+    val color = "#%02X%02X%02X%02X".format(r, g, b, opacity)
+    println(color)
+    <userClass color={color} name={u.name}/>
+  }
+
   override def represent(x: Sim, filename: String): xml.Elem = {
     val timestamp: String            = DateTimeFormatter.ofPattern("E LLL d H:m:s zz u")
       .format(ZonedDateTime.now)
-    val userClasses: Array[xml.Elem] = x.classes.map(
-      (userClass: UserClass) =>
-        <userClass name={userClass.name} priority={
-          userClass.priority.toString
-        } referenceSource={userClass.referenceSource.name} type={
-          userClass.`type`.getClass.getSimpleName
-        }/>
-    ).toArray
+    val userClasses: Array[xml.Elem] = x.classes.map(representClass).toArray
 
     // TODO delete this commented-out code before merging
     //
@@ -88,18 +98,35 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     ).toArray
 
     // TODO: This is a temp hack :))
+
+    //TODO: Scale by 1/255 ??
+    //    val colorr = x.classes.head.color
+
+    //    val color = "#%02X%02X%02X%02X".format(colorr.red, colorr.green, colorr.blue, (colorr.opacity * 255).toInt);
+    //    println(color)
+
+    val guiClasses = x.classes.map(representClassGui).toArray
+
     <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name={
       filename
     } timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">
-      <sim disableStatisticStop="false" logDecimalSeparator="." logDelimiter="," logPath="~/JMT/" logReplaceMode="0" maxEvents="-1" maxSamples="1000000" name="TODO" polling="1.0" xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
-        {userClasses}
-        {nodes}
-        <measure alpha="0.01" name="Queue 1_Class1_Number of Customers" nodeType="station" precision="0.03" referenceNode="Queue 1" referenceUserClass="Class1" type="Number of Customers" verbose="false"/>
-        {connections}
+      <sim disableStatisticStop={
+      x.disableStatistic.toString
+    } logDecimalSeparator={x.loggingDecimalSeparator} logDelimiter={
+      x.loggingDelim
+    } logPath={x.loggingPath} logReplaceMode={x.loggingAutoAppend} maxEvents={
+      x.maxEvents.toString
+    } maxSamples={x.maxSamples.toString} name={filename} polling={
+      x.pollingInterval.toString
+    } xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
+        {userClasses}{
+      nodes
+    }<measure alpha="0.01" name="Queue 1_Class1_Number of Customers" nodeType="station" precision="0.03" referenceNode="Queue 1" referenceUserClass="Class1" type="Number of Customers" verbose="false"/>{
+      connections
+    }
       </sim>
       <jmodel xsi:noNamespaceSchemaLocation="JModelGUI.xsd">
-        <userClass color="#FF0000FF" name="Class1"/>
-        {nodePositions}
+        {guiClasses}{nodePositions}
       </jmodel>
       <results>
       </results>
@@ -316,7 +343,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
     val logDecimalSeparator = root.attribute(XML_A_ROOT_LOGDECIMALSEPARATOR)
     if (logDecimalSeparator.isDefined) {
-      model.loggingdecimalSeparator = logDecimalSeparator.get.head.toString
+      model.loggingDecimalSeparator = logDecimalSeparator.get.head.toString
     }
 
     model
@@ -377,7 +404,8 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         val colorString: String = classData.attribute(XML_A_CLASS_COLOR).get
           .head.toString.stripPrefix("#")
 
-        val color = Color.web(colorString)
+        val alpha = Integer.parseInt(colorString.substring(6, 8), 16)
+        val color = Color.web(colorString, alpha / 255)
 
         val classToComplete =
           classData.attribute(XML_A_CLASS_NAME).get.head.toString

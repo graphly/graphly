@@ -9,7 +9,7 @@ class Timeline       {
   private val future  = mutable.Stack.empty[Action]
 
   private def transfer[A](sim: model.sim.Sim, from: mutable.Stack[A], to: mutable.Stack[A])(apply: (A, model.sim.Sim) => ()): Boolean =
-    if( from.nonEmpty) {
+    if (from.nonEmpty) {
       val action = from.pop()
       apply(action, sim)
       to.push(action)

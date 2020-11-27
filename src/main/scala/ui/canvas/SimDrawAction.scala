@@ -1,10 +1,12 @@
 package ui.canvas
 
 import model.{LinearTransform, Position, sim}
+import scalafx.Includes._
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.image.Image
 import scalafx.scene.paint.Color
-import scalafx.scene.shape.ArcType
+import scalafx.scene.shape.{ArcType, SVGPath}
+import scalafx.scene.text.{Text, TextAlignment}
 import ui.canvas.GraphingCanvas.DrawAction
 import util.Number.Implicit.DoubleExtensions
 
@@ -37,8 +39,15 @@ object SimDrawAction {
     }
 
     implicit object Node extends this.Shape[sim.Node] {
-      val radius: Int          = 20
-      private val highlighting = Color.GreenYellow
+      val radius: Int                                                  = 20
+      private val highlighting                                         = Color.GreenYellow
+      private val icons: Map[Class[_ <: sim.NodeType], String] = Map(
+        classOf[sim.Source] -> "/assets/icons/source.svg",
+        classOf[sim.Join]   -> "/assets/icons/source.svg",
+        classOf[sim.Server]  -> "/assets/icons/queue.svg",
+        classOf[sim.Fork]   -> "/assets/icons/fork.svg",
+        classOf[sim.Sink]   -> "/assets/icons/sink.svg",
+      )
 
       private def drawCircle(
           position: Position,
@@ -58,28 +67,41 @@ object SimDrawAction {
         )
       }
 
-      def classColor(instance: Any): Color                               = {
+      def classColor(instance: Any): Color = {
         val conversion    = 0.5 / 26
         val name          = instance.getClass.getSimpleName
         def index(n: Int) = 0.5 + (name(n).toUpper.toInt % 26) * conversion
         Color.color(index(0), index(1), index(2))
       }
 
+      final private def drawName(context: GraphicsContext, node: sim.Node): Unit = {
+        val textObj = new Text(node.name)
+        textObj.font = context.font
+
+        val (x, y) = node.position.coords
+        val textY = y + 2 * radius
+        val (tw, th) = (textObj.layoutBounds().getWidth, textObj.layoutBounds().getHeight)
+        context.fill = Color.Black
+        context.clearRect(x - tw / 2 - 5, textY - th / 2 - 5, tw + 10, th + 5)
+
+        context.textAlign = TextAlignment.Center
+        context.fillText(node.name, x, textY)
+      }
+
       override def apply(node: sim.Node, highlight: Boolean): DrawAction = {
         context =>
           if (highlight)
             drawCircle(node.position, radius * 1.3, highlighting, context)
-          drawCircle(node.position, radius, classColor(node.nodeType), context)
-          context.fill = Color.Black
-          val textSizeOffset = 5
-          context.fillText(
-            node.nodeType.toString.substring(0, 2),
-            node.x - textSizeOffset * 1.5,
-            node.y + textSizeOffset
-          )
+          drawCircle(node.position, radius, classColor(node), context)
+
+          val resourceURI = icons(node.nodeType.getClass)
+          val img = new Image(resourceURI, 2 * radius, 2 * radius, false, false)
+          context.drawImage(img, node.x - radius, node.y - radius)
+
+          drawName(context, node)
       }
 
-      override def hits(node: sim.Node, hit: Position): Boolean          = {
+      override def hits(node: sim.Node, hit: Position): Boolean = {
         val dist = (node.x - hit.x) ** 2 + (node.y - hit.y) ** 2
         dist < radius ** 2
       }

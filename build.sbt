@@ -6,6 +6,7 @@ scalaVersion := "2.13.3"
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.2.0"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.0" % "test"
+libraryDependencies += "de.codecentric.centerdevice" % "javafxsvg" % "1.3.0"
 
 /** For ScalaFX **/
 resolvers += Resolver.sonatypeRepo("snapshots")

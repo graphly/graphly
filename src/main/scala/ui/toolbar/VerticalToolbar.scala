@@ -12,14 +12,14 @@ class VerticalToolbar extends ToolBar {
   // TODO Refactor state machine so that State -> EntryState.
   val itemSelected = new Event[GCC.EditingMode.State]
 
-  private val allButtonsTg                                     = new ToggleGroup()
-  private val selectBtn                                        =
-    new ToolbarButton("Select Nodes or Edges", "assets/icons/select-32.png") {
+  private val allButtonsTg = new ToggleGroup()
+  private val selectBtn    =
+    new ToolbarButton("Select Nodes or Edges", "/assets/icons/select.svg") {
       toggleGroup = allButtonsTg
       onAction = e => { itemSelected.dispatch(GCC.EditingMode.Selecting) }
     }
-  private val sourceBtn                                        =
-    new ToolbarButton("Create Source Nodes", "assets/icons/source-32.png") {
+  private val sourceBtn    =
+    new ToolbarButton("Create Source Nodes", "/assets/icons/source.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
         itemSelected.dispatch(GCC.EditingMode.Node(Source(
@@ -46,8 +46,8 @@ class VerticalToolbar extends ToolBar {
         )))
       }
     }
-  private val forkBtn                                          =
-    new ToolbarButton("Create Fork Nodes", "assets/icons/fork-32.png") {
+  private val forkBtn      =
+    new ToolbarButton("Create Fork Nodes", "/assets/icons/fork.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
         itemSelected.dispatch(GCC.EditingMode.Node(Fork(
@@ -129,8 +129,8 @@ class VerticalToolbar extends ToolBar {
         )))
       }
     }
-  private val joinBtn                                          =
-    new ToolbarButton("Create Join Nodes", "assets/icons/source-32.png") {
+  private val joinBtn      =
+    new ToolbarButton("Create Join Nodes", "/assets/icons/source.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
         itemSelected.dispatch(GCC.EditingMode.Node(Join(
@@ -154,8 +154,8 @@ class VerticalToolbar extends ToolBar {
         )))
       }
     }
-  private val queueBtn                                         =
-    new ToolbarButton("Create Queue Nodes", "assets/icons/queue-32.png") {
+  private val queueBtn     =
+    new ToolbarButton("Create Queue Nodes", "/assets/icons/queue.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
         itemSelected.dispatch(GCC.EditingMode.Node(Server(
@@ -206,8 +206,8 @@ class VerticalToolbar extends ToolBar {
         )))
       }
     }
-  private val sinkBtn                                          =
-    new ToolbarButton("Create Sink Nodes", "assets/icons/sink-32.png") {
+  private val sinkBtn      =
+    new ToolbarButton("Create Sink Nodes", "/assets/icons/sink.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
         itemSelected.dispatch(GCC.EditingMode.Node(Sink(
@@ -215,8 +215,8 @@ class VerticalToolbar extends ToolBar {
         )))
       }
     }
-  private val edgesBtn                                         =
-    new ToolbarButton("Create Edges", "assets/icons/edge-32.png") {
+  private val edgesBtn     =
+    new ToolbarButton("Create Edges", "/assets/icons/edge.svg") {
       toggleGroup = allButtonsTg
       onAction = e => { itemSelected.dispatch(GCC.EditingMode.BeginEdge) }
     }

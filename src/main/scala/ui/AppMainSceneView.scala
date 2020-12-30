@@ -28,7 +28,11 @@ class AppMainSceneView(width: Double, height: Double)
     new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}" }
   controller.onSwitchMode +=
     (state => statusBar.text = s"Status: ${state.toolbarStatusMnemonic}")
-  controller.onSwitchMode += (state => toolbar.controllerUpdatedMode(state))
+  controller.onSwitchMode +=
+    (state => toolbar.controllerUpdatedMode(state))
+  controller.onCanvasTransform +=
+    (tuple => graphContainer.transformCanvas(tuple._1, tuple._2))
+
   toolbar.itemSelected +=
     (state => controller.redrawMode(state, graphContainer.redraw))
 

@@ -1,8 +1,9 @@
 package ui
 
 import _root_.util.Number.Implicit.DoubleExtensions
+import javafx.geometry.Point2D
 import model.{Position => ModelPosition}
-import scalafx.scene.input.MouseEvent
+import scalafx.scene.input.{MouseEvent, ScrollEvent}
 
 case class Position(x: Double, y: Double) {
   def model: ModelPosition = ModelPosition(x, y)
@@ -32,8 +33,17 @@ case class Position(x: Double, y: Double) {
 
 object Position                           {
   object Implicit {
+    // TODO: Can we somehow consolidate these two?
     implicit class MouseEventPosition(mouseEvent: MouseEvent) {
       def position: Position = { Position(mouseEvent.x, mouseEvent.y) }
+    }
+
+    implicit class ScrollEventPosition(scrollEvent: ScrollEvent) {
+      def position: Position = { Position(scrollEvent.x, scrollEvent.y ) }
+    }
+
+    implicit class Point2DPosition(point: Point2D) {
+      def position: Position = { Position(point.getX, point.getY) }
     }
   }
 

@@ -50,13 +50,12 @@ object FloatingPropertiesPanel {
           box.show()
           box.clearAll()
           val node = nodes.head
-          // TODO new node metadata stuff
-//          if (node.metadata.isEmpty) {
-//            box.text("Empty")
-//          }
-//          else {
-//            node.metadata.foreach((box.row _).tupled)
-//          }
+
+          /* TODO new node metadata
+           * Metadata is now stored in the node sections.
+           * We should integrate this data with the display systems.
+           */
+
           box.x = node.position.x + 40
           box.y = node.position.y - 25
         case _ => box.hide()
@@ -72,11 +71,12 @@ object FloatingPropertiesPanel {
   object Sim     {
     def apply(controller: GraphCanvasController[_]): FloatingPropertiesPanel = {
       val box = new FloatingPropertiesPanel
-      // TODO new model config stuff
-//      controller.model.configuration.foreach {
-//        case (title, configuration) =>
-//          box.row(title, configuration.toString)
-//      }
+
+      /* TODO new node metadata
+       * Metadata is now stored in the node sections.
+       * We should integrate this data with the display systems.
+       */
+
       box
     }
   }

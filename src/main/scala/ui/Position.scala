@@ -32,29 +32,38 @@ case class Position(x: Double, y: Double) {
 }
 
 object Position                           {
-  object Implicit {
-    // TODO: Can we somehow consolidate these two?
-    implicit class MouseEventPosition(mouseEvent: MouseEvent) {
-      def position: Position = { Position(mouseEvent.x, mouseEvent.y) }
-    }
-
-    implicit class ScrollEventPosition(scrollEvent: ScrollEvent) {
-      def position: Position = { Position(scrollEvent.x, scrollEvent.y ) }
-    }
-
-    implicit class Point2DPosition(point: Point2D) {
-      def position: Position = { Position(point.getX, point.getY) }
-    }
-  }
-
   def Zero: Position = Position(0, 0)
 }
 
-trait Positioned                          {
+trait Positioned {
   var position: Position
 
   def x: Double                  = position.x
   def x_=(updated: Double): Unit = position = position.copy(x = updated)
   def y: Double                  = position.y
   def y_=(updated: Double): Unit = position = position.copy(y = updated)
+}
+
+trait WithPosition[P] {
+  def position(positioning: P): Position
+}
+
+object WithPosition {
+  object Implicit {
+    implicit object MouseEventWithPosition extends WithPosition[MouseEvent] {
+      def position(positioning: MouseEvent): Position = Position(positioning.x, positioning.y)
+    }
+
+    implicit object ScrollEventWithPosition extends WithPosition[ScrollEvent] {
+      def position(positioning: ScrollEvent): Position = Position(positioning.x, positioning.y)
+    }
+
+    implicit object Point2DWithPosition extends WithPosition[Point2D] {
+      def position(positioning: Point2D): Position = Position(positioning.getX, positioning.getY)
+    }
+
+    implicit class PositionWithPosition[P](positioned: P)(implicit withPosition: WithPosition[P]) {
+      def position: Position = withPosition.position(positioned)
+    }
+  }
 }

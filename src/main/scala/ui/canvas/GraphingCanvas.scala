@@ -1,13 +1,12 @@
 package ui.canvas
 
 import model.Position
-import scalafx.scene.input.ScrollEvent
-import scalafx.scene.input.MouseEvent
+import scalafx.scene.input.{InputEvent, MouseEvent, ScrollEvent}
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
-import ui.{Controlled, GPosEvent}
-import ui.Position.Implicit.{MouseEventPosition, Point2DPosition, ScrollEventPosition}
+import ui.{Controlled, LogicalEvent}
+import ui.WithPosition.Implicit._
 import ui.canvas.GraphCanvasController.Redraw
 import ui.canvas.GraphingCanvas.{DrawAction, DrawActions}
 import ui.util.Background
@@ -40,46 +39,26 @@ class GraphingCanvas(
 
   // Add transformation to canvases
   def transformCanvas(
-      oDelta: Option[Position],
-      oZoom: Option[(Position, Double)]
+      delta: Option[Position],
+      zoom: Option[(Position, Double)]
   ): Unit = {
-    oDelta match {
-      case Some(delta) => {
-        canvas.translate(delta)
-        traceCanvas.translate(delta)
-      }
-
-      case None =>
+    delta foreach { delta =>
+      canvas.translate(delta)
+      traceCanvas.translate(delta)
     }
 
-    oZoom match {
-      case Some((center, amount)) => {
+    zoom foreach {
+      case (center, amount) =>
         canvas.zoom(center, amount)
         traceCanvas.zoom(center, amount)
-      }
-
-      case None =>
-        if (oDelta.isEmpty) {
-          canvas.resetTransform()
-          traceCanvas.resetTransform()
-        }
     }
   }
 
   override val state: Redraw[DrawAction] = redraw
 
-  override def augmentMouseEvent(e: MouseEvent): GPosEvent[MouseEvent] = {
-    val xform   = canvas.graphicsContext2D.getTransform
-    val xCoords = xform.inverseTransform(e.x, e.y)
-
-    new GPosEvent[MouseEvent](xCoords.position.model, e.position.model, e)
-  }
-
-  override def augmentScrollEvent(e: ScrollEvent): GPosEvent[ScrollEvent] = {
-    val xform = canvas.graphicsContext2D.getTransform
-    val xCoords = xform.inverseTransform(e.x, e.y)
-
-    new GPosEvent[ScrollEvent](xCoords.position.model, e.position.model, e)
+  override def transform(e: ui.Position): model.Position = {
+    val affine = canvas.graphicsContext2D.getTransform
+    affine.inverseTransform(e.x, e.y).position.model
   }
 }
 

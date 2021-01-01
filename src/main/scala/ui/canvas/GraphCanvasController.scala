@@ -11,13 +11,13 @@ import model.sim.Trace.Image
 import model.{Position, sim}
 import scalafx.scene.input.{Clipboard, ClipboardContent, KeyEvent, MouseButton, MouseEvent, ScrollEvent}
 import scalafx.stage.{FileChooser, Stage}
-import ui.Position.Implicit.MouseEventPosition
 import ui.canvas.Draw.Implicit.DrawShape
 import ui.canvas.GraphCanvasController.EditingMode.default
 import ui.canvas.GraphCanvasController.{EditingMode, Redraw}
-import ui.{Controller, GPosEvent, history}
+import ui.{Controller, LogicalEvent, history}
 import ui.util.Event
 import util.Default
+import ui.WithPosition.Implicit._
 
 import scala.collection.{View, immutable, mutable}
 import scala.reflect.{ClassTag, classTag}
@@ -67,15 +67,15 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
 
   private val timeline = new history.Timeline
 
-  override def onMousePress(gevt: GPosEvent[MouseEvent], update: Redraw[D]): Unit   = {
-    val event: MouseEvent = gevt.evt
+  override def onMousePress(gevt: LogicalEvent[MouseEvent], update: Redraw[D]): Unit   = {
+    val event: MouseEvent = gevt.event
 
     super.onMousePress(gevt, update)
     val position = event.position.model
 
     // So far we drag only on when we press middle mouse.
     if (event.button == MouseButton.Middle) {
-      mode = EditingMode.NavigationPan(gevt.screenPosition, mode)
+      mode = EditingMode.NavigationPan(gevt.screen, mode)
       return
     }
 
@@ -121,8 +121,8 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
   }
 
-  override def onMouseRelease(gevt: GPosEvent[MouseEvent], update: Redraw[D]): Unit = {
-    val event = gevt.evt
+  override def onMouseRelease(gevt: LogicalEvent[MouseEvent], update: Redraw[D]): Unit = {
+    val event = gevt.event
     super.onMouseRelease(gevt, update)
     val position = event.position.model
 
@@ -225,15 +225,15 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     update(Some(foreground), None)
   }
 
-  override def onMouseDragged(gevt: GPosEvent[MouseEvent], update: Redraw[D]): Unit = {
-    val event = gevt.evt
-    val position = gevt.position
+  override def onMouseDragged(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit = {
+    val event = logicalEvent.event
+    val position = logicalEvent.position
 
     mode match {
       case EditingMode.NavigationPan(prevPos, prevMode) =>
-        val scrPos = gevt.screenPosition
-        onCanvasTransform.dispatch(Some(scrPos - prevPos), None)
-        redrawMode(EditingMode.NavigationPan(scrPos, prevMode), update)
+        val delta = (logicalEvent.screen - prevPos).model
+        onCanvasTransform.dispatch((Some(delta), None))
+        redrawMode(EditingMode.NavigationPan(logicalEvent.screen, prevMode), update)
         return
       case EditingMode.DragNode(nodes, from, origin) =>
         nodes.foreach { node => node.position += position - from }
@@ -281,8 +281,8 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     update(Some(foreground), None)
   }
 
-  override def onScroll(gevt: GPosEvent[ScrollEvent], update: Redraw[D]): Unit = {
-    val event = gevt.evt
+  override def onScroll(gevt: LogicalEvent[ScrollEvent], update: Redraw[D]): Unit = {
+    val event = gevt.event
     super.onScroll(gevt, update)
 
     val oScale = Some(gevt.position, event.getDeltaY / 400)
@@ -586,7 +586,7 @@ object GraphCanvasController      {
         origin: Position
     ) extends ActiveTrace
 
-    case class NavigationPan(origin: Position, prev: State)
+    case class NavigationPan(origin: ui.Position, prev: State)
       extends Entry {
       override def toolbarStatusMnemonic: String =
         s"Panning (will return to ${prev.toolbarStatusMnemonic})"

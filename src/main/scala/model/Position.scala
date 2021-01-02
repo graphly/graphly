@@ -41,7 +41,7 @@ case class Position(x: Double, y: Double)                              {
 object Position                                                        {
   def Zero: Position = Position(0, 0)
 
-  object Implicits {
+  object Implicit {
     implicit def pairToPosition(pair: (Double, Double)): Position =
       Position(pair._1, pair._2)
   }

@@ -395,8 +395,10 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       val userClass = UserClass(
         name,
         priority,
-        referenceSource = nodes
-          .get(currClass.attribute(XML_A_CLASS_REFSOURCE).get.head.toString),
+        referenceSource = currClass.attribute(XML_A_CLASS_REFSOURCE) match {
+          case Some(nodeName) => nodes.get(nodeName.head.toString)
+          case None => None
+        },
         `type`,
         population,
         _: Option[Distribution],

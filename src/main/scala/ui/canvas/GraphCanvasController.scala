@@ -67,15 +67,15 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
 
   private val timeline = new history.Timeline
 
-  override def onMousePress(gevt: LogicalEvent[MouseEvent], update: Redraw[D]): Unit   = {
-    val event: MouseEvent = gevt.event
+  override def onMousePress(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit   = {
+    val event: MouseEvent = logicalEvent.event
 
-    super.onMousePress(gevt, update)
+    super.onMousePress(logicalEvent, update)
     val position = event.position.model
 
     // So far we drag only on when we press middle mouse.
     if (event.button == MouseButton.Middle) {
-      mode = EditingMode.NavigationPan(gevt.screen, mode)
+      mode = EditingMode.NavigationPan(logicalEvent.screenPosition, mode)
       return
     }
 
@@ -121,9 +121,9 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
   }
 
-  override def onMouseRelease(gevt: LogicalEvent[MouseEvent], update: Redraw[D]): Unit = {
-    val event = gevt.event
-    super.onMouseRelease(gevt, update)
+  override def onMouseRelease(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit = {
+    val event = logicalEvent.event
+    super.onMouseRelease(logicalEvent, update)
     val position = event.position.model
 
     mode match {
@@ -227,13 +227,13 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
 
   override def onMouseDragged(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit = {
     val event = logicalEvent.event
-    val position = logicalEvent.position
+    val position = logicalEvent.modelPosition
 
     mode match {
       case EditingMode.NavigationPan(prevPos, prevMode) =>
-        val delta = (logicalEvent.screen - prevPos).model
-        onCanvasTransform.dispatch((Some(delta), None))
-        redrawMode(EditingMode.NavigationPan(logicalEvent.screen, prevMode), update)
+        val delta = (logicalEvent.screenPosition - prevPos).model
+        onCanvasTransform.dispatch(Some(delta), None)
+        redrawMode(EditingMode.NavigationPan(logicalEvent.screenPosition, prevMode), update)
         return
       case EditingMode.DragNode(nodes, from, origin) =>
         nodes.foreach { node => node.position += position - from }
@@ -281,11 +281,11 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     update(Some(foreground), None)
   }
 
-  override def onScroll(gevt: LogicalEvent[ScrollEvent], update: Redraw[D]): Unit = {
-    val event = gevt.event
-    super.onScroll(gevt, update)
+  override def onScroll(logicalEvent: LogicalEvent[ScrollEvent], update: Redraw[D]): Unit = {
+    val event = logicalEvent.event
+    super.onScroll(logicalEvent, update)
 
-    val oScale = Some(gevt.position, event.getDeltaY / 400)
+    val oScale = Some(logicalEvent.modelPosition, event.getDeltaY / 400)
     onCanvasTransform.dispatch(None, oScale)
 
     redrawMode(mode, update)

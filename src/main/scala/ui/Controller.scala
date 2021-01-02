@@ -48,8 +48,8 @@ trait Controller[S] {
 }
 
 case class LogicalEvent[E](
-    position: model.Position,
-    screen: ui.Position,
+    modelPosition: model.Position,
+    screenPosition: ui.Position,
     event: E
 )
 

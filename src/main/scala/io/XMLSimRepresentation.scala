@@ -461,7 +461,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeRouterSection(sections(2))
       )
-//      Terminal(makeTerminalSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_QUEUE &&
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
@@ -471,7 +470,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeRouterSection(sections(2))
       )
-//    Router(makeQueueSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_QUEUE &&
       sectionNames(1) == CLASSNAME_DELAY && sectionNames(2) == CLASSNAME_ROUTER
@@ -481,7 +479,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeUnimplementedSection(sections(1)),
         makeRouterSection(sections(2))
       )
-//    Delay(makeQueueSection(sections(0)), makeDelaySection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_QUEUE &&
       (sectionNames(1) == CLASSNAME_SERVER ||
@@ -494,7 +491,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeUnimplementedSection(sections(1)),
         makeRouterSection(sections(2))
       )
-//    Server(makeQueueSection(sections(0)), makeServerSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_QUEUE &&
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_FORK
@@ -504,7 +500,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeUnimplementedSection(sections(2))
       )
-//      Fork(makeQueueSection(sections(0)), makeTunnelSection(sections(1)), makeForkSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_JOIN &&
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
@@ -514,7 +509,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeRouterSection(sections(2))
       )
-//    Join(makeJoinSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_QUEUE &&
       sectionNames(1) == CLASSNAME_LOGGER && sectionNames(2) == CLASSNAME_ROUTER
@@ -524,7 +518,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeUnimplementedSection(sections(1)),
         makeRouterSection(sections(2))
       )
-//      Logger(makeQueueSection(sections(0)), makeLoggerSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_QUEUE &&
       sectionNames(1) == CLASSNAME_CLASSSWITCH &&
@@ -535,7 +528,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeUnimplementedSection(sections(1)),
         makeRouterSection(sections(2))
       )
-//     ClassSwitch(makeQueueSection(sections(0)), makeClassSwitchSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_SEMAPHORE &&
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
@@ -545,7 +537,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeRouterSection(sections(2))
       )
-//    Semaphore(makeSemaphoreSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_JOIN &&
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_FORK
@@ -555,7 +546,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeUnimplementedSection(sections(2))
       )
-//    Scalar(makeJoinSection(sections(0)), makeTunnelSection(sections(1)), makeForkSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_STORAGE &&
       sectionNames(1) == CLASSNAME_TUNNEL &&
@@ -566,7 +556,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeUnimplementedSection(sections(2))
       )
-//    Place(makeStorageSection(sections(0)), makeTunnelSection(sections(1)), makeLinkageSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_ENABLING &&
       sectionNames(1) == CLASSNAME_TIMING && sectionNames(2) == CLASSNAME_FIRING
@@ -576,7 +565,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeUnimplementedSection(sections(1)),
         makeUnimplementedSection(sections(2))
       )
-//      Transition(makeEnablingSection(sections(0)), makeTimingSection(sections(1)), makeFiringSection(sections(2)))
 
     Unimplemented(sections.map(section => makeUnimplementedSection(section)))
   }

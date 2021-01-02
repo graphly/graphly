@@ -9,20 +9,15 @@ import model.sim.{Connection, Node}
 import model.sim.Shape.Metadata
 import model.sim.Trace.Image
 import model.{Position, sim}
-import scalafx.scene.input.{
-  Clipboard,
-  ClipboardContent,
-  MouseButton,
-  MouseEvent
-}
+import scalafx.scene.input.{Clipboard, ClipboardContent, KeyEvent, MouseButton, MouseEvent, ScrollEvent}
 import scalafx.stage.{FileChooser, Stage}
-import ui.Position.Implicit.MouseEventPosition
 import ui.canvas.Draw.Implicit.DrawShape
 import ui.canvas.GraphCanvasController.EditingMode.default
 import ui.canvas.GraphCanvasController.{EditingMode, Redraw}
-import ui.{Controller, history}
+import ui.{Controller, LogicalEvent, history}
 import ui.util.Event
 import util.Default
+import ui.WithPosition.Implicit._
 
 import scala.collection.{View, immutable, mutable}
 import scala.reflect.{ClassTag, classTag}
@@ -31,7 +26,10 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     val draw: Draw[D, sim.Shape]
 ) extends Controller[Redraw[D]] {
   // Callbacks to run when we switch the mode
-  val onSwitchMode                                                             = new Event[EditingMode.State]
+  val onSwitchMode      = new Event[EditingMode.State]
+  val onCanvasTransform = new Event[(Option[Position],
+                                     Option[(Position, Double)]
+                                    )]
   private val counters: mutable.Map[(Metadata, String, Position) => Node, Int] =
     mutable.Map(
       sim.Source -> 0,
@@ -69,9 +67,17 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
 
   private val timeline = new history.Timeline
 
-  override def onMousePress(event: MouseEvent, update: Redraw[D]): Unit   = {
-    super.onMousePress(event, update)
+  override def onMousePress(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit   = {
+    val event: MouseEvent = logicalEvent.event
+
+    super.onMousePress(logicalEvent, update)
     val position = event.position.model
+
+    // So far we drag only on when we press middle mouse.
+    if (event.button == MouseButton.Middle) {
+      mode = EditingMode.NavigationPan(logicalEvent.screenPosition, mode)
+      return
+    }
 
     mode match {
       case traceMode: EditingMode.Trace =>
@@ -115,11 +121,16 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
   }
 
-  override def onMouseRelease(event: MouseEvent, update: Redraw[D]): Unit = {
-    super.onMouseRelease(event, update)
+  override def onMouseRelease(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit = {
+    val event = logicalEvent.event
+    super.onMouseRelease(logicalEvent, update)
     val position = event.position.model
 
     mode match {
+      case EditingMode.NavigationPan(_, prevMode) =>
+        redrawMode(prevMode, update)
+        return
+
       case traceMode: EditingMode.Trace =>
         traceMode match {
           // Stopped dragging traces. Leave them selected.
@@ -214,11 +225,18 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     update(Some(foreground), None)
   }
 
-  override def onMouseDragged(event: MouseEvent, update: Redraw[D]): Unit = {
-    val position = event.position.model
+  override def onMouseDragged(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit = {
+    val event = logicalEvent.event
+    val position = logicalEvent.modelPosition
+
     mode match {
+      case EditingMode.NavigationPan(prevPos, prevMode) =>
+        val delta = (logicalEvent.screenPosition - prevPos).model
+        onCanvasTransform.dispatch(Some(delta), None)
+        redrawMode(EditingMode.NavigationPan(logicalEvent.screenPosition, prevMode), update)
+        return
       case EditingMode.DragNode(nodes, from, origin) =>
-        nodes.foreach { node => node.position += event.position.model - from }
+        nodes.foreach { node => node.position += position - from }
         mode = EditingMode.DragNode(nodes, position, origin)
       case EditingMode.SelectNode(nodes) if nodes.exists(_.hits[D](position)) =>
         mode = EditingMode.DragNode(nodes, position, position)
@@ -261,6 +279,16 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
 
     update(Some(foreground), None)
+  }
+
+  override def onScroll(logicalEvent: LogicalEvent[ScrollEvent], update: Redraw[D]): Unit = {
+    val event = logicalEvent.event
+    super.onScroll(logicalEvent, update)
+
+    val oScale = Some(logicalEvent.modelPosition, event.getDeltaY / 400)
+    onCanvasTransform.dispatch(None, oScale)
+
+    redrawMode(mode, update)
   }
 
   private def modelToString(model: sim.Sim): String                       = {
@@ -558,5 +586,10 @@ object GraphCanvasController      {
         origin: Position
     ) extends ActiveTrace
 
+    case class NavigationPan(origin: ui.Position, prev: State)
+      extends Entry {
+      override def toolbarStatusMnemonic: String =
+        s"Panning (will return to ${prev.toolbarStatusMnemonic})"
+    }
   }
 }

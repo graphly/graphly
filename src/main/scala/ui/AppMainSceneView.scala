@@ -30,7 +30,11 @@ class AppMainSceneView(width: Double, height: Double)
     new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}" }
   controller.onSwitchMode +=
     (state => statusBar.text = s"Status: ${state.toolbarStatusMnemonic}")
-  controller.onSwitchMode += (state => toolbar.controllerUpdatedMode(state))
+  controller.onSwitchMode +=
+    (state => toolbar.controllerUpdatedMode(state))
+  controller.onCanvasTransform +=
+    (tuple => graphContainer.transformCanvas(tuple._1, tuple._2))
+
   toolbar.itemSelected +=
     (state => controller.redrawMode(state, graphContainer.redraw))
 
@@ -80,23 +84,44 @@ class AppMainSceneView(width: Double, height: Double)
         new Menu("Edit")  {
           items = List(
             new MenuItem("Delete") {
-              onAction = (_: ActionEvent) => controller.deleteSelected(graphContainer.redraw)
+              onAction = (_: ActionEvent) =>
+                controller.deleteSelected(graphContainer.redraw)
               accelerator = new KeyCodeCombination(KeyCode.Delete)
             },
             new SeparatorMenuItem(),
-            new MenuItem("Copy") {
-              onAction = (_: ActionEvent) => controller.copySelectedNodes(graphContainer.redraw)
+            new MenuItem("Copy")   {
+              onAction = (_: ActionEvent) =>
+                controller.copySelectedNodes(graphContainer.redraw)
               accelerator =
                 new KeyCodeCombination(KeyCode.C, KeyCombination.ControlDown)
             },
-            new MenuItem("Paste") {
-              onAction = (_: ActionEvent) => controller.pasteSelectedNodes(graphContainer.redraw)
-              accelerator = new KeyCodeCombination(KeyCode.P, KeyCombination.ControlDown)
+            new MenuItem("Paste")  {
+              onAction = (_: ActionEvent) =>
+                controller.pasteSelectedNodes(graphContainer.redraw)
+              accelerator =
+                new KeyCodeCombination(KeyCode.P, KeyCombination.ControlDown)
             },
-            new MenuItem("Cut") {
-              onAction = (_: ActionEvent) => controller.cutSelectedNodes(graphContainer.redraw);
-              accelerator = new KeyCodeCombination(KeyCode.X, KeyCombination.ControlDown)
+            new MenuItem("Cut")    {
+              onAction = (_: ActionEvent) =>
+                controller.cutSelectedNodes(graphContainer.redraw)
+              accelerator =
+                new KeyCodeCombination(KeyCode.X, KeyCombination.ControlDown)
             },
+            new MenuItem("Undo")   {
+              onAction =
+                (_: ActionEvent) => controller.undo(graphContainer.redraw)
+              accelerator =
+                new KeyCodeCombination(KeyCode.Z, KeyCombination.ControlDown)
+            },
+            new MenuItem("Redo")   {
+              onAction =
+                (_: ActionEvent) => controller.redo(graphContainer.redraw)
+              accelerator = new KeyCodeCombination(
+                KeyCode.Z,
+                KeyCombination.ControlDown,
+                KeyCombination.ShiftDown
+              )
+            }
           )
         },
         new Menu("Trace") {

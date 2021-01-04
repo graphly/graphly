@@ -160,16 +160,15 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
     val measures = parseMeasures(simulationAssets, nodes, userClasses)
 
-    val unconfiguredSim = Sim(
+    val sim = Sim(
       mutable.HashSet.from(nodes.values),
       connections,
       mutable.HashSet.from(userClasses.values),
       measures,
       mutable.ArrayBuffer.empty,
+      parseConfiguration(xmlSim),
       results
     )
-
-    val sim = parseSim(xmlSim, unconfiguredSim)
 
     nodes.values.foreach(println)
     connections.foreach(println)
@@ -288,74 +287,77 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       )
     )
 
-  def parseSim(root: xml.Elem, model: Sim): Sim    = {
+  def parseConfiguration(root: xml.Elem): Configuration = {
 
+    val configuration = Configuration()
     // Gets optional parameter simulation seed
-    val seed = root.attribute(XML_A_ROOT_SEED)
+    val seed          = root.attribute(XML_A_ROOT_SEED)
     if (seed.isDefined) {
-      model.useRandomSeed = false
-      model.seed = seed.get.head.toString.toInt
+      configuration.useRandomSeed = false
+      configuration.seed = seed.get.head.toString.toInt
     }
 
     // Gets optional parameter maximum time
     val maxTime = root.attribute(XML_A_ROOT_DURATION)
     if (maxTime.isDefined) {
-      model.maximumDuration = maxTime.get.head.toString.toDouble
+      configuration.maximumDuration = maxTime.get.head.toString.toDouble
     }
 
     // Gets optional parameter maximum simulated time
     val maxSimulated = root.attribute(XML_A_ROOT_SIMULATED)
     if (maxSimulated.isDefined) {
-      model.maxSimulatedTime = maxSimulated.get.head.toString.toDouble
+      configuration.maxSimulatedTime = maxSimulated.get.head.toString.toDouble
     }
 
     // Gets optional parameter polling interval
     val polling = root.attribute(XML_A_ROOT_POLLING)
     if (polling.isDefined) {
-      model.pollingInterval = polling.get.head.toString.toDouble
+      configuration.pollingInterval = polling.get.head.toString.toDouble
     }
 
     // Gets optional parameter maximum samples
     val maxSamples = root.attribute(XML_A_ROOT_MAXSAMPLES)
     if (maxSamples.isDefined) {
-      model.maxSamples = maxSamples.get.head.toString.toInt
+      configuration.maxSamples = maxSamples.get.head.toString.toInt
     }
 
     // Gets optional parameter disable statistic
     val disableStatistic = root.attribute(XML_A_ROOT_DISABLESTATISTIC)
     if (disableStatistic.isDefined) {
-      model.disableStatistic = disableStatistic.get.head.toString.toBoolean
+      configuration.disableStatistic =
+        disableStatistic.get.head.toString.toBoolean
     }
 
     // Gets optional parameter maximum events
     val maxEvents = root.attribute(XML_A_ROOT_MAXEVENTS)
     if (maxEvents.isDefined) {
-      model.maxEvents = maxEvents.get.head.toString.toInt
+      configuration.maxEvents = maxEvents.get.head.toString.toInt
     }
 
     // Gets optional parameters log path, replace policy, and delimiter#
     val logPath        = root.attribute(XML_A_ROOT_LOGPATH)
     if (logPath.isDefined) {
       val dir = new File(logPath.toString)
-      if (dir.isDirectory) model.loggingPath = dir.getAbsolutePath
+      if (dir.isDirectory) configuration.loggingPath = dir.getAbsolutePath
     }
 
     val logReplaceMode = root.attribute(XML_A_ROOT_LOGREPLACE)
     if (logReplaceMode.isDefined) {
-      model.loggingAutoAppend = logReplaceMode.get.head.toString
+      configuration.loggingAutoAppend = logReplaceMode.get.head.toString
     }
 
     val logDelimiter = root.attribute(XML_A_ROOT_LOGDELIM)
     if (logDelimiter.isDefined) {
-      model.loggingDelim = logDelimiter.get.head.toString
+      configuration.loggingDelim = logDelimiter.get.head.toString
     }
 
     val logDecimalSeparator = root.attribute(XML_A_ROOT_LOGDECIMALSEPARATOR)
     if (logDecimalSeparator.isDefined) {
-      model.loggingDecimalSeparator = logDecimalSeparator.get.head.toString
+      configuration.loggingDecimalSeparator =
+        logDecimalSeparator.get.head.toString
     }
 
-    model
+    configuration
   }
 
   protected def parseClasses(

@@ -6,17 +6,12 @@ import scalafx.scene.layout.GridPane
 import scalafx.scene.text.{Font, Text}
 
 class PropertiesPanel extends GridPane {
-  private var rowCounter = 1
-  private val title      = new Text("Placeholder")
-  title.setFont(Font.font(20))
-  addRow(0, title)
+  private var rowCounter = 0
   managed <== visible
 
   def hide(): Unit = { visible = false }
 
   def show(): Unit = { visible = true }
-
-  def title_=(title: String): Unit = { this.title.text = title }
 
   def textField(title: String, placeholder: String): Unit = {
     val textField = new TextField()
@@ -37,8 +32,8 @@ class PropertiesPanel extends GridPane {
   }
 
   def clearAll(): Unit                                    = {
-    children.retainAll(title)
-    rowCounter = 1
+    children.removeAll()
+    rowCounter = 0
   }
 }
 
@@ -50,11 +45,9 @@ object PropertiesPanel {
       controller.onSwitchMode += {
         case GraphCanvasController.EditingMode.SelectNode(nodes) =>
           menu.clearAll()
-          menu.title_=(nodes.head.name)
           nodes.head.metadata.foreach((menu.textField _).tupled)
           menu.show()
         case _: GraphCanvasController.EditingMode.SelectEdge =>
-          menu.title_=("Edge")
           menu.show()
         case _ => menu.hide()
       }
@@ -70,7 +63,6 @@ object PropertiesPanel {
   object Sim     {
     def apply(controller: GraphCanvasController[_]): PropertiesPanel = {
       val panel = new PropertiesPanel
-      panel.title_=("Sim")
       controller.model.configuration.foreach {
         case (title, configuration) =>
           panel.textField(title, configuration.toString)

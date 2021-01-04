@@ -21,7 +21,7 @@ class FloatingPropertiesPanel extends GridPane {
   def row(name: String, value: String): Unit = {
     val shortenedName = if (name.length > 10) name.substring(0, 10) + "..." else name
     val nameElem = new Text(shortenedName + ":")
-    val valueElem = if (value.strip().length == 0) new Text("null") else new Text(value)
+    val valueElem = if (value.strip().isEmpty) new Text("null") else new Text(value)
     this.addRow(rowCounter, nameElem, valueElem)
     GridPane.setHalignment(valueElem, HPos.Right)
     rowCounter += 1
@@ -59,7 +59,7 @@ object FloatingPropertiesPanel {
         case _ =>
           box.hide()
       }
-      box.setStyle("-fx-background-color: lightgray;")
+      box.setStyle("-fx-background-color: #EEEEEE;")
       box.setHgap(10)
       box.setVgap(10)
       box.setPadding(Insets(10, 10, 10, 10))

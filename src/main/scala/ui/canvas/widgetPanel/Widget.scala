@@ -1,16 +1,17 @@
 package ui.canvas.widgetPanel
 
-import scalafx.scene.layout.{BorderPane, Pane}
+import scalafx.scene.layout.BorderPane
 import scalafx.Includes._
 import scalafx.scene.input.MouseEvent
+import scalafx.scene.shape.Rectangle
 
 class Widget(title: String) extends BorderPane {
-  private val titleBarHeight = 30
-  private val titleBar = new TitleBar(title, titleBarHeight)
+  private val titleBar = new TitleBar(title)
+  private var minimised = false
+//  private var clip = new Rectangle()
+  style = "-fx-background-color: #fdfdfd;"
   top = titleBar
   managed <== visible
-
-  titleBar.close.onMouseClicked = (_: MouseEvent) => close()
 
   titleBar.minimise.onMouseClicked = (_: MouseEvent) => minimise()
 
@@ -19,6 +20,15 @@ class Widget(title: String) extends BorderPane {
   }
 
   def minimise(): Unit = {
-    minHeight = titleBarHeight
+    if (minimised) {
+      maxHeight = 10
+      titleBar.minimise.setScaleY(1)
+    }
+    else {
+      maxHeight = 10
+      prefHeight = 30
+      titleBar.minimise.setScaleY(-1)
+    }
+    minimised = !minimised
   }
 }

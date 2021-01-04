@@ -5,26 +5,25 @@ import scalafx.scene.image.ImageView
 import scalafx.scene.layout.{HBox, Pane, Priority, StackPane}
 import scalafx.scene.text.Text
 
-class TitleBar(title: String, height: Int) extends HBox {
+class TitleBar(title: String) extends HBox {
   private val titleElem = new Text(title)
-  val close: StackPane = icon("./assets/icons/close-32.png")
-  val minimise: StackPane = icon("./assets/icons/minimise-32.png")
-  minimise.setPadding(Insets(0, 13, 0, 0))
+  val minimise: StackPane = icon("./assets/icons/triangle-32.png")
+  minimise.setPadding(Insets(0, 8, 0, 0))
   val filler = new Pane()
 
-  prefHeight = height
+  prefHeight = 30
   fillHeight = true
   alignment = Pos.CenterLeft
   padding = Insets(5, 10, 5, 10)
-  style = "-fx-background-color: #D4D4D4;"
+  style = "-fx-background-color: #fcfcfc;"
 
-  children.addAll(titleElem, filler, minimise, close)
+  children.addAll(titleElem, filler, minimise)
   HBox.setHgrow(filler, Priority.Always)
 
   def icon(path: String): StackPane = {
     val iconImage = new ImageView(path)
-    iconImage.fitWidth = 12
-    iconImage.fitHeight = 12
+    iconImage.preserveRatio = true
+    iconImage.fitWidth = 11
     iconImage.opacity = 0.6
     iconImage.pickOnBounds = true
 

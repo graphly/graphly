@@ -1,7 +1,6 @@
 package ui
 
 import java.io.File
-
 import io.Implicit.SimableRepresention
 import io.XMLSimRepresentation.Implicit.xmlSimRepresentation
 import javafx.event.ActionEvent
@@ -12,7 +11,7 @@ import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
 import ui.canvas.SimDrawAction._
-import ui.canvas.widgetPanel.WidgetPanel
+import ui.canvas.widgetPanel.{PropertiesWidget, WidgetPanel}
 import ui.canvas.{GraphCanvasController, GraphingCanvas}
 import ui.toolbar.VerticalToolbar
 
@@ -23,6 +22,10 @@ class AppMainSceneView(width: Double, height: Double)
     new GraphCanvasController[GraphingCanvas.DrawAction](model)
   private val graphContainer = new GraphingCanvas(controller)
   private val rightMenu      = WidgetPanel.Element(controller)
+  private val sample = new PropertiesWidget("A wdiget")
+  sample.propertiesPanel.textField("testing", "testing123")
+  sample.propertiesPanel.dropdown("drop", List("1", "2", "3"), "placeholder")
+  rightMenu.widget(sample)
   rightMenu.prefWidth <== graphContainer.width / 3
   private val toolbar        = new VerticalToolbar
 

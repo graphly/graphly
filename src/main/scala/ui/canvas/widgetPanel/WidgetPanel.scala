@@ -18,8 +18,7 @@ object WidgetPanel {
       panel.setSpacing(8)
       panel.minWidth = 200
       panel.maxWidth = 400
-      panel.setStyle("-fx-background-color: #D4D4D4;")
-      panel.widget(Widget("testing123"))
+      panel.setStyle("-fx-background-color: #f4f4f4;")
       panel
     }
   }

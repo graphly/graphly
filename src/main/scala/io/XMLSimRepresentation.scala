@@ -273,7 +273,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   private def nodeFromXML(
       xmlNode: xml.Node,
       distributions: mutable.Map[String, Distribution]
-  ): Option[(String, (Position, Boolean) => Node)] =
+  ): Option[(String, (Position, Boolean) => Node)]      =
     for {
       names <- xmlNode.attribute(XML_A_STATION_NAME)
       name  <- names.headOption
@@ -581,19 +581,22 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   ): SourceSection                                                             = {
     val refClassNames: mutable.Buffer[String] = mutable.Buffer.empty
 
-    val strategies =
-      sectionXml.child(1).child.tail.filterNot(x => x.toString == "\n")
-    for (i <- strategies.indices.filter(n => n % 2 == 0)) {
-      breakable {
-        val refClassName: String = strategies(i).child.head.toString()
-        // If the class is closed, then this will just contain "null" & isn't relevant
-        val distributionXml      = strategies(i + 1)
-        if (distributionXml.head.toString() == "null") break()
+    val strategiesParent = sectionXml.child(1).child
 
-        val distribution: Distribution =
-          UnimplementedDistribution(distributionXml)
-        distributions.put(refClassName, distribution)
-        refClassNames.addOne(refClassName)
+    if (strategiesParent.nonEmpty) {
+      val strategies = strategiesParent.tail.filterNot(x => x.toString == "\n")
+      for (i <- strategies.indices.filter(n => n % 2 == 0)) {
+        breakable {
+          val refClassName: String = strategies(i).child.head.toString()
+          // If the class is closed, then this will just contain "null" & isn't relevant
+          val distributionXml      = strategies(i + 1)
+          if (distributionXml.head.toString() == "null") break()
+
+          val distribution: Distribution =
+            UnimplementedDistribution(distributionXml)
+          distributions.put(refClassName, distribution)
+          refClassNames.addOne(refClassName)
+        }
       }
     }
 

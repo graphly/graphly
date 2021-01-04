@@ -16,37 +16,52 @@ import scala.util.control.Breaks.{break, breakable}
 
 // Please note, this class is completely dependent on JMT and its file format
 
+
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
-  def representNode(node: Node): xml.Elem    = {
+  def representTypeSection(ts: TypeSection): xml.Node = {
+    ts match {
+      case SourceSection(refClassNames) => ???
+      case TunnelSection() => <section className="ServiceTunnel"/>
+      case RouterSection(routingStrategy) => <section className="Router">
+        {routingStrategy}
+      </section>
+      case QueueSection(queueingStrategy) => <section className="Queue">
+        {queueingStrategy}
+      </section>
+      case UnimplementedSection(raw) => raw
+      case _ => ???
+    }
+  }
+
+  def representNode(node: Node): xml.Elem = {
     val sections: Array[xml.Node] = node.nodeType match {
-      case Source(sourceSection, tunnelSection, routerSection) => ???
-//        Array(sourceSection.raw, tunnelSection.raw, routerSection.raw)
-      case Sink(sinkSection) => ??? //Array(sinkSection.raw)
-      case Terminal(terminalSection, tunnelSection, routerSection) => ???
-//        Array(terminalSection.raw, tunnelSection.raw, routerSection.raw)
-      case Router(queueSection, tunnelSection, routerSection) => ???
-//        Array(queueSection.raw, tunnelSection.raw, routerSection.raw)
-      case Delay(queueSection, delaySection, routerSection) => ???
-//        Array(queueSection.raw, delaySection.raw, routerSection.raw)
-      case Server(queueSection, serverSection, routerSection) => ???
-//        Array(queueSection.raw, serverSection.raw, routerSection.raw)
-      case Fork(queueSection, tunnelSection, forkSection) => ???
-//        Array(queueSection.raw, tunnelSection.raw, forkSection.raw)
-      case Join(joinSection, tunnelSection, routerSection) => ???
-//        Array(joinSection.raw, tunnelSection.raw, routerSection.raw)
-      case Logger(queueSection, loggerSection, routerSection) => ???
-//        Array(queueSection.raw, loggerSection.raw, routerSection.raw)
-      case ClassSwitch(queueSection, classSwitch, routerSection) => ???
-//        Array(queueSection.raw, classSwitch.raw, routerSection.raw)
-      case Semaphore(semaphoreSection, tunnelSection, routerSection) => ???
-//        Array(semaphoreSection.raw, tunnelSection.raw, routerSection.raw)
-      case Scalar(joinSection, tunnelSection, forkSection) => ???
-//        Array(joinSection.raw, tunnelSection.raw, forkSection.raw)
-      case Place(storageSection, tunnelSection, linkageSection) => ???
-//        Array(storageSection.raw, tunnelSection.raw, linkageSection.raw)
-      case Transition(enablingSection, timingSection, firingSection) => ???
-//        Array(enablingSection.raw, timingSection.raw, firingSection.raw)
-      case Unimplemented(sections) => sections.map(x => x.raw).toArray
+      case Source(sourceSection, tunnelSection, routerSection) =>
+        Array(sourceSection, tunnelSection, routerSection).map(representTypeSection)
+      case Sink(sinkSection) => Array(representTypeSection(sinkSection))
+      case Terminal(terminalSection, tunnelSection, routerSection) =>
+        Array(terminalSection, tunnelSection, routerSection).map(representTypeSection)
+      case Router(queueSection, tunnelSection, routerSection) =>
+        Array(queueSection, tunnelSection, routerSection).map(representTypeSection)
+      case Delay(queueSection, delaySection, routerSection) =>
+        Array(queueSection, delaySection, routerSection).map(representTypeSection)
+      case Server(queueSection, serverSection, routerSection) =>
+        Array(queueSection, serverSection, routerSection).map(representTypeSection)
+      case Fork(queueSection, tunnelSection, forkSection) =>
+        Array(queueSection, tunnelSection, forkSection).map(representTypeSection)
+      case Join(joinSection, tunnelSection, routerSection) =>
+        Array(joinSection, tunnelSection, routerSection).map(representTypeSection)
+      case Logger(queueSection, loggerSection, routerSection) =>
+        Array(queueSection, loggerSection, routerSection).map(representTypeSection)
+      case ClassSwitch(queueSection, classSwitch, routerSection) =>
+        Array(queueSection, classSwitch, routerSection).map(representTypeSection)
+      case Semaphore(semaphoreSection, tunnelSection, routerSection) =>
+        Array(semaphoreSection, tunnelSection, routerSection).map(representTypeSection
+      case Scalar(joinSection, tunnelSection, forkSection) =>
+        Array(joinSection, tunnelSection, forkSection).map(representTypeSection)
+      case Place(storageSection, tunnelSection, linkageSection) =>
+        Array(storageSection, tunnelSection, linkageSection).map(representTypeSection)
+      case Transition(enablingSection, timingSection, firingSection) =>
+        Array(enablingSection, timingSection, firingSection).map(representTypeSection)
     }
 
     <node name={node.name}>
@@ -56,12 +71,10 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
   def representClass(u: UserClass): xml.Elem = {
     if (u.referenceSource.isDefined) {
-      <userClass name={u.name} priority={u.priority.toString} referenceSource={
-        u.referenceSource.get.name
-      } type={u.`type`.getClass.getSimpleName}/>
+        <userClass name={u.name} priority={u.priority.toString} referenceSource={u.referenceSource.get.name} type={u.`type`.getClass.getSimpleName.stripSuffix("$")}/>
     } else {
-      <userClass name={u.name} priority={u.priority.toString} 
-                   type={u.`type`.getClass.getSimpleName}/>
+        <userClass name={u.name} priority={u.priority.toString}
+                   type={u.`type`.getClass.getSimpleName.stripSuffix("$")}/>
     }
   }
 

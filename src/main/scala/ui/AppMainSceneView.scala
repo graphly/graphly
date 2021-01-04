@@ -1,7 +1,6 @@
 package ui
 
 import java.io.File
-
 import io.Implicit.SimableRepresention
 import io.XMLSimRepresentation.Implicit.xmlSimRepresentation
 import javafx.event.ActionEvent
@@ -12,7 +11,8 @@ import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
 import ui.canvas.SimDrawAction._
-import ui.canvas.{GraphCanvasController, GraphingCanvas, PropertiesPanel}
+import ui.canvas.{GraphCanvasController, GraphingCanvas}
+import ui.properties.PropertiesPanel
 import ui.toolbar.VerticalToolbar
 
 class AppMainSceneView(width: Double, height: Double)

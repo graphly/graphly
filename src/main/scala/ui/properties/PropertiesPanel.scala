@@ -1,9 +1,10 @@
-package ui.canvas
+package ui.properties
 
 import scalafx.geometry.Pos
 import scalafx.scene.control.{ComboBox, Label, TextField}
 import scalafx.scene.layout.GridPane
 import scalafx.scene.text.{Font, Text}
+import ui.canvas.GraphCanvasController
 
 class PropertiesPanel extends GridPane {
   private var rowCounter = 1
@@ -46,18 +47,18 @@ object PropertiesPanel {
   object Element {
     def apply(controller: GraphCanvasController[_]): PropertiesPanel = {
       val menu = new PropertiesPanel
-      menu.visible = false
+      menu.visible = true
       controller.onSwitchMode += {
         case GraphCanvasController.EditingMode.SelectNode(nodes) =>
           menu.clearAll()
           menu.title_=(nodes.head.name)
           // TODO new node metadata stuff
 //          nodes.head.metadata.foreach((menu.textField _).tupled)
-          menu.show()
+          //menu.show()
         case _: GraphCanvasController.EditingMode.SelectEdge =>
           menu.title_=("Edge")
-          menu.show()
-        case _ => menu.hide()
+          //menu.show()
+        case _ =>
       }
       menu.setHgap(10)
       menu.setVgap(10)

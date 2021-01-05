@@ -28,6 +28,14 @@ class PropertiesPanel extends GridPane {
     rowCounter += 1
   }
 
+  def integerField(title: String, placeholder: Int): Unit = {
+    ???
+  }
+
+  def floatField(title: String, placeholder: Float): Unit = {
+    ???
+  }
+
   def dropdown(
       title: String,
       options: List[String],

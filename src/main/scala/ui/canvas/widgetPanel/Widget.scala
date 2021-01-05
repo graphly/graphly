@@ -3,14 +3,12 @@ package ui.canvas.widgetPanel
 import scalafx.scene.layout.BorderPane
 import scalafx.Includes._
 import scalafx.scene.input.MouseEvent
-import scalafx.scene.shape.Rectangle
 
 class Widget(title: String) extends BorderPane {
   private val titleBar = new TitleBar(title)
   private var minimised = false
-//  private var clip = new Rectangle()
-  style = "-fx-background-color: #fdfdfd;"
   top = titleBar
+  styleClass = List("widget")
   managed <== visible
 
   titleBar.minimise.onMouseClicked = (_: MouseEvent) => minimise()
@@ -21,12 +19,11 @@ class Widget(title: String) extends BorderPane {
 
   def minimise(): Unit = {
     if (minimised) {
-      maxHeight = 10
+      center.value.setVisible(true)
       titleBar.minimise.setScaleY(1)
     }
     else {
-      maxHeight = 10
-      prefHeight = 30
+      center.value.setVisible(false)
       titleBar.minimise.setScaleY(-1)
     }
     minimised = !minimised

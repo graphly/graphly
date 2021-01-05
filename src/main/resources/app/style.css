@@ -1,0 +1,16 @@
+.widget {
+    -fx-background-color: #fefefe;
+}
+
+.widget-panel {
+    -fx-background-color: #eeeeee;
+}
+
+.widget-titlebar {
+    -fx-padding: 0 7 0 12;
+}
+
+.prop-panel {
+    -fx-padding: 12;
+    -fx-vgap: 10;
+}

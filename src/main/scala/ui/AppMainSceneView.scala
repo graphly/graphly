@@ -22,10 +22,14 @@ class AppMainSceneView(width: Double, height: Double)
     new GraphCanvasController[GraphingCanvas.DrawAction](model)
   private val graphContainer = new GraphingCanvas(controller)
   private val rightMenu      = WidgetPanel.Element(controller)
-  private val sample = new PropertiesWidget("A wdiget")
+  private val sample = new PropertiesWidget("Widget 1")
   sample.propertiesPanel.textField("testing", "testing123")
   sample.propertiesPanel.dropdown("drop", List("1", "2", "3"), "placeholder")
+  private val sample2 = new PropertiesWidget("Widget 2")
+  sample2.propertiesPanel.textField("testing", "testing123")
+  sample2.propertiesPanel.dropdown("drop", List("1", "2", "3"), "placeholder")
   rightMenu.widget(sample)
+  rightMenu.widget(sample2)
   rightMenu.prefWidth <== graphContainer.width / 3
   private val toolbar        = new VerticalToolbar
 

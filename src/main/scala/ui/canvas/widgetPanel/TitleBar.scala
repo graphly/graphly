@@ -14,8 +14,7 @@ class TitleBar(title: String) extends HBox {
   prefHeight = 30
   fillHeight = true
   alignment = Pos.CenterLeft
-  padding = Insets(5, 10, 5, 10)
-  style = "-fx-background-color: #fcfcfc;"
+  styleClass = List("widget-titlebar")
 
   children.addAll(titleElem, filler, minimise)
   HBox.setHgrow(filler, Priority.Always)

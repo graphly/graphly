@@ -16,7 +16,6 @@ import scala.util.control.Breaks.{break, breakable}
 
 // Please note, this class is completely dependent on JMT and its file format
 
-
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   def representTypeSection(ts: TypeSection): xml.Node = {
     ts match {
@@ -33,35 +32,47 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     }
   }
 
-  def representNode(node: Node): xml.Elem = {
+  def representNode(node: Node): xml.Elem    = {
     val sections: Array[xml.Node] = node.nodeType match {
       case Source(sourceSection, tunnelSection, routerSection) =>
-        Array(sourceSection, tunnelSection, routerSection).map(representTypeSection)
+        Array(sourceSection, tunnelSection, routerSection)
+          .map(representTypeSection)
       case Sink(sinkSection) => Array(representTypeSection(sinkSection))
       case Terminal(terminalSection, tunnelSection, routerSection) =>
-        Array(terminalSection, tunnelSection, routerSection).map(representTypeSection)
+        Array(terminalSection, tunnelSection, routerSection)
+          .map(representTypeSection)
       case Router(queueSection, tunnelSection, routerSection) =>
-        Array(queueSection, tunnelSection, routerSection).map(representTypeSection)
+        Array(queueSection, tunnelSection, routerSection)
+          .map(representTypeSection)
       case Delay(queueSection, delaySection, routerSection) =>
-        Array(queueSection, delaySection, routerSection).map(representTypeSection)
+        Array(queueSection, delaySection, routerSection)
+          .map(representTypeSection)
       case Server(queueSection, serverSection, routerSection) =>
-        Array(queueSection, serverSection, routerSection).map(representTypeSection)
+        Array(queueSection, serverSection, routerSection)
+          .map(representTypeSection)
       case Fork(queueSection, tunnelSection, forkSection) =>
-        Array(queueSection, tunnelSection, forkSection).map(representTypeSection)
+        Array(queueSection, tunnelSection, forkSection)
+          .map(representTypeSection)
       case Join(joinSection, tunnelSection, routerSection) =>
-        Array(joinSection, tunnelSection, routerSection).map(representTypeSection)
+        Array(joinSection, tunnelSection, routerSection)
+          .map(representTypeSection)
       case Logger(queueSection, loggerSection, routerSection) =>
-        Array(queueSection, loggerSection, routerSection).map(representTypeSection)
+        Array(queueSection, loggerSection, routerSection)
+          .map(representTypeSection)
       case ClassSwitch(queueSection, classSwitch, routerSection) =>
-        Array(queueSection, classSwitch, routerSection).map(representTypeSection)
+        Array(queueSection, classSwitch, routerSection)
+          .map(representTypeSection)
       case Semaphore(semaphoreSection, tunnelSection, routerSection) =>
-        Array(semaphoreSection, tunnelSection, routerSection).map(representTypeSection
+        Array(semaphoreSection, tunnelSection, routerSection)
+          .map(representTypeSection)
       case Scalar(joinSection, tunnelSection, forkSection) =>
         Array(joinSection, tunnelSection, forkSection).map(representTypeSection)
       case Place(storageSection, tunnelSection, linkageSection) =>
-        Array(storageSection, tunnelSection, linkageSection).map(representTypeSection)
+        Array(storageSection, tunnelSection, linkageSection)
+          .map(representTypeSection)
       case Transition(enablingSection, timingSection, firingSection) =>
-        Array(enablingSection, timingSection, firingSection).map(representTypeSection)
+        Array(enablingSection, timingSection, firingSection)
+          .map(representTypeSection)
     }
 
     <node name={node.name}>
@@ -71,9 +82,11 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
   def representClass(u: UserClass): xml.Elem = {
     if (u.referenceSource.isDefined) {
-        <userClass name={u.name} priority={u.priority.toString} referenceSource={u.referenceSource.get.name} type={u.`type`.getClass.getSimpleName.stripSuffix("$")}/>
+      <userClass name={u.name} priority={u.priority.toString} referenceSource={
+        u.referenceSource.get.name
+      } type={u.`type`.getClass.getSimpleName.stripSuffix("$")}/>
     } else {
-        <userClass name={u.name} priority={u.priority.toString}
+      <userClass name={u.name} priority={u.priority.toString}
                    type={u.`type`.getClass.getSimpleName.stripSuffix("$")}/>
     }
   }

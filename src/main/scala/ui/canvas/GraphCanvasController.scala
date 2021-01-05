@@ -5,7 +5,7 @@ import java.io.{File, FileInputStream, PrintWriter}
 import io.Implicit._
 import io.XMLSimRepresentation.Implicit._
 import model.sim.Trace.Image
-import model.sim.{Connection, Node, NodeType}
+import model.sim.{Configuration, Connection, Node, NodeType}
 import model.{Position, sim}
 import scalafx.scene.input.{
   Clipboard,
@@ -406,11 +406,13 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     val simEdges = getEdgesWithBothEndpoints(nodes)
 
     new sim.Sim(
-      simNodes,            // nodes
-      simEdges,            // connections
-      mutable.Set.empty,   // classes
-      mutable.Set.empty,   // measures
-      mutable.Buffer.empty // traces
+      simNodes,             // nodes
+      simEdges,             // connections
+      mutable.Set.empty,    // classes
+      mutable.Set.empty,    // measures
+      mutable.Buffer.empty, // traces
+      Configuration(),      // configuration
+      None                  // results
     )
   }
 

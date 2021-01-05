@@ -6,13 +6,13 @@ import util.Default
 object Implicit {
 
   implicit object SinkDefault             extends Default[Sink]             {
-    override def default: Sink = Sink(Default[SinkSection])
+    override def default: Sink = Sink(Default.default(SinkSectionDefault))
   }
 
   implicit object ServerDefault           extends Default[Server]           {
     override def default: Server =
       Server(
-        Default[QueueSection],
+        Default.default(QueueSectionDefault),
         UnimplementedSection(<section className="Server">
           <parameter classPath="java.lang.Integer" name="maxJobs">
             <value>1</value>
@@ -20,31 +20,35 @@ object Implicit {
           <parameter array="true" classPath="java.lang.Integer" name="numberOfVisits"/>
           <parameter array="true" classPath="jmt.engine.NetStrategies.ServiceStrategy" name="ServiceStrategy"/>
         </section>),
-        Default[RouterSection]
+        Default.default(RouterSectionDefault)
       )
   }
 
   implicit object JoinDefault             extends Default[Join]             {
     override def default: Join =
-      Join(UnimplementedSection(<section className="Join">
+      Join(
+        UnimplementedSection(<section className="Join">
         <parameter array="true" classPath="jmt.engine.NetStrategies.JoinStrategy" name="JoinStrategy"/>
-      </section>), Default[TunnelSection], Default[RouterSection])
+      </section>),
+        Default.default(TunnelSectionDefault),
+        Default.default(RouterSectionDefault)
+      )
   }
 
   implicit object SourceDefault           extends Default[Source]           {
     override def default: Source =
       Source(
-        Default[SourceSection],
-        Default[TunnelSection],
-        Default[RouterSection]
+        Default.default(SourceSectionDefault),
+        Default.default(TunnelSectionDefault),
+        Default.default(RouterSectionDefault)
       )
   }
 
   implicit object ForkDefault             extends Default[Fork]             {
     override def default: Fork =
       Fork(
-        Default[QueueSection],
-        Default[TunnelSection],
+        Default.default(QueueSectionDefault),
+        Default.default(TunnelSectionDefault),
         UnimplementedSection(<section className="Fork">
             <parameter classPath="java.lang.Integer" name="jobsPerLink">
               <value>1</value>

@@ -121,13 +121,15 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       filename
     } timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">
       <sim disableStatisticStop={
-      x.disableStatistic.toString
-    } logDecimalSeparator={x.loggingDecimalSeparator} logDelimiter={
-      x.loggingDelim
-    } logPath={x.loggingPath} logReplaceMode={x.loggingAutoAppend} maxEvents={
-      x.maxEvents.toString
-    } maxSamples={x.maxSamples.toString} name={filename} polling={
-      x.pollingInterval.toString
+      x.configuration.disableStatistic.toString
+    } logDecimalSeparator={
+      x.configuration.loggingDecimalSeparator
+    } logDelimiter={x.configuration.loggingDelim} logPath={
+      x.configuration.loggingPath
+    } logReplaceMode={x.configuration.loggingAutoAppend} maxEvents={
+      x.configuration.maxEvents.toString
+    } maxSamples={x.configuration.maxSamples.toString} name={filename} polling={
+      x.configuration.pollingInterval.toString
     } xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
         {userClasses}{nodes}{connections}
       </sim>

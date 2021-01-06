@@ -7,16 +7,18 @@ import scalafx.scene.text.{Font, Text}
 
 class PropertiesPanel extends GridPane {
   private var rowCounter = 1
-  private val title      = new Text("Placeholder")
-  title.setFont(Font.font(20))
-  addRow(0, title)
+  private val heading    = new Text("Placeholder")
+  heading.setFont(Font.font(20))
+  addRow(0, heading)
   managed <== visible
 
   def hide(): Unit = { visible = false }
 
   def show(): Unit = { visible = true }
 
-  def title_=(title: String): Unit = { this.title.text = title }
+  def title = this.heading.text
+
+  def title_=(heading: String): Unit = { this.heading.text = heading }
 
   def textField(title: String, placeholder: String): Unit = {
     val textField = new TextField()
@@ -37,7 +39,7 @@ class PropertiesPanel extends GridPane {
   }
 
   def clearAll(): Unit                                    = {
-    children.retainAll(title)
+    children.retainAll(heading)
     rowCounter = 1
   }
 }
@@ -50,12 +52,15 @@ object PropertiesPanel {
       controller.onSwitchMode += {
         case GraphCanvasController.EditingMode.SelectNode(nodes) =>
           menu.clearAll()
-          menu.title_=(nodes.head.name)
-          // TODO new node metadata stuff
-          // nodes.head.metadata.foreach((menu.textField _).tupled)
+          menu.title = nodes.head.name
+          /* TODO The sim configuration object has changed, this is to better reflect JMT
+          This is the code for the previous system, it's purely for reference and will not work
+
+          nodes.head.metadata.foreach((menu.textField _).tupled)
+           */
           menu.show()
         case _: GraphCanvasController.EditingMode.SelectEdge =>
-          menu.title_=("Edge")
+          menu.title = "Edge"
           menu.show()
         case _ => menu.hide()
       }
@@ -71,12 +76,15 @@ object PropertiesPanel {
   object Sim     {
     def apply(controller: GraphCanvasController[_]): PropertiesPanel = {
       val panel = new PropertiesPanel
-      panel.title_=("Sim")
-      // TODO new sim config stuff
-      // controller.model.configuration.foreach {
-      //   case (title, configuration) =>
-      //     panel.textField(title, configuration.toString)
-      // }
+      panel.title = "Sim"
+      /* TODO The sim configuration object has changed, this is to better reflect JMT
+      This is the code for the previous system, it's purely for reference and will not work
+
+       controller.model.configuration.foreach {
+         case (title, configuration) =>
+           panel.textField(title, configuration.toString)
+       }
+       */
       panel
     }
   }

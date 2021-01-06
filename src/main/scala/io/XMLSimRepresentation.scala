@@ -16,7 +16,6 @@ import scala.util.control.Breaks.{break, breakable}
 
 // Please note, this class is completely dependent on JMT and its file format
 
-
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   def representTypeSection(ts: TypeSection): xml.Node = {
     ts match {
@@ -33,35 +32,47 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     }
   }
 
-  def representNode(node: Node): xml.Elem = {
+  def representNode(node: Node): xml.Elem    = {
     val sections: Array[xml.Node] = node.nodeType match {
       case Source(sourceSection, tunnelSection, routerSection) =>
-        Array(sourceSection, tunnelSection, routerSection).map(representTypeSection)
+        Array(sourceSection, tunnelSection, routerSection)
+          .map(representTypeSection)
       case Sink(sinkSection) => Array(representTypeSection(sinkSection))
       case Terminal(terminalSection, tunnelSection, routerSection) =>
-        Array(terminalSection, tunnelSection, routerSection).map(representTypeSection)
+        Array(terminalSection, tunnelSection, routerSection)
+          .map(representTypeSection)
       case Router(queueSection, tunnelSection, routerSection) =>
-        Array(queueSection, tunnelSection, routerSection).map(representTypeSection)
+        Array(queueSection, tunnelSection, routerSection)
+          .map(representTypeSection)
       case Delay(queueSection, delaySection, routerSection) =>
-        Array(queueSection, delaySection, routerSection).map(representTypeSection)
+        Array(queueSection, delaySection, routerSection)
+          .map(representTypeSection)
       case Server(queueSection, serverSection, routerSection) =>
-        Array(queueSection, serverSection, routerSection).map(representTypeSection)
+        Array(queueSection, serverSection, routerSection)
+          .map(representTypeSection)
       case Fork(queueSection, tunnelSection, forkSection) =>
-        Array(queueSection, tunnelSection, forkSection).map(representTypeSection)
+        Array(queueSection, tunnelSection, forkSection)
+          .map(representTypeSection)
       case Join(joinSection, tunnelSection, routerSection) =>
-        Array(joinSection, tunnelSection, routerSection).map(representTypeSection)
+        Array(joinSection, tunnelSection, routerSection)
+          .map(representTypeSection)
       case Logger(queueSection, loggerSection, routerSection) =>
-        Array(queueSection, loggerSection, routerSection).map(representTypeSection)
+        Array(queueSection, loggerSection, routerSection)
+          .map(representTypeSection)
       case ClassSwitch(queueSection, classSwitch, routerSection) =>
-        Array(queueSection, classSwitch, routerSection).map(representTypeSection)
+        Array(queueSection, classSwitch, routerSection)
+          .map(representTypeSection)
       case Semaphore(semaphoreSection, tunnelSection, routerSection) =>
-        Array(semaphoreSection, tunnelSection, routerSection).map(representTypeSection
+        Array(semaphoreSection, tunnelSection, routerSection)
+          .map(representTypeSection)
       case Scalar(joinSection, tunnelSection, forkSection) =>
         Array(joinSection, tunnelSection, forkSection).map(representTypeSection)
       case Place(storageSection, tunnelSection, linkageSection) =>
-        Array(storageSection, tunnelSection, linkageSection).map(representTypeSection)
+        Array(storageSection, tunnelSection, linkageSection)
+          .map(representTypeSection)
       case Transition(enablingSection, timingSection, firingSection) =>
-        Array(enablingSection, timingSection, firingSection).map(representTypeSection)
+        Array(enablingSection, timingSection, firingSection)
+          .map(representTypeSection)
     }
 
     <node name={node.name}>
@@ -71,9 +82,11 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
   def representClass(u: UserClass): xml.Elem = {
     if (u.referenceSource.isDefined) {
-        <userClass name={u.name} priority={u.priority.toString} referenceSource={u.referenceSource.get.name} type={u.`type`.getClass.getSimpleName.stripSuffix("$")}/>
+      <userClass name={u.name} priority={u.priority.toString} referenceSource={
+        u.referenceSource.get.name
+      } type={u.`type`.getClass.getSimpleName.stripSuffix("$")}/>
     } else {
-        <userClass name={u.name} priority={u.priority.toString}
+      <userClass name={u.name} priority={u.priority.toString}
                    type={u.`type`.getClass.getSimpleName.stripSuffix("$")}/>
     }
   }
@@ -127,13 +140,15 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       filename
     } timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">
       <sim disableStatisticStop={
-      x.disableStatistic.toString
-    } logDecimalSeparator={x.loggingDecimalSeparator} logDelimiter={
-      x.loggingDelim
-    } logPath={x.loggingPath} logReplaceMode={x.loggingAutoAppend} maxEvents={
-      x.maxEvents.toString
-    } maxSamples={x.maxSamples.toString} name={filename} polling={
-      x.pollingInterval.toString
+      x.configuration.disableStatistic.toString
+    } logDecimalSeparator={
+      x.configuration.loggingDecimalSeparator
+    } logDelimiter={x.configuration.loggingDelim} logPath={
+      x.configuration.loggingPath
+    } logReplaceMode={x.configuration.loggingAutoAppend} maxEvents={
+      x.configuration.maxEvents.toString
+    } maxSamples={x.configuration.maxSamples.toString} name={filename} polling={
+      x.configuration.pollingInterval.toString
     } xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
         {userClasses}{nodes}{connections}
       </sim>
@@ -166,16 +181,15 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
     val measures = parseMeasures(simulationAssets, nodes, userClasses)
 
-    val unconfiguredSim = Sim(
+    val sim = Sim(
       mutable.HashSet.from(nodes.values),
       connections,
       mutable.HashSet.from(userClasses.values),
       measures,
       mutable.ArrayBuffer.empty,
+      parseConfiguration(xmlSim),
       results
     )
-
-    val sim = parseSim(xmlSim, unconfiguredSim)
 
     nodes.values.foreach(println)
     connections.foreach(println)
@@ -280,7 +294,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   private def nodeFromXML(
       xmlNode: xml.Node,
       distributions: mutable.Map[String, Distribution]
-  ): Option[(String, (Position, Boolean) => Node)] =
+  ): Option[(String, (Position, Boolean) => Node)]      =
     for {
       names <- xmlNode.attribute(XML_A_STATION_NAME)
       name  <- names.headOption
@@ -294,74 +308,77 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       )
     )
 
-  def parseSim(root: xml.Elem, model: Sim): Sim    = {
+  def parseConfiguration(root: xml.Elem): Configuration = {
 
+    val configuration = Configuration()
     // Gets optional parameter simulation seed
-    val seed = root.attribute(XML_A_ROOT_SEED)
+    val seed          = root.attribute(XML_A_ROOT_SEED)
     if (seed.isDefined) {
-      model.useRandomSeed = false
-      model.seed = seed.get.head.toString.toInt
+      configuration.useRandomSeed = false
+      configuration.seed = seed.get.head.toString.toInt
     }
 
     // Gets optional parameter maximum time
     val maxTime = root.attribute(XML_A_ROOT_DURATION)
     if (maxTime.isDefined) {
-      model.maximumDuration = maxTime.get.head.toString.toDouble
+      configuration.maximumDuration = maxTime.get.head.toString.toDouble
     }
 
     // Gets optional parameter maximum simulated time
     val maxSimulated = root.attribute(XML_A_ROOT_SIMULATED)
     if (maxSimulated.isDefined) {
-      model.maxSimulatedTime = maxSimulated.get.head.toString.toDouble
+      configuration.maxSimulatedTime = maxSimulated.get.head.toString.toDouble
     }
 
     // Gets optional parameter polling interval
     val polling = root.attribute(XML_A_ROOT_POLLING)
     if (polling.isDefined) {
-      model.pollingInterval = polling.get.head.toString.toDouble
+      configuration.pollingInterval = polling.get.head.toString.toDouble
     }
 
     // Gets optional parameter maximum samples
     val maxSamples = root.attribute(XML_A_ROOT_MAXSAMPLES)
     if (maxSamples.isDefined) {
-      model.maxSamples = maxSamples.get.head.toString.toInt
+      configuration.maxSamples = maxSamples.get.head.toString.toInt
     }
 
     // Gets optional parameter disable statistic
     val disableStatistic = root.attribute(XML_A_ROOT_DISABLESTATISTIC)
     if (disableStatistic.isDefined) {
-      model.disableStatistic = disableStatistic.get.head.toString.toBoolean
+      configuration.disableStatistic =
+        disableStatistic.get.head.toString.toBoolean
     }
 
     // Gets optional parameter maximum events
     val maxEvents = root.attribute(XML_A_ROOT_MAXEVENTS)
     if (maxEvents.isDefined) {
-      model.maxEvents = maxEvents.get.head.toString.toInt
+      configuration.maxEvents = maxEvents.get.head.toString.toInt
     }
 
     // Gets optional parameters log path, replace policy, and delimiter#
     val logPath        = root.attribute(XML_A_ROOT_LOGPATH)
     if (logPath.isDefined) {
       val dir = new File(logPath.toString)
-      if (dir.isDirectory) model.loggingPath = dir.getAbsolutePath
+      if (dir.isDirectory) configuration.loggingPath = dir.getAbsolutePath
     }
 
     val logReplaceMode = root.attribute(XML_A_ROOT_LOGREPLACE)
     if (logReplaceMode.isDefined) {
-      model.loggingAutoAppend = logReplaceMode.get.head.toString
+      configuration.loggingAutoAppend = logReplaceMode.get.head.toString
     }
 
     val logDelimiter = root.attribute(XML_A_ROOT_LOGDELIM)
     if (logDelimiter.isDefined) {
-      model.loggingDelim = logDelimiter.get.head.toString
+      configuration.loggingDelim = logDelimiter.get.head.toString
     }
 
     val logDecimalSeparator = root.attribute(XML_A_ROOT_LOGDECIMALSEPARATOR)
     if (logDecimalSeparator.isDefined) {
-      model.loggingDecimalSeparator = logDecimalSeparator.get.head.toString
+      configuration.loggingDecimalSeparator =
+        logDecimalSeparator.get.head.toString
     }
 
-    model
+    configuration
   }
 
   protected def parseClasses(
@@ -467,7 +484,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeRouterSection(sections(2))
       )
-//      Terminal(makeTerminalSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_QUEUE &&
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
@@ -477,7 +493,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeRouterSection(sections(2))
       )
-//    Router(makeQueueSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_QUEUE &&
       sectionNames(1) == CLASSNAME_DELAY && sectionNames(2) == CLASSNAME_ROUTER
@@ -487,7 +502,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeUnimplementedSection(sections(1)),
         makeRouterSection(sections(2))
       )
-//    Delay(makeQueueSection(sections(0)), makeDelaySection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_QUEUE &&
       (sectionNames(1) == CLASSNAME_SERVER ||
@@ -500,7 +514,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeUnimplementedSection(sections(1)),
         makeRouterSection(sections(2))
       )
-//    Server(makeQueueSection(sections(0)), makeServerSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_QUEUE &&
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_FORK
@@ -510,7 +523,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeUnimplementedSection(sections(2))
       )
-//      Fork(makeQueueSection(sections(0)), makeTunnelSection(sections(1)), makeForkSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_JOIN &&
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
@@ -520,7 +532,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeRouterSection(sections(2))
       )
-//    Join(makeJoinSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_QUEUE &&
       sectionNames(1) == CLASSNAME_LOGGER && sectionNames(2) == CLASSNAME_ROUTER
@@ -530,7 +541,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeUnimplementedSection(sections(1)),
         makeRouterSection(sections(2))
       )
-//      Logger(makeQueueSection(sections(0)), makeLoggerSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_QUEUE &&
       sectionNames(1) == CLASSNAME_CLASSSWITCH &&
@@ -541,7 +551,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeUnimplementedSection(sections(1)),
         makeRouterSection(sections(2))
       )
-//     ClassSwitch(makeQueueSection(sections(0)), makeClassSwitchSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_SEMAPHORE &&
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
@@ -551,7 +560,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeRouterSection(sections(2))
       )
-//    Semaphore(makeSemaphoreSection(sections(0)), makeTunnelSection(sections(1)), makeRouterSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_JOIN &&
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_FORK
@@ -561,7 +569,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeUnimplementedSection(sections(2))
       )
-//    Scalar(makeJoinSection(sections(0)), makeTunnelSection(sections(1)), makeForkSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_STORAGE &&
       sectionNames(1) == CLASSNAME_TUNNEL &&
@@ -572,7 +579,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeTunnelSection(),
         makeUnimplementedSection(sections(2))
       )
-//    Place(makeStorageSection(sections(0)), makeTunnelSection(sections(1)), makeLinkageSection(sections(2)))
     else if (
       sectionNames(0) == CLASSNAME_ENABLING &&
       sectionNames(1) == CLASSNAME_TIMING && sectionNames(2) == CLASSNAME_FIRING
@@ -582,7 +588,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeUnimplementedSection(sections(1)),
         makeUnimplementedSection(sections(2))
       )
-//      Transition(makeEnablingSection(sections(0)), makeTimingSection(sections(1)), makeFiringSection(sections(2)))
 
     Unimplemented(sections.map(section => makeUnimplementedSection(section)))
   }
@@ -597,19 +602,22 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   ): SourceSection                                                             = {
     val refClassNames: mutable.Buffer[String] = mutable.Buffer.empty
 
-    val strategies =
-      sectionXml.child(1).child.tail.filterNot(x => x.toString == "\n")
-    for (i <- strategies.indices.filter(n => n % 2 == 0)) {
-      breakable {
-        val refClassName: String = strategies(i).child.head.toString()
-        // If the class is closed, then this will just contain "null" & isn't relevant
-        val distributionXml      = strategies(i + 1)
-        if (distributionXml.head.toString() == "null") break()
+    val strategiesParent = sectionXml.child(1).child
 
-        val distribution: Distribution =
-          UnimplementedDistribution(distributionXml)
-        distributions.put(refClassName, distribution)
-        refClassNames.addOne(refClassName)
+    if (strategiesParent.nonEmpty) {
+      val strategies = strategiesParent.tail.filterNot(x => x.toString == "\n")
+      for (i <- strategies.indices.filter(n => n % 2 == 0)) {
+        breakable {
+          val refClassName: String = strategies(i).child.head.toString()
+          // If the class is closed, then this will just contain "null" & isn't relevant
+          val distributionXml      = strategies(i + 1)
+          if (distributionXml.head.toString() == "null") break()
+
+          val distribution: Distribution =
+            UnimplementedDistribution(distributionXml)
+          distributions.put(refClassName, distribution)
+          refClassNames.addOne(refClassName)
+        }
       }
     }
 

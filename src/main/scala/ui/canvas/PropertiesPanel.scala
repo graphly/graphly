@@ -52,7 +52,7 @@ object PropertiesPanel {
           menu.clearAll()
           menu.title_=(nodes.head.name)
           // TODO new node metadata stuff
-//          nodes.head.metadata.foreach((menu.textField _).tupled)
+          // nodes.head.metadata.foreach((menu.textField _).tupled)
           menu.show()
         case _: GraphCanvasController.EditingMode.SelectEdge =>
           menu.title_=("Edge")
@@ -73,10 +73,10 @@ object PropertiesPanel {
       val panel = new PropertiesPanel
       panel.title_=("Sim")
       // TODO new sim config stuff
-//      controller.model.configuration.foreach {
-//        case (title, configuration) =>
-//          panel.textField(title, configuration.toString)
-//      }
+      // controller.model.configuration.foreach {
+      //   case (title, configuration) =>
+      //     panel.textField(title, configuration.toString)
+      // }
       panel
     }
   }

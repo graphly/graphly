@@ -94,13 +94,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       .format(ZonedDateTime.now)
     val userClasses: Array[xml.Elem] = x.classes.map(representClass).toArray
 
-    // TODO delete this commented-out code before merging
-    //
-    //    val nodes: Array[xml.Elem] =
-    //      x.nodes.map((node: Node) => <node name={node.name}>
-    //        <section className={node.nodeType.getClass.getSimpleName}>
-    //        </section>
-    //      </node>).toArray
     val nodes: Array[xml.Elem] = x.nodes.map(representNode).toArray;
 
     val nodePositions: Array[xml.Elem] = x.nodes.map(
@@ -155,7 +148,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   override def toSim(xmlSim: xml.Elem): Sim                  = {
     val xmlSimNodes               = xmlSim.child
     val simulation                = xmlSimNodes(1)
-    //TODO: Handle simulation results
+    // This is where simulation results should go when they are added.
     var results: Option[xml.Node] = None
     if (xmlSimNodes.length > 5) { results = Some(xmlSimNodes(5)) }
 

@@ -1,7 +1,5 @@
 package util
 
-import scala.language.implicitConversions
-
 trait Default[A] {
   def default: A
 }

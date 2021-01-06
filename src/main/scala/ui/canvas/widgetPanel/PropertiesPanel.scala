@@ -1,5 +1,6 @@
 package ui.canvas.widgetPanel
 
+import javafx.event.ActionEvent
 import scalafx.geometry.HPos
 import scalafx.scene.Node
 import scalafx.scene.control.{ComboBox, Label, TextField, TextFormatter}
@@ -43,7 +44,8 @@ class PropertiesPanel extends GridPane {
     }
     textField.focusedProperty().addListener((_, _, newVal) => {
       if (!newVal) {
-        println(title, textField.text)
+        println("Textbox change")
+        println(title, textField.text.value)
       }
     })
     textField.text = initial
@@ -56,7 +58,12 @@ class PropertiesPanel extends GridPane {
       options: List[String],
       placeholder: String
   ): Unit                                                 = {
-    val box = new ComboBox[String](options)
+    val box = new ComboBox[String](options) {
+      onAction = (e: ActionEvent) => {
+        println("Dropdown change")
+        println(title, this.value.value)
+      }
+    }
     box.setValue(placeholder)
     this.addRowSpaced(rowCounter, wideLabel(title), box)
     rowCounter += 1

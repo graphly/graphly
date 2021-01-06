@@ -98,7 +98,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     val opacity = (u.color.opacity * 255).toInt
 
     val color = "#%02X%02X%02X%02X".format(r, g, b, opacity)
-    println(color)
     <userClass color={color} name={u.name}/>
   }
 
@@ -125,17 +124,8 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         }/>
     ).toArray
 
-    // TODO: This is a temp hack :))
-
-    //TODO: Scale by 1/255 ??
-    //    val colorr = x.classes.head.color
-
-    //    val color = "#%02X%02X%02X%02X".format(colorr.red, colorr.green, colorr.blue, (colorr.opacity * 255).toInt);
-    //    println(color)
-
     val guiClasses = x.classes.map(representClassGui).toArray
 
-    // <measure alpha="0.01" name="Queue 1_Class1_Number of Customers" nodeType="station" precision="0.03" referenceNode="Queue 1" referenceUserClass="Class1" type="Number of Customers" verbose="false"/>
     <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name={
       filename
     } timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">

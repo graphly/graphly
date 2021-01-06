@@ -2,8 +2,9 @@ package ui.canvas
 
 import scalafx.geometry.HPos
 import scalafx.scene.Node
-import scalafx.scene.control.{ComboBox, Label, TextField}
+import scalafx.scene.control.{ComboBox, Label, TextField, TextFormatter}
 import scalafx.scene.layout.{GridPane, Pane, Priority}
+import scalafx.util.converter.{DoubleStringConverter, IntStringConverter}
 
 class PropertiesPanel extends GridPane {
   private var rowCounter = 0
@@ -15,25 +16,33 @@ class PropertiesPanel extends GridPane {
 
   def show(): Unit = { visible = true }
 
-  def label(str: String): Label = {
+  def wideLabel(str: String): Label = {
     val lbl = new Label(str)
     lbl.minWidth = 40
     lbl
   }
 
-  def textField(title: String, placeholder: String): Unit = {
-    val textField = new TextField()
-    textField.text = placeholder
-    this.addRowSpaced(rowCounter, label(title), textField)
+  def textField(title: String, initial: String): Unit = {
+    addTextField(title, initial, null)
+  }
+
+  def integerField(title: String, initial: Int): Unit = {
+    val converter = new IntStringConverter
+    addTextField(title, initial.toString, new TextFormatter(converter))
+  }
+
+  def doubleField(title: String, initial: Double): Unit = {
+    val converter = new DoubleStringConverter
+    addTextField(title, initial.toString, new TextFormatter(converter))
+  }
+
+  private def addTextField(title: String, initial: String, formatter: TextFormatter[_]): Unit = {
+    val textField = new TextField {
+      textFormatter = formatter
+    }
+    textField.text = initial
+    this.addRowSpaced(rowCounter, wideLabel(title), textField)
     rowCounter += 1
-  }
-
-  def integerField(title: String, placeholder: Int): Unit = {
-    ???
-  }
-
-  def floatField(title: String, placeholder: Float): Unit = {
-    ???
   }
 
   def dropdown(
@@ -43,11 +52,11 @@ class PropertiesPanel extends GridPane {
   ): Unit                                                 = {
     val box = new ComboBox[String](options)
     box.setValue(placeholder)
-    this.addRowSpaced(rowCounter, label(title), box)
+    this.addRowSpaced(rowCounter, wideLabel(title), box)
     rowCounter += 1
   }
 
-  def addRowSpaced(index: Int, left: Node, right: Node): Unit = {
+  private def addRowSpaced(index: Int, left: Node, right: Node): Unit = {
     val spacer = new Pane
     spacer.prefWidth = 40
     GridPane.setHgrow(right, Priority.Always)

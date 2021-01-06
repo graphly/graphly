@@ -1,10 +1,11 @@
-package ui.canvas
+package ui.canvas.widgetPanel
 
 import scalafx.geometry.HPos
 import scalafx.scene.Node
 import scalafx.scene.control.{ComboBox, Label, TextField, TextFormatter}
 import scalafx.scene.layout.{GridPane, Pane, Priority}
 import scalafx.util.converter.{DoubleStringConverter, IntStringConverter}
+import ui.canvas.GraphCanvasController
 
 class PropertiesPanel extends GridPane {
   private var rowCounter = 0
@@ -23,23 +24,28 @@ class PropertiesPanel extends GridPane {
   }
 
   def textField(title: String, initial: String): Unit = {
-    addTextField(title, initial, null)
+    addField(title, initial, null)
   }
 
   def integerField(title: String, initial: Int): Unit = {
     val converter = new IntStringConverter
-    addTextField(title, initial.toString, new TextFormatter(converter))
+    addField(title, initial.toString, new TextFormatter(converter))
   }
 
   def doubleField(title: String, initial: Double): Unit = {
     val converter = new DoubleStringConverter
-    addTextField(title, initial.toString, new TextFormatter(converter))
+    addField(title, initial.toString, new TextFormatter(converter))
   }
 
-  private def addTextField(title: String, initial: String, formatter: TextFormatter[_]): Unit = {
+  private def addField(title: String, initial: String, formatter: TextFormatter[_]): Unit = {
     val textField = new TextField {
       textFormatter = formatter
     }
+    textField.focusedProperty().addListener((_, _, newVal) => {
+      if (!newVal) {
+        println(title, textField.text)
+      }
+    })
     textField.text = initial
     this.addRowSpaced(rowCounter, wideLabel(title), textField)
     rowCounter += 1

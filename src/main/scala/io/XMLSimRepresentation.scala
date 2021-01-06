@@ -98,7 +98,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     val opacity = (u.color.opacity * 255).toInt
 
     val color = "#%02X%02X%02X%02X".format(r, g, b, opacity)
-    println(color)
     <userClass color={color} name={u.name}/>
   }
 
@@ -107,13 +106,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       .format(ZonedDateTime.now)
     val userClasses: Array[xml.Elem] = x.classes.map(representClass).toArray
 
-    // TODO delete this commented-out code before merging
-    //
-    //    val nodes: Array[xml.Elem] =
-    //      x.nodes.map((node: Node) => <node name={node.name}>
-    //        <section className={node.nodeType.getClass.getSimpleName}>
-    //        </section>
-    //      </node>).toArray
     val nodes: Array[xml.Elem] = x.nodes.map(representNode).toArray;
 
     val nodePositions: Array[xml.Elem] = x.nodes.map(
@@ -132,17 +124,8 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         }/>
     ).toArray
 
-    // TODO: This is a temp hack :))
-
-    //TODO: Scale by 1/255 ??
-    //    val colorr = x.classes.head.color
-
-    //    val color = "#%02X%02X%02X%02X".format(colorr.red, colorr.green, colorr.blue, (colorr.opacity * 255).toInt);
-    //    println(color)
-
     val guiClasses = x.classes.map(representClassGui).toArray
 
-    // <measure alpha="0.01" name="Queue 1_Class1_Number of Customers" nodeType="station" precision="0.03" referenceNode="Queue 1" referenceUserClass="Class1" type="Number of Customers" verbose="false"/>
     <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name={
       filename
     } timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">
@@ -170,7 +153,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   override def toSim(xmlSim: xml.Elem): Sim                  = {
     val xmlSimNodes               = xmlSim.child
     val simulation                = xmlSimNodes(1)
-    //TODO: Handle simulation results
+    // This is where simulation results should go when they are added.
     var results: Option[xml.Node] = None
     if (xmlSimNodes.length > 5) { results = Some(xmlSimNodes(5)) }
 

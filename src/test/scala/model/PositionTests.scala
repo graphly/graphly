@@ -15,11 +15,11 @@ class PositionTests extends GraphlyTest {
   }
 
   it should "be outside rectangle 1" in {
-    assert(!Position(9, 25).inRectangle(posA, posB))
+    assert(!Position(9, 15).inRectangle(posA, posB))
   }
 
   it should "be inside rectangle with fuzzy" in {
-    assert(Position(9, 20).inRectangle(posA, posB, fuzzy = 1))
+    assert(Position(9, 15).inRectangle(posA, posB, fuzzy = 1))
   }
 
   it should "be outside rectangle 2" in {
@@ -27,7 +27,7 @@ class PositionTests extends GraphlyTest {
   }
 
   it should "be outside rectangle 3" in {
-    assert(!Position(25, 25).inRectangle(posA, posB))
+    assert(!Position(15, 25).inRectangle(posA, posB))
   }
 }
 

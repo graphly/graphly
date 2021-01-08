@@ -98,8 +98,10 @@ object SimDrawAction {
             drawCircle(node.position, radius * 1.3, highlighting, context)
           drawCircle(node.position, radius, classColor(node), context)
 
-          val resourceURI = icons(node.nodeType.getClass)
-          val img = new Image(resourceURI, 2 * radius, 2 * radius, false, false)
+          //TODO: Actually design the icon
+          val resourceURI = icons
+            .getOrElse(node.nodeType.getClass, "/assets/icons/triangle.svg")
+          val img         = new Image(resourceURI, 2 * radius, 2 * radius, false, false)
           context.drawImage(img, node.x - radius, node.y - radius)
 
           drawName(context, node)

@@ -26,8 +26,7 @@ class GraphingCanvas(
 
   background = Background(Color.White)
 
-  children =
-    List(traceCanvas, canvas, FloatingPropertiesPanel.Element(controller))
+  children = List(traceCanvas, canvas)
 
   def redraw(
       shapes: Option[DrawActions],

@@ -18,7 +18,7 @@ class PropertiesPanel extends GridPane {
 
   def show(): Unit = { visible = true }
 
-  def wideLabel(str: String): Label = {
+  def wideLabel(str: String): Label                   = {
     val lbl = new Label(str)
     lbl.minWidth = 40
     lbl
@@ -28,20 +28,22 @@ class PropertiesPanel extends GridPane {
     addField(title, initial, null)
   }
 
-  def integerField(title: String, initial: Int): Unit = {
+  def integerField(title: String, initial: Int): Unit                 = {
     val converter = new IntStringConverter
     addField(title, initial.toString, new TextFormatter(converter))
   }
 
-  def doubleField(title: String, initial: Double): Unit = {
+  def doubleField(title: String, initial: Double): Unit               = {
     val converter = new DoubleStringConverter
     addField(title, initial.toString, new TextFormatter(converter))
   }
 
-  private def addField(title: String, initial: String, formatter: TextFormatter[_]): Unit = {
-    val textField = new TextField {
-      textFormatter = formatter
-    }
+  private def addField(
+      title: String,
+      initial: String,
+      formatter: TextFormatter[_]
+  ): Unit                                                             = {
+    val textField = new TextField { textFormatter = formatter }
     textField.focusedProperty().addListener((_, _, newVal) => {
       if (!newVal) {
         println("Textbox change")
@@ -57,7 +59,7 @@ class PropertiesPanel extends GridPane {
       title: String,
       options: List[String],
       placeholder: String
-  ): Unit                                                 = {
+  ): Unit                                                             = {
     val box = new ComboBox[String](options) {
       onAction = (e: ActionEvent) => {
         println("Dropdown change")
@@ -77,38 +79,8 @@ class PropertiesPanel extends GridPane {
     this.addRow(index, left, spacer, right)
   }
 
-  def clearAll(): Unit                                    = {
+  def clearAll(): Unit                                                = {
     children.removeAll()
     rowCounter = 0
-  }
-}
-
-object PropertiesPanel {
-  object Element {
-    def apply(controller: GraphCanvasController[_]): PropertiesPanel = {
-      val menu = new PropertiesPanel
-      menu.visible = false
-      controller.onSwitchMode += {
-        case GraphCanvasController.EditingMode.SelectNode(nodes) =>
-          menu.clearAll()
-          nodes.head.metadata.foreach((menu.textField _).tupled)
-          menu.show()
-        case _: GraphCanvasController.EditingMode.SelectEdge =>
-          menu.show()
-        case _ => menu.hide()
-      }
-      menu
-    }
-  }
-
-  object Sim     {
-    def apply(controller: GraphCanvasController[_]): PropertiesPanel = {
-      val panel = new PropertiesPanel
-      controller.model.configuration.foreach {
-        case (title, configuration) =>
-          panel.textField(title, configuration.toString)
-      }
-      panel
-    }
   }
 }

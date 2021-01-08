@@ -39,14 +39,14 @@ object SimDrawAction {
     }
 
     implicit object Node extends this.Shape[sim.Node] {
-      val radius: Int                                                  = 20
-      private val highlighting                                         = Color.GreenYellow
+      val radius: Int                                          = 20
+      private val highlighting                                 = Color.GreenYellow
       private val icons: Map[Class[_ <: sim.NodeType], String] = Map(
         classOf[sim.Source] -> "/assets/icons/source.svg",
-        classOf[sim.Join]   -> "/assets/icons/source.svg",
-        classOf[sim.Server]  -> "/assets/icons/queue.svg",
-        classOf[sim.Fork]   -> "/assets/icons/fork.svg",
-        classOf[sim.Sink]   -> "/assets/icons/sink.svg",
+        classOf[sim.Join] -> "/assets/icons/source.svg",
+        classOf[sim.Server] -> "/assets/icons/queue.svg",
+        classOf[sim.Fork] -> "/assets/icons/fork.svg",
+        classOf[sim.Sink] -> "/assets/icons/sink.svg"
       )
 
       private def drawCircle(
@@ -67,20 +67,24 @@ object SimDrawAction {
         )
       }
 
-      def classColor(instance: Any): Color = {
+      def classColor(instance: Any): Color                               = {
         val conversion    = 0.5 / 26
         val name          = instance.getClass.getSimpleName
         def index(n: Int) = 0.5 + (name(n).toUpper.toInt % 26) * conversion
         Color.color(index(0), index(1), index(2))
       }
 
-      final private def drawName(context: GraphicsContext, node: sim.Node): Unit = {
+      final private def drawName(
+          context: GraphicsContext,
+          node: sim.Node
+      ): Unit                                                            = {
         val textObj = new Text(node.name)
         textObj.font = context.font
 
-        val (x, y) = node.position.coords
-        val textY = y + 2 * radius
-        val (tw, th) = (textObj.layoutBounds().getWidth, textObj.layoutBounds().getHeight)
+        val (x, y)   = node.position.coords
+        val textY    = y + 2 * radius
+        val (tw, th) =
+          (textObj.layoutBounds().getWidth, textObj.layoutBounds().getHeight)
         context.fill = Color.Black
         context.clearRect(x - tw / 2 - 5, textY - th / 2 - 5, tw + 10, th + 5)
 

@@ -23,7 +23,7 @@ class FloatingPropertiesPanel extends GridPane {
       if (name.length > 10) name.substring(0, 10) + "..." else name
     val nameElem      = new Text(shortenedName + ":")
     val valueElem     =
-      if (value.strip().length == 0) new Text("null") else new Text(value)
+      if (value.strip().isEmpty) new Text("null") else new Text(value)
     this.addRow(rowCounter, nameElem, valueElem)
     GridPane.setHalignment(valueElem, HPos.Right)
     rowCounter += 1
@@ -50,17 +50,13 @@ object FloatingPropertiesPanel {
           box.show()
           box.clearAll()
           val node = nodes.head
-
-          /* TODO new node metadata
-           * Metadata is now stored in the node sections.
-           * We should integrate this data with the display systems.
-           */
-
+          if (node.metadata.isEmpty) { box.text("Empty") }
+          else { node.metadata.foreach((box.row _).tupled) }
           box.x = node.position.x + 40
           box.y = node.position.y - 25
         case _ => box.hide()
       }
-      box.setStyle("-fx-background-color: lightgray;")
+      box.setStyle("-fx-background-color: #EEEEEE;")
       box.setHgap(10)
       box.setVgap(10)
       box.setPadding(Insets(10, 10, 10, 10))
@@ -71,12 +67,9 @@ object FloatingPropertiesPanel {
   object Sim     {
     def apply(controller: GraphCanvasController[_]): FloatingPropertiesPanel = {
       val box = new FloatingPropertiesPanel
-
-      /* TODO new node metadata
-       * Metadata is now stored in the node sections.
-       * We should integrate this data with the display systems.
-       */
-
+      controller.model.configuration.foreach {
+        case (title, configuration) => box.row(title, configuration.toString)
+      }
       box
     }
   }

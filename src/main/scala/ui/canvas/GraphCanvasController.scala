@@ -7,22 +7,15 @@ import io.XMLSimRepresentation.Implicit._
 import model.sim.Trace.Image
 import model.sim.{Configuration, Connection, Node, NodeType}
 import model.{Position, sim}
-import scalafx.scene.input.{
-  Clipboard,
-  ClipboardContent,
-  KeyEvent,
-  MouseButton,
-  MouseEvent,
-  ScrollEvent
-}
+import scalafx.scene.input._
 import scalafx.stage.{FileChooser, Stage}
+import ui.WithPosition.Implicit._
 import ui.canvas.Draw.Implicit.DrawShape
 import ui.canvas.GraphCanvasController.EditingMode.default
 import ui.canvas.GraphCanvasController.{EditingMode, Redraw}
-import ui.{Controller, LogicalEvent, history}
 import ui.util.Event
+import ui.{Controller, LogicalEvent, history}
 import util.Default
-import ui.WithPosition.Implicit._
 
 import scala.collection.{View, immutable, mutable}
 import scala.reflect.{ClassTag, classTag}
@@ -336,12 +329,18 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
       .add(new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg"))
     fileChooser.initialFileName = ".jsimg"
     Option(fileChooser.showSaveDialog(new Stage)).foreach { dest =>
-      dest.createNewFile()
-      new PrintWriter(dest) {
-        //TODO: Check if conversion was successful
-        // We don't want to overwrite the file with null
-        write(modelToString(model, dest.getName))
-        close()
+      val modelXml: String = modelToString(model, dest.getName)
+      println(modelXml)
+      println(!modelXml.isEmpty)
+      if (!modelXml.isEmpty) {
+
+        dest.createNewFile()
+        new PrintWriter(dest) {
+          write(modelXml)
+          close()
+        }
+      } else {
+        //TODO: Let the user know we failed to save
       }
     }
   }

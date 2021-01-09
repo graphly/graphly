@@ -68,10 +68,10 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   private val timeline = new history.Timeline
 
   override def onMousePress(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit   = {
-    val event: MouseEvent = logicalEvent.event
-
     super.onMousePress(logicalEvent, update)
-    val position = event.position.model
+
+    val event: MouseEvent = logicalEvent.event
+    val position = logicalEvent.modelPosition
 
     // So far we drag only on when we press middle mouse.
     if (event.button == MouseButton.Middle) {
@@ -122,9 +122,10 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   }
 
   override def onMouseRelease(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit = {
-    val event = logicalEvent.event
     super.onMouseRelease(logicalEvent, update)
-    val position = event.position.model
+
+    val event = logicalEvent.event
+    val position = logicalEvent.modelPosition
 
     mode match {
       case EditingMode.NavigationPan(_, prevMode) =>
@@ -262,7 +263,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
         trace match {
           case EditingMode.DragTrace(traces, from, origin) =>
             traces.foreach { trace =>
-              trace.position += event.position.model - from
+              trace.position += position - from
             }
             mode = EditingMode.DragTrace(traces, position, origin)
           case EditingMode.ResizeTrace(traces, start, base, origin) =>

@@ -169,18 +169,57 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
     val measures = parseMeasures(simulationAssets, nodes, userClasses)
 
+    val blockingRegions = parseBlockingRegions(simulationAssets)
+
+    val traces: mutable.Buffer[Trace] = parseTraces(xmlSimNodes)
+
     val sim = Sim(
       mutable.HashSet.from(nodes.values),
       connections,
       mutable.HashSet.from(userClasses.values),
       measures,
-      mutable.ArrayBuffer.empty,
+      blockingRegions,
+      traces,
       parseConfiguration(xmlSim),
       results
     )
 
     sim
   }
+
+  private def parseTraces(xmlSimNodes: Seq[xml.Node]): mutable.Buffer[Trace] =
+    xmlSimNodes.filter(asset => asset.label == XML_E_TRACE)
+      .flatMap(traceFromXML).to(mutable.Buffer)
+
+  private def traceFromXML(xmlTrace: xml.Node): Option[Trace] =
+    for {
+      traceX      <- xmlTrace.attribute(XML_A_TRACE_X)
+      traceY      <- xmlTrace.attribute(XML_A_TRACE_Y)
+      traceWidth  <- xmlTrace.attribute(XML_A_TRACE_WIDTH)
+      traceHeight <- xmlTrace.attribute(XML_A_TRACE_HEIGHT)
+    } yield Trace(
+      Trace.Image(new ByteArrayInputStream(
+//          java.util.Base64.getDecoder.decode(
+        xmlTrace.child.head.toString.getBytes
+//      )
+      )),
+      Position(traceX.toString.toDouble, traceY.toString.toDouble),
+      traceWidth.toString.toDouble,
+      traceHeight.toString.toDouble
+    )
+
+  private def parseBlockingRegions(
+      simulationAssets: Seq[xml.Node]
+  ): mutable.Set[BlockingRegion]                              =
+    simulationAssets.filter(asset => asset.label == XML_E_REGION)
+      .flatMap(blockingRegionFromXML).to(mutable.Set)
+
+  private def blockingRegionFromXML(
+      xmlBlockingRegion: xml.Node
+  ): Option[BlockingRegion] =
+    for {
+      blockingRegionName <- xmlBlockingRegion.attribute(XML_A_REGION_NAME)
+    } yield BlockingRegion(blockingRegionName.toString, xmlBlockingRegion)
 
   private def parseMeasures(
       simulationAssets: Seq[xml.Node],

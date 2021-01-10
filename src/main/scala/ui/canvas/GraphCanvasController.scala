@@ -409,6 +409,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
       simEdges,             // connections
       mutable.Set.empty,    // classes
       mutable.Set.empty,    // measures
+      mutable.Set.empty,    // blocking regions
       mutable.Buffer.empty, // traces
       Configuration(),      // configuration
       None                  // results

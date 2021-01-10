@@ -7,6 +7,7 @@ case class Sim(
     connections: mutable.Set[Connection],
     classes: mutable.Set[UserClass],
     measures: mutable.Set[Measure],
+    blockingRegions: mutable.Set[BlockingRegion],
     traces: mutable.Buffer[Trace],
     configuration: Configuration,
     results: Option[xml.Node]
@@ -25,6 +26,7 @@ case class Sim(
       this.connections.clone(),
       this.classes.clone(),
       this.measures.clone(),
+      this.blockingRegions.clone(),
       this.traces.clone(),
       this.configuration.clone(),
       this.results
@@ -83,6 +85,7 @@ object Sim {
       mutable.Set.empty,
       mutable.HashSet.empty,
       mutable.HashSet.empty,
+      mutable.Set.empty,
       mutable.ArrayBuffer.empty,
       Configuration(),
       None

@@ -1,6 +1,6 @@
 package io
 
-import java.io.File
+import java.io.{ByteArrayInputStream, File}
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -19,16 +19,55 @@ import scala.util.control.Breaks.{break, breakable}
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   def representTypeSection(ts: TypeSection): xml.Node = {
     ts match {
-      case SourceSection(refClassNames) => ???
+      case SourceSection(refClassNames) =>
+        <section className="RandomSource">
+          <parameter array="true" classPath="jmt.engine.NetStrategies.ServiceStrategy" name="ServiceStrategy">
+            {
+          classes.map(userClass => {
+            var userClassXml = <refClass>
+                {userClass.name}
+              </refClass>
+            if (refClassNames.contains(userClass.name))
+              userClassXml.appended(userClass.distribution.get)
+
+            userClassXml
+          })
+        }
+          </parameter>
+        </section>
       case TunnelSection() => <section className="ServiceTunnel"/>
-      case RouterSection(routingStrategy) => <section className="Router">
+      case RouterSection(routingStrategy) =>
+        <section className="Router" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         {routingStrategy}
       </section>
-      case QueueSection(queueingStrategy) => <section className="Queue">
-        {queueingStrategy}
+      case QueueSection(size, dropStrategy, queueingStrategy) =>
+        <section className="Queue">
+          <parameter classPath="java.lang.Integer" name="size">
+            <value>{size.getOrElse(-1).toString}</value>
+          </parameter>
+          <parameter array="true" classPath="java.lang.String" name="dropStrategies">
+            {
+          classes.map(userClass => <refClass>
+            {userClass.name}
+          </refClass>)
+        }
+            <subParameter classPath="java.lang.String" name="dropStrategy">
+              {
+          dropStrategy match {
+            case Some(strategy) => <value>{strategy.toString}</value>
+            case None => ()
+          }
+        }
+            </subParameter>
+          </parameter>
+        {queueingStrategy.toArray}
       </section>
+      case SinkSection() => <section className="JobSink"/>
       case UnimplementedSection(raw) => raw
-      case _ => ???
+      case x => {
+        println(x.getClass, " isn't implemented!")
+        ???
+      }
     }
   }
 

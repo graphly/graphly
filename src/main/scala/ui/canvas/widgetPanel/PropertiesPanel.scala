@@ -1,7 +1,8 @@
 package ui.canvas.widgetPanel
 
 import javafx.event.ActionEvent
-import model.sim.{Configuration, Sim}
+import javafx.scene.input.{KeyCode, KeyEvent}
+import model.sim.Sim
 import scalafx.geometry.{HPos, VPos}
 import scalafx.scene.Node
 import scalafx.scene.control.{
@@ -33,13 +34,13 @@ class PropertiesPanel(model: Sim) extends GridPane {
   def textField(
       title: String,
       initial: String,
-      projection: (Configuration, String) => Unit
+      projection: (Sim, String) => Unit
   ): Unit                           = { addField(title, x => y => projection(y, x), initial, null) }
 
   def integerField(
       title: String,
       initial: Int,
-      projection: (Configuration, Int) => Unit
+      projection: (Sim, Int) => Unit
   ): Unit                                                             = {
     val converter = new IntStringConverter
     addField(
@@ -53,7 +54,7 @@ class PropertiesPanel(model: Sim) extends GridPane {
   def doubleField(
       title: String,
       initial: Double,
-      projection: (Configuration, Double) => Unit
+      projection: (Sim, Double) => Unit
   ): Unit                                                             = {
     val converter = new DoubleStringConverter
     addField(
@@ -66,15 +67,22 @@ class PropertiesPanel(model: Sim) extends GridPane {
 
   private def addField(
       title: String,
-      projection: String => Configuration => Unit,
+      projection: String => Sim => Unit,
       initial: String,
       formatter: TextFormatter[_]
   ): Unit                                                             = {
-    val textField = new TextField { textFormatter = formatter }
+    val textField = new TextField {
+      textFormatter = formatter
+      onKeyPressed = (key: KeyEvent) => {
+        if (key.getCode.equals(KeyCode.ENTER)) {
+          projection(this.text.value)(model)
+        }
+      }
+    }
     textField.focusedProperty().addListener((_, _, newVal) => {
       if (!newVal) {
         println(title, textField.text.value)
-        projection(textField.text.value)(model.configuration)
+        projection(textField.text.value)(model)
       }
     })
     textField.text = initial
@@ -86,12 +94,12 @@ class PropertiesPanel(model: Sim) extends GridPane {
       title: String,
       options: List[String],
       placeholder: String,
-      projection: (Configuration, String) => Unit
+      projection: (Sim, String) => Unit
   ): Unit                                                             = {
     val box = new ComboBox[String](options) {
       onAction = (_: ActionEvent) => {
         println(title, this.value.value)
-        projection(model.configuration, this.value.value)
+        projection(model, this.value.value)
       }
     }
     box.setValue(placeholder)
@@ -115,12 +123,12 @@ class PropertiesPanel(model: Sim) extends GridPane {
   def checkbox(
       title: String,
       initial: Boolean,
-      projection: (Configuration, Boolean) => Unit
+      projection: (Sim, Boolean) => Unit
   ): Unit                                                             = {
     val checkbox = new CheckBox() {
       onAction = (_: ActionEvent) => {
         println(title, this.isSelected)
-        projection(model.configuration, this.isSelected)
+        projection(model, this.isSelected)
       }
     }
     checkbox.selected = initial

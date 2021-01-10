@@ -1,14 +1,20 @@
 package ui.canvas.widgetPanel
 
 import javafx.event.ActionEvent
-import scalafx.geometry.HPos
+import model.sim.{Configuration, Sim}
+import scalafx.geometry.{HPos, VPos}
 import scalafx.scene.Node
-import scalafx.scene.control.{ComboBox, Label, TextField, TextFormatter}
+import scalafx.scene.control.{
+  CheckBox,
+  ComboBox,
+  Label,
+  TextField,
+  TextFormatter
+}
 import scalafx.scene.layout.{GridPane, Pane, Priority}
 import scalafx.util.converter.{DoubleStringConverter, IntStringConverter}
-import ui.canvas.GraphCanvasController
 
-class PropertiesPanel extends GridPane {
+class PropertiesPanel(model: Sim) extends GridPane {
   private var rowCounter = 0
 
   managed <== visible
@@ -18,36 +24,57 @@ class PropertiesPanel extends GridPane {
 
   def show(): Unit = { visible = true }
 
-  def wideLabel(str: String): Label                   = {
+  def wideLabel(str: String): Label = {
     val lbl = new Label(str)
     lbl.minWidth = 40
     lbl
   }
 
-  def textField(title: String, initial: String): Unit = {
-    addField(title, initial, null)
-  }
+  def textField(
+      title: String,
+      initial: String,
+      projection: (Configuration, String) => Unit
+  ): Unit                           = { addField(title, x => y => projection(y, x), initial, null) }
 
-  def integerField(title: String, initial: Int): Unit                 = {
+  def integerField(
+      title: String,
+      initial: Int,
+      projection: (Configuration, Int) => Unit
+  ): Unit                                                             = {
     val converter = new IntStringConverter
-    addField(title, initial.toString, new TextFormatter(converter))
+    addField(
+      title,
+      x => y => projection(y, converter.fromString(x)),
+      initial.toString,
+      new TextFormatter(converter)
+    )
   }
 
-  def doubleField(title: String, initial: Double): Unit               = {
+  def doubleField(
+      title: String,
+      initial: Double,
+      projection: (Configuration, Double) => Unit
+  ): Unit                                                             = {
     val converter = new DoubleStringConverter
-    addField(title, initial.toString, new TextFormatter(converter))
+    addField(
+      title,
+      x => y => projection(y, converter.fromString(x)),
+      initial.toString,
+      new TextFormatter(converter)
+    )
   }
 
   private def addField(
       title: String,
+      projection: String => Configuration => Unit,
       initial: String,
       formatter: TextFormatter[_]
   ): Unit                                                             = {
     val textField = new TextField { textFormatter = formatter }
     textField.focusedProperty().addListener((_, _, newVal) => {
       if (!newVal) {
-        println("Textbox change")
         println(title, textField.text.value)
+        projection(textField.text.value)(model.configuration)
       }
     })
     textField.text = initial
@@ -58,12 +85,13 @@ class PropertiesPanel extends GridPane {
   def dropdown(
       title: String,
       options: List[String],
-      placeholder: String
+      placeholder: String,
+      projection: (Configuration, String) => Unit
   ): Unit                                                             = {
     val box = new ComboBox[String](options) {
-      onAction = (e: ActionEvent) => {
-        println("Dropdown change")
+      onAction = (_: ActionEvent) => {
         println(title, this.value.value)
+        projection(model.configuration, this.value.value)
       }
     }
     box.setValue(placeholder)
@@ -73,14 +101,35 @@ class PropertiesPanel extends GridPane {
 
   private def addRowSpaced(index: Int, left: Node, right: Node): Unit = {
     val spacer = new Pane
-    spacer.prefWidth = 40
+    spacer.prefWidth = 10
+    spacer.minWidth = 5
     GridPane.setHgrow(right, Priority.Always)
     GridPane.setHalignment(right, HPos.Right)
+    GridPane.setValignment(left, VPos.Center)
+//    left.setStyle("-fx-background-color: lightblue;")
+//    spacer.setStyle("-fx-background-color: lightgreen;")
+//    right.setStyle("-fx-background-color: pink;")
     this.addRow(index, left, spacer, right)
   }
 
+  def checkbox(
+      title: String,
+      initial: Boolean,
+      projection: (Configuration, Boolean) => Unit
+  ): Unit                                                             = {
+    val checkbox = new CheckBox() {
+      onAction = (_: ActionEvent) => {
+        println(title, this.isSelected)
+        projection(model.configuration, this.isSelected)
+      }
+    }
+    checkbox.selected = initial
+    this.addRowSpaced(rowCounter, wideLabel(title), checkbox)
+    rowCounter += 1
+  }
+
   def clearAll(): Unit                                                = {
-    children.removeAll()
+    children.clear()
     rowCounter = 0
   }
 }

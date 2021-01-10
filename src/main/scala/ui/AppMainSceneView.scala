@@ -22,7 +22,7 @@ class AppMainSceneView(width: Double, height: Double)
     new GraphCanvasController[GraphingCanvas.DrawAction](model)
   private val graphContainer = new GraphingCanvas(controller)
   private val rightMenu      = WidgetPanel.Element()
-  private val general        = new PropertiesWidget("Global Simulation", model)
+  private val general        = new PropertiesWidget("Model Settings", model)
 
   // This commented code is only used to generate the general simulation config fields, and should be deleted
   // TODO: remove once done
@@ -101,8 +101,10 @@ class AppMainSceneView(width: Double, height: Double)
                   GraphCanvasController.EditingMode.Selecting,
                   graphContainer.redraw
                 )
-                general.clear()
-                general.generateGlobalMenu()
+                rightMenu.clear()
+                val newGeneral = new PropertiesWidget("Model Settings", model)
+                newGeneral.generateGlobalMenu()
+                rightMenu.widget(newGeneral)
               }
               accelerator =
                 new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)

@@ -235,10 +235,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     } polling={model.configuration.pollingInterval.toString}
            maxTime={model.configuration.maximumDuration.toString} maxSimulated={
       model.configuration.maxSimulatedTime.toString
-    } seed={
-      if (model.configuration.useRandomSeed) random().toString
-      else model.configuration.seed.toString
-    } xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
+    } seed={if (model.configuration.useRandomSeed) (random() * 10e9).toLong.toString else model.configuration.seed.toString} xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
         {userClasses}{nodes}{measures}{connections}{blockingRegions}
       </sim>
       <jmodel xsi:noNamespaceSchemaLocation="JModelGUI.xsd">

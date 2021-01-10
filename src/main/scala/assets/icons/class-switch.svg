@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1183 1181" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:100;">
+    <g transform="matrix(1,0,0,1,-11692,-1)">
+        <g id="ClassSwitch1" transform="matrix(1,0,0,1,1299.21,0)">
+            <rect x="10393.7" y="1" width="1181.1" height="1180.1" style="fill:none;"/>
+            <clipPath id="_clip1">
+                <rect x="10393.7" y="1" width="1181.1" height="1180.1"/>
+            </clipPath>
+            <g clip-path="url(#_clip1)">
+                <g transform="matrix(1,0,0,-1,-1299.21,1135.86)">
+                    <g transform="matrix(1,0,0,-1,11692,1134.86)">
+                        <path d="M931.278,685.962l156.25,117.188l-156.25,117.187l-0,-234.375Z"/>
+                        <path d="M95.402,330.709l283.464,-0l425.197,472.441l158.465,-0" style="fill:none;stroke:black;stroke-width:104.17px;"/>
+                    </g>
+                </g>
+                <g transform="matrix(1,0,0,1,-1299.21,0)">
+                    <path d="M11787.4,804.15l283.464,-0l425.197,-472.441l283.465,-0" style="fill:none;stroke:white;stroke-width:229.17px;"/>
+                </g>
+                <g transform="matrix(1,0,0,1,-1299.21,0)">
+                    <g transform="matrix(1,-0,-0,1,11692,1)">
+                        <path d="M931.278,213.521l156.25,117.188l-156.25,117.187l-0,-234.375Z"/>
+                        <path d="M95.402,803.15l283.464,-0l425.197,-472.441l158.465,-0" style="fill:none;stroke:black;stroke-width:104.17px;"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1182 1181" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:100;">
+    <g transform="matrix(1,0,0,1,-16889,-1299)">
+        <g transform="matrix(1,0,0,1,1299.21,0)">
+            <g id="Transition2" transform="matrix(1,0,0,1,5196.85,1298.71)">
+                <rect x="10393.7" y="1" width="1181.1" height="1180.1" style="fill:none;"/>
+                <g transform="matrix(1.26667,0,0,1.26667,-2988.98,-98.4045)">
+                    <g transform="matrix(1.14286,0,0,1.14286,-8996.63,-1565.38)">
+                        <circle cx="17669.3" cy="1701.29" r="165.354" style="fill:white;stroke:black;stroke-width:71.96px;"/>
+                    </g>
+                    <g transform="matrix(1,0,0,1,-6307.09,-1156.98)">
+                        <path d="M17503.9,1668.22c0,-73.01 -59.274,-132.284 -132.283,-132.284l-113.386,0c-73.01,0 -132.284,59.274 -132.284,132.284l0,113.385c0,73.01 59.274,132.284 132.284,132.284l113.386,-0c73.009,-0 132.283,-59.274 132.283,-132.284l0,-113.385Z" style="fill:white;stroke:black;stroke-width:82.24px;"/>
+                    </g>
+                    <g transform="matrix(1.4,0,0,1.4,-13299.2,-2243.79)">
+                        <rect x="17126" y="2008.37" width="236.22" height="236.22" style="fill:white;stroke:black;stroke-width:58.74px;"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

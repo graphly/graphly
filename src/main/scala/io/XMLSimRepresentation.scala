@@ -17,7 +17,38 @@ import scala.util.control.Breaks.{break, breakable}
 // Please note, this class is completely dependent on JMT and its file format
 
 object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
-  def representTypeSection(ts: TypeSection): xml.Node = {
+  def representDistribution(distribution: Distribution): xml.Node =
+    distribution match {
+      case Uniform(min, max) =>
+        <subParameter classPath="jmt.engine.NetStrategies.ServiceStrategies.ServiceTimeStrategy" name="ServiceTimeStrategy">
+            <subParameter classPath="jmt.engine.random.Uniform" name="Uniform"/>
+          <subParameter classPath="jmt.engine.random.UniformPar" name="distrPar">
+            <subParameter classPath="java.lang.Double" name="min">
+              <value>{min.toString}</value>
+            </subParameter>
+            <subParameter classPath="java.lang.Double" name="max">
+              <value>{max.toString}</value>
+            </subParameter>
+          </subParameter>
+        </subParameter>
+      case Exponential(lambda) =>
+        <subParameter classPath="jmt.engine.NetStrategies.ServiceStrategies.ServiceTimeStrategy" name="ServiceTimeStrategy">
+          <subParameter classPath="jmt.engine.random.Exponential" name="Exponential"/>
+          <subParameter classPath="jmt.engine.random.ExponentialPar" name="distrPar">
+            <subParameter classPath="java.lang.Double" name="lambda">
+              <value>{lambda.toString}</value>
+            </subParameter>
+          </subParameter>
+        </subParameter>
+      case Pareto(alpha, k) => ???
+      case Poisson(mean) => ???
+      case UnimplementedDistribution(raw) => raw
+    }
+
+  def representTypeSection(
+      ts: TypeSection,
+      classes: mutable.Set[UserClass]
+  ): xml.Node                                                              = {
     ts match {
       case SourceSection(refClassNames) =>
         <section className="RandomSource">
@@ -178,7 +209,12 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         }/>
     ).toArray
 
-    val guiClasses = x.classes.map(representClassGui).toArray
+    val guiClasses = model.classes.map(representClassGui).toArray
+
+    val measures = model.measures.map(representMeasure).toArray
+
+    val blockingRegions =
+      model.blockingRegions.map(representBlockingRegion).toArray
 
     <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name={
       filename

@@ -8,7 +8,7 @@ class WidgetPanel extends VBox {
 
   def widget(widget: Widget): Unit = { children.add(widget) }
 
-  def clear(): Unit = { children.remove() }
+  def clear(): Unit = { children.clear() }
 }
 
 object WidgetPanel {

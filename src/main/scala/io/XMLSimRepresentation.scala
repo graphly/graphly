@@ -298,7 +298,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       measures,
       blockingRegions,
       traces,
-      parseConfiguration(xmlSim),
+      parseConfiguration(xmlSim.child(1)),
       results
     )
 
@@ -453,7 +453,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       )
     )
 
-  def parseConfiguration(root: xml.Elem): Configuration = {
+  def parseConfiguration(root: xml.Node): Configuration = {
 
     val configuration = Configuration()
     // Gets optional parameter simulation seed

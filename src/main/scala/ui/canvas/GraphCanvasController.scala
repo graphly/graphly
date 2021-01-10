@@ -339,8 +339,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
         timeline(
           history.Delete.node(active.active) +
             history.Delete.edge(model.connections.view.filter { connection =>
-              !active.active(connection.source) &&
-              !active.active(connection.target)
+              active.active(connection.source) || active.active(connection.target)
             }.toSet),
           model
         )

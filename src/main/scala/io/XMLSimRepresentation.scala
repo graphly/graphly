@@ -104,11 +104,12 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   override def represent(x: Sim, filename: String): xml.Elem = {
     val timestamp: String            = DateTimeFormatter.ofPattern("E LLL d H:m:s zz u")
       .format(ZonedDateTime.now)
-    val userClasses: Array[xml.Elem] = x.classes.map(representClass).toArray
+    val userClasses: Array[xml.Elem] = model.classes.map(representClass).toArray
 
-    val nodes: Array[xml.Elem] = x.nodes.map(representNode).toArray;
+    val nodes: Array[xml.Elem] =
+      model.nodes.map(representNode(_, model.classes)).toArray;
 
-    val nodePositions: Array[xml.Elem] = x.nodes.map(
+    val nodePositions: Array[xml.Elem] = model.nodes.map(
       (node: Node) =>
         <station name={node.name}>
           <position rotate="false" x={node.position.x.toString} y={
@@ -117,7 +118,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         </station>
     ).toArray
 
-    val connections: Array[xml.Elem] = x.connections.map(
+    val connections: Array[xml.Elem] = model.connections.map(
       (connection: Connection) =>
         <connection source={connection.source.name} target={
           connection.target.name
@@ -130,17 +131,17 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       filename
     } timestamp={timestamp} xsi:noNamespaceSchemaLocation="Archive.xsd">
       <sim disableStatisticStop={
-      x.configuration.disableStatistic.toString
+      model.configuration.disableStatistic.toString
     } logDecimalSeparator={
-      x.configuration.loggingDecimalSeparator
-    } logDelimiter={x.configuration.loggingDelim} logPath={
-      x.configuration.loggingPath
-    } logReplaceMode={x.configuration.loggingAutoAppend} maxEvents={
-      x.configuration.maxEvents.toString
-    } maxSamples={x.configuration.maxSamples.toString} name={filename} polling={
-      x.configuration.pollingInterval.toString
-    } xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
-        {userClasses}{nodes}{connections}
+      model.configuration.loggingDecimalSeparator
+    } logDelimiter={model.configuration.loggingDelim} logPath={
+      model.configuration.loggingPath
+    } logReplaceMode={model.configuration.loggingAutoAppend} maxEvents={
+      model.configuration.maxEvents.toString
+    } maxSamples={model.configuration.maxSamples.toString} name={
+      filename
+    } polling={model.configuration.pollingInterval.toString} xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
+        {userClasses}{nodes}{measures}{connections}{blockingRegions}
       </sim>
       <jmodel xsi:noNamespaceSchemaLocation="JModelGUI.xsd">
         {guiClasses}{nodePositions}

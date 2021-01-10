@@ -101,7 +101,19 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     <userClass color={color} name={u.name}/>
   }
 
-  override def represent(x: Sim, filename: String): xml.Elem = {
+  def representMeasure(measure: Measure): xml.Elem =
+    <measure alpha={measure.alpha.toString} name={measure.name} nodeType={
+      measure.`type`
+    } precision={measure.precision.toString} referenceNode={
+      measure.referenceNodeName
+    } referenceUserClass={measure.referenceClassName} type={
+      measure.`type`
+    } verbose={measure.verbose.toString} />
+
+  def representBlockingRegion(blockingRegion: BlockingRegion): xml.Node =
+    blockingRegion.raw
+
+  override def represent(model: Sim, filename: String): xml.Elem             = {
     val timestamp: String            = DateTimeFormatter.ofPattern("E LLL d H:m:s zz u")
       .format(ZonedDateTime.now)
     val userClasses: Array[xml.Elem] = model.classes.map(representClass).toArray

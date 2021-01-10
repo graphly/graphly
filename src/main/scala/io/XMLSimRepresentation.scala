@@ -32,47 +32,49 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     }
   }
 
-  def representNode(node: Node): xml.Elem    = {
+  def representNode(node: Node, classes: mutable.Set[UserClass]): xml.Elem = {
     val sections: Array[xml.Node] = node.nodeType match {
       case Source(sourceSection, tunnelSection, routerSection) =>
         Array(sourceSection, tunnelSection, routerSection)
-          .map(representTypeSection)
-      case Sink(sinkSection) => Array(representTypeSection(sinkSection))
+          .map(representTypeSection(_, classes))
+      case Sink(sinkSection) =>
+        Array(representTypeSection(sinkSection, classes))
       case Terminal(terminalSection, tunnelSection, routerSection) =>
         Array(terminalSection, tunnelSection, routerSection)
-          .map(representTypeSection)
+          .map(representTypeSection(_, classes))
       case Router(queueSection, tunnelSection, routerSection) =>
         Array(queueSection, tunnelSection, routerSection)
-          .map(representTypeSection)
+          .map(representTypeSection(_, classes))
       case Delay(queueSection, delaySection, routerSection) =>
         Array(queueSection, delaySection, routerSection)
-          .map(representTypeSection)
+          .map(representTypeSection(_, classes))
       case Server(queueSection, serverSection, routerSection) =>
         Array(queueSection, serverSection, routerSection)
-          .map(representTypeSection)
+          .map(representTypeSection(_, classes))
       case Fork(queueSection, tunnelSection, forkSection) =>
         Array(queueSection, tunnelSection, forkSection)
-          .map(representTypeSection)
+          .map(representTypeSection(_, classes))
       case Join(joinSection, tunnelSection, routerSection) =>
         Array(joinSection, tunnelSection, routerSection)
-          .map(representTypeSection)
+          .map(representTypeSection(_, classes))
       case Logger(queueSection, loggerSection, routerSection) =>
         Array(queueSection, loggerSection, routerSection)
-          .map(representTypeSection)
+          .map(representTypeSection(_, classes))
       case ClassSwitch(queueSection, classSwitch, routerSection) =>
         Array(queueSection, classSwitch, routerSection)
-          .map(representTypeSection)
+          .map(representTypeSection(_, classes))
       case Semaphore(semaphoreSection, tunnelSection, routerSection) =>
         Array(semaphoreSection, tunnelSection, routerSection)
-          .map(representTypeSection)
+          .map(representTypeSection(_, classes))
       case Scalar(joinSection, tunnelSection, forkSection) =>
-        Array(joinSection, tunnelSection, forkSection).map(representTypeSection)
+        Array(joinSection, tunnelSection, forkSection)
+          .map(representTypeSection(_, classes))
       case Place(storageSection, tunnelSection, linkageSection) =>
         Array(storageSection, tunnelSection, linkageSection)
-          .map(representTypeSection)
+          .map(representTypeSection(_, classes))
       case Transition(enablingSection, timingSection, firingSection) =>
         Array(enablingSection, timingSection, firingSection)
-          .map(representTypeSection)
+          .map(representTypeSection(_, classes))
     }
 
     <node name={node.name}>

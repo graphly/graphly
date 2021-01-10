@@ -43,7 +43,7 @@ object SimDrawAction {
       private val highlighting                                         = Color.GreenYellow
       private val icons: Map[Class[_ <: sim.Node], String] = Map(
         classOf[sim.Source] -> "/assets/icons/source.svg",
-        classOf[sim.Join]   -> "/assets/icons/source.svg",
+        classOf[sim.Join]   -> "/assets/icons/join.svg",
         classOf[sim.Queue]  -> "/assets/icons/queue.svg",
         classOf[sim.Fork]   -> "/assets/icons/fork.svg",
         classOf[sim.Sink]   -> "/assets/icons/sink.svg",

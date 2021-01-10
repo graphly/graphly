@@ -1,18 +1,12 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g filter="url(#filter0_d)">
-<circle cx="32" cy="30" r="28" fill="white"/>
-<circle cx="32" cy="30" r="27.5" stroke="#F2F2F2"/>
-</g>
-<path d="M41.8856 29.2938L19.6578 15.9187C18.8796 15.5644 18.0508 16.3194 18.2586 17.1028L24.7847 41.7074C24.9308 42.2581 25.4823 42.5901 26.0159 42.4486C26.2672 42.3819 26.4816 42.2181 26.5816 42.0378L30.2637 36.4077L36.7293 44.8697C36.8393 45.0141 36.9995 45.1084 37.1757 45.1329C37.2611 45.1428 37.3466 45.1373 37.4278 45.1158C37.5141 45.0929 37.5955 45.0512 37.6672 44.9939L41.3301 42.0578C41.6194 41.8275 41.6678 41.396 41.4378 41.0955L35.1782 32.9006L41.6504 31.1839C42.184 31.0424 42.4985 30.4806 42.3525 29.93C42.3098 29.769 42.2057 29.5376 41.8856 29.2938V29.2938Z" fill="#595959"/>
-<defs>
-<filter id="filter0_d" x="0" y="0" width="64" height="64" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"/>
-<feOffset dy="2"/>
-<feGaussianBlur stdDeviation="2"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
-</filter>
-</defs>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1182 1182" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-22086,-1)">
+        <g id="Select1" transform="matrix(1.00085,0,0,1.00085,2558.27,-0.000847384)">
+            <rect x="19511.8" y="1" width="1180.1" height="1180.1" style="fill:none;"/>
+            <g transform="matrix(37.1192,0,0,37.1192,18976.9,-540.463)">
+                <path d="M41.886,29.294L19.658,15.919C18.88,15.564 18.051,16.319 18.259,17.103L24.785,41.707C24.931,42.258 25.482,42.59 26.016,42.449C26.267,42.382 26.482,42.218 26.582,42.038L30.264,36.408L36.729,44.87C36.839,45.014 37,45.108 37.176,45.133C37.261,45.143 37.347,45.137 37.428,45.116C37.514,45.093 37.596,45.051 37.667,44.994L41.33,42.058C41.619,41.828 41.668,41.396 41.438,41.096L35.178,32.901L41.65,31.184C42.184,31.042 42.499,30.481 42.353,29.93C42.31,29.769 42.206,29.538 41.886,29.294Z" style="fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
 </svg>

@@ -29,7 +29,7 @@ class VerticalToolbar extends ToolBar {
       onAction = e => { itemSelected.dispatch(GraphCanvasController.EditingMode.Node(Fork)) }
     }
   private val joinBtn      =
-    new ToolbarButton("Create Join Nodes", "/assets/icons/source.svg") {
+    new ToolbarButton("Create Join Nodes", "/assets/icons/join.svg") {
       toggleGroup = allButtonsTg
       onAction = e => { itemSelected.dispatch(GraphCanvasController.EditingMode.Node(Join)) }
     }

@@ -235,7 +235,10 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       <jmodel xsi:noNamespaceSchemaLocation="JModelGUI.xsd">
         {guiClasses}{nodePositions}
       </jmodel>
-      <results>
+      {
+      if (model.results.isDefined) {
+        <results>
+        {model.results.get}
       </results>
       }
     }

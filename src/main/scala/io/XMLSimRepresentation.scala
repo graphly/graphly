@@ -250,10 +250,8 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
               trace.width.toString
             } height={trace.height.toString}>
               {
-//              java.util.Base64.getEncoder
-//                .encodeToString(
-              trace.image.stream.readAllBytes
-//                )
+              java.util.Base64.getEncoder
+                .encodeToString(trace.image.stream.readAllBytes)
             }
             </trace>
         ).toArray
@@ -308,16 +306,17 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       traceY      <- xmlTrace.attribute(XML_A_TRACE_Y)
       traceWidth  <- xmlTrace.attribute(XML_A_TRACE_WIDTH)
       traceHeight <- xmlTrace.attribute(XML_A_TRACE_HEIGHT)
-    } yield Trace(
-      Trace.Image(new ByteArrayInputStream(
-//          java.util.Base64.getDecoder.decode(
-        xmlTrace.child.head.toString.getBytes
-//      )
-      )),
-      Position(traceX.toString.toDouble, traceY.toString.toDouble),
-      traceWidth.toString.toDouble,
-      traceHeight.toString.toDouble
-    )
+    } yield {
+
+      Trace(
+        Trace.Image(new ByteArrayInputStream(java.util.Base64.getDecoder.decode(
+          xmlTrace.child.head.toString.strip().getBytes
+        ))),
+        Position(traceX.toString.toDouble, traceY.toString.toDouble),
+        traceWidth.toString.toDouble,
+        traceHeight.toString.toDouble
+      )
+    }
 
   private def parseBlockingRegions(
       simulationAssets: Seq[xml.Node]

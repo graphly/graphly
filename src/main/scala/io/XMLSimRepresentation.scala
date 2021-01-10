@@ -237,6 +237,24 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       </jmodel>
       <results>
       </results>
+      }
+    }
+    {
+      if (model.traces.nonEmpty)
+        model.traces.map(
+          trace =>
+            <trace x={trace.x.toString} y={trace.y.toString} width={
+              trace.width.toString
+            } height={trace.height.toString}>
+              {
+//              java.util.Base64.getEncoder
+//                .encodeToString(
+              trace.image.stream.readAllBytes
+//                )
+            }
+            </trace>
+        ).toArray
+    }
     </archive>
   }
 

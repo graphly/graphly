@@ -582,8 +582,8 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         makeUnimplementedSection(sections(1)),
         makeUnimplementedSection(sections(2))
       )
-
-    Unimplemented(sections.map(section => makeUnimplementedSection(section)))
+    else
+      Unimplemented(sections.map(section => makeUnimplementedSection(section)))
   }
 
   private def makeUnimplementedSection[T <: TypeSection](

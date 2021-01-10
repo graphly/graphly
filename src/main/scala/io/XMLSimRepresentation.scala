@@ -179,11 +179,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       results
     )
 
-    nodes.values.foreach(println)
-    connections.foreach(println)
-    measures.foreach(println)
-    userClasses.values.foreach(println)
-
     sim
   }
 

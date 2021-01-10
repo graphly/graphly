@@ -21,26 +21,43 @@ class AppMainSceneView(width: Double, height: Double)
   private val controller     =
     new GraphCanvasController[GraphingCanvas.DrawAction](model)
   private val graphContainer = new GraphingCanvas(controller)
-  private val rightMenu      = WidgetPanel.Element(controller)
-  private val sample = new PropertiesWidget("Integer Test")
-  sample.integerField("An integer", 0)
-  sample.dropdown("A dropdown", List("1", "2", "3"), "placeholder")
-  private val sample2 = new PropertiesWidget("Double Test")
-  sample2.doubleField("A double", 0.0)
-  private val sample3 = new PropertiesWidget("String Test")
-  sample3.textField("A relatively long title", "Some sorta long text")
-  rightMenu.widget(sample)
-  rightMenu.widget(sample2)
-  rightMenu.widget(sample3)
+  private val rightMenu      = WidgetPanel.Element()
+  private val general        = new PropertiesWidget("Global Simulation", model)
+
+  // This commented code is only used to generate the general simulation config fields, and should be deleted
+  // TODO: remove once done
+//  private val fields = model.configuration.getClass.getDeclaredFields
+//  private val jLong = classOf[Long]
+//  private val jInt = classOf[Int]
+//  private val jString = classOf[String]
+//  private val jBool = classOf[Boolean]
+//  private val jDouble = classOf[Double]
+//
+//  def convertCamelCase(str: String): String = {
+//    var temp = str.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2").replaceAll("([a-z\\d])([A-Z])", "$1_$2").toLowerCase
+//    temp.replaceAll("_", " ").capitalize
+//  }
+//
+//  fields.foreach {
+//    f => f.getType match {
+//      case `jLong` | `jInt` => println(s"""integerField("${convertCamelCase(f.getName)}", model.configuration.${f.getName}, _.${f.getName} = _)""")
+//      case `jString` => println(s"""textField("${convertCamelCase(f.getName)}", model.configuration.${f.getName}, _.${f.getName} = _)""")
+//      case `jBool` => println(s"""checkbox("${convertCamelCase(f.getName)}", model.configuration.${f.getName}, _.${f.getName} = _)""")
+//      case `jDouble` => println(s"""doubleField("${convertCamelCase(f.getName)}", model.configuration.${f.getName}, _.${f.getName} = _)""")
+//      case _ => println("what")
+//    }
+//  }
+
+  general.generateGlobalMenu()
+  rightMenu.widget(general)
   rightMenu.prefWidth <== graphContainer.width / 3
-  private val toolbar        = new VerticalToolbar
+  private val toolbar = new VerticalToolbar
 
   private val statusBar =
     new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}" }
   controller.onSwitchMode +=
     (state => statusBar.text = s"Status: ${state.toolbarStatusMnemonic}")
-  controller.onSwitchMode +=
-    (state => toolbar.controllerUpdatedMode(state))
+  controller.onSwitchMode += (state => toolbar.controllerUpdatedMode(state))
   controller.onCanvasTransform +=
     (tuple => graphContainer.transformCanvas(tuple._1, tuple._2))
 
@@ -84,6 +101,8 @@ class AppMainSceneView(width: Double, height: Double)
                   GraphCanvasController.EditingMode.Selecting,
                   graphContainer.redraw
                 )
+                general.clear()
+                general.generateGlobalMenu()
               }
               accelerator =
                 new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)

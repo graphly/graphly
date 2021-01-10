@@ -11,7 +11,6 @@ import scalafx.scene.control._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
-import ui.canvas.GraphCanvasController.EditingMode
 import ui.canvas.SimDrawAction._
 import ui.canvas.widgetPanel.{NodeWidget, PropertiesWidget, WidgetPanel}
 import ui.canvas.{GraphCanvasController, GraphingCanvas}
@@ -27,6 +26,12 @@ class AppMainSceneView(width: Double, height: Double)
   private val general        = new PropertiesWidget("Model Settings", model)
   private val nodeMenu       = NodeWidget("Node Settings", model, controller)
   nodeMenu.visible = false
+
+  private def resetGeneralMenu(mdl: Sim): Unit = {
+    val newGeneral  = new PropertiesWidget("Model Settings", mdl)
+    newGeneral.generateGlobalMenu()
+    rightMenu.children.set(0, newGeneral)
+  }
 
   // This commented code is only used to generate the general simulation config fields, and should be deleted
   // TODO: remove once done
@@ -74,6 +79,18 @@ class AppMainSceneView(width: Double, height: Double)
       menus = List(
         new Menu("File")  {
           items = List(
+            new MenuItem("New") {
+              onAction = (_: ActionEvent) => {
+                model = Sim.empty
+                controller.model = model
+                controller.redrawMode(
+                  GraphCanvasController.EditingMode.Selecting,
+                  graphContainer.redraw
+                )
+                resetGeneralMenu(model)
+              }
+//              accelerator = new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)
+            },
             new MenuItem("Save")    {
               onAction = (_: ActionEvent) => { controller.save() }
               accelerator =
@@ -106,9 +123,7 @@ class AppMainSceneView(width: Double, height: Double)
                   GraphCanvasController.EditingMode.Selecting,
                   graphContainer.redraw
                 )
-                val newGeneral  = new PropertiesWidget("Model Settings", model)
-                newGeneral.generateGlobalMenu()
-                rightMenu.children.set(0, newGeneral)
+                resetGeneralMenu(model)
               }
               accelerator =
                 new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)

@@ -123,6 +123,12 @@ object XMLConstantNames {
   val XML_E_MAPREDUCE                        = "template_mapreduce"
   val NODETYPE_REGION                        = "region"
   val NODETYPE_STATION                       = "station"
+  val XML_E_TRACE                            = "trace"
+  val XML_A_TRACE_X                          = "x"
+  val XML_A_TRACE_Y                          = "y"
+  val XML_A_TRACE_WIDTH                      = "width"
+  val XML_A_TRACE_HEIGHT                     = "height"
+  val XML_E_RESULTS                          = "results"
 
   /**
     * Parser features

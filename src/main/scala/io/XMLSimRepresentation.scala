@@ -150,12 +150,10 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     </archive>
   }
 
-  override def toSim(xmlSim: xml.Elem): Sim                  = {
+  override def toSim(xmlSim: xml.Elem): Sim                                  = {
     val xmlSimNodes               = xmlSim.child
     val simulation                = xmlSimNodes(1)
-    // This is where simulation results should go when they are added.
-    var results: Option[xml.Node] = None
-    if (xmlSimNodes.length > 5) { results = Some(xmlSimNodes(5)) }
+    val results: Option[xml.Node] = xmlSimNodes.find(_.label == XML_E_RESULTS)
 
     val distributions: mutable.Map[String, Distribution] = mutable.HashMap.empty
     val simulationAssets                                 = simulation.head.child

@@ -664,7 +664,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
   }
   private def makeTunnelSection(): TunnelSection                               = TunnelSection()
   private def makeRouterSection(sectionXml: xml.Node): RouterSection           =
-    RouterSection(sectionXml)
+    RouterSection(sectionXml.child(1))
   private def makeSinkSection(): SinkSection                                   = SinkSection()
   private def makeTerminalSection(sectionXml: xml.Node): TerminalSection       = ???
   private def makeQueueSection(sectionXml: xml.Node): QueueSection             = {

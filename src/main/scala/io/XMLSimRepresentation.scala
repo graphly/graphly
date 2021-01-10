@@ -204,19 +204,23 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       userClasses: collection.Map[String, UserClass]
   ): Option[Measure]         =
     for {
-      classAlpha          <- xmlMeasure.attribute(XML_A_MEASURE_ALPHA)
-      classReferenceNode  <- xmlMeasure.attribute(XML_A_MEASURE_STATION)
-      classReferenceClass <- xmlMeasure.attribute(XML_A_MEASURE_CLASS)
-      classType           <- xmlMeasure.attribute(XML_A_MEASURE_TYPE)
-      classVerbose        <- xmlMeasure.attribute(XML_A_MEASURE_VERBOSE)
-      referenceNode       <- nodes.get(classReferenceNode.toString)
-      referenceUserClass  <- userClasses.get(classReferenceClass.toString)
+      measureName              <- xmlMeasure.attribute(XML_A_MEASURE_NAME)
+      measureAlpha             <- xmlMeasure.attribute(XML_A_MEASURE_ALPHA)
+      measurePrecision         <- xmlMeasure.attribute(XML_A_MEASURE_PRECISION)
+      measureVerbose           <- xmlMeasure.attribute(XML_A_MEASURE_VERBOSE)
+      measureType              <- xmlMeasure.attribute(XML_A_MEASURE_TYPE)
+      measureReferenceClass    <- xmlMeasure.attribute(XML_A_MEASURE_CLASS)
+      measureReferenceNode     <- xmlMeasure.attribute(XML_A_MEASURE_STATION)
+      measureReferenceNodeType <- xmlMeasure.attribute(XML_A_MEASURE_NODETYPE)
     } yield Measure(
-      classAlpha.toString.toFloat,
-      referenceNode,
-      referenceUserClass,
-      classType.toString,
-      classVerbose.toString.toBoolean
+      measureAlpha.toString.toFloat,
+      measureName.toString,
+      measureReferenceNodeType.toString,
+      nodes.get(measureReferenceNode.toString),
+      userClasses.get(measureReferenceClass.toString),
+      measureType.toString,
+      measurePrecision.toString.toFloat,
+      measureVerbose.toString.toBoolean
     )
 
   private def parseConnections(

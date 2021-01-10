@@ -12,6 +12,7 @@ import scalafx.scene.paint.Color
 
 import scala.collection.mutable
 import scala.language.implicitConversions
+import scala.math.random
 import scala.util.control.Breaks.{break, breakable}
 
 // Please note, this class is completely dependent on JMT and its file format
@@ -145,6 +146,8 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       case Transition(enablingSection, timingSection, firingSection) =>
         Array(enablingSection, timingSection, firingSection)
           .map(representTypeSection(_, classes))
+      case Unimplemented(sections) =>
+        sections.toArray.map(representTypeSection(_, classes))
     }
 
     <node name={node.name}>
@@ -229,7 +232,13 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       model.configuration.maxEvents.toString
     } maxSamples={model.configuration.maxSamples.toString} name={
       filename
-    } polling={model.configuration.pollingInterval.toString} xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
+    } polling={model.configuration.pollingInterval.toString}
+           maxTime={model.configuration.maximumDuration.toString} maxSimulated={
+      model.configuration.maxSimulatedTime.toString
+    } seed={
+      if (model.configuration.useRandomSeed) random().toString
+      else model.configuration.seed.toString
+    } xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
         {userClasses}{nodes}{measures}{connections}{blockingRegions}
       </sim>
       <jmodel xsi:noNamespaceSchemaLocation="JModelGUI.xsd">
@@ -491,7 +500,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       configuration.maxEvents = maxEvents.get.head.toString.toInt
     }
 
-    // Gets optional parameters log path, replace policy, and delimiter#
+    // Gets optional parameters log path, replace policy, and delimiter
     val logPath        = root.attribute(XML_A_ROOT_LOGPATH)
     if (logPath.isDefined) {
       val dir = new File(logPath.toString)

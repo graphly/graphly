@@ -4,14 +4,16 @@ import java.io.File
 import io.Implicit.SimableRepresention
 import io.XMLSimRepresentation.Implicit.xmlSimRepresentation
 import javafx.event.ActionEvent
+import javafx.scene.input.KeyEvent
 import model.sim._
 import scalafx.scene.Scene
 import scalafx.scene.control._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
+import ui.canvas.GraphCanvasController.EditingMode
 import ui.canvas.SimDrawAction._
-import ui.canvas.widgetPanel.{PropertiesWidget, WidgetPanel}
+import ui.canvas.widgetPanel.{NodeWidget, PropertiesWidget, WidgetPanel}
 import ui.canvas.{GraphCanvasController, GraphingCanvas}
 import ui.toolbar.VerticalToolbar
 
@@ -23,6 +25,8 @@ class AppMainSceneView(width: Double, height: Double)
   private val graphContainer = new GraphingCanvas(controller)
   private val rightMenu      = WidgetPanel.Element()
   private val general        = new PropertiesWidget("Model Settings", model)
+  private val nodeMenu       = NodeWidget("Node Settings", model, controller)
+  nodeMenu.visible = false
 
   // This commented code is only used to generate the general simulation config fields, and should be deleted
   // TODO: remove once done
@@ -50,6 +54,7 @@ class AppMainSceneView(width: Double, height: Double)
 
   general.generateGlobalMenu()
   rightMenu.widget(general)
+  rightMenu.widget(nodeMenu)
   rightMenu.prefWidth <== graphContainer.width / 3
   private val toolbar = new VerticalToolbar
 
@@ -101,10 +106,9 @@ class AppMainSceneView(width: Double, height: Double)
                   GraphCanvasController.EditingMode.Selecting,
                   graphContainer.redraw
                 )
-                rightMenu.clear()
-                val newGeneral = new PropertiesWidget("Model Settings", model)
+                val newGeneral  = new PropertiesWidget("Model Settings", model)
                 newGeneral.generateGlobalMenu()
-                rightMenu.widget(newGeneral)
+                rightMenu.children.set(0, newGeneral)
               }
               accelerator =
                 new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)
@@ -187,8 +191,11 @@ class AppMainSceneView(width: Double, height: Double)
     right = rightMenu
     left = toolbar
 
-    rightMenu.managed.onChange {
-      controller.redrawMode(controller.mode, graphContainer.redraw)
+    rightMenu.onKeyPressed = (key: KeyEvent) => {
+      if (key.getCode.equals(javafx.scene.input.KeyCode.ENTER)) {
+        controller.redrawMode(controller.mode, graphContainer.redraw)
+        rightMenu.requestFocus()
+      }
     }
   }
 }

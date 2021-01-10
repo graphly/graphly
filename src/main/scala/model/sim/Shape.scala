@@ -4,7 +4,8 @@ import java.io.{ByteArrayInputStream, InputStream}
 import java.util.UUID
 
 import javax.imageio.ImageIO
-import model.{Position, Positioned}
+import model.sim.DropStrategy.{DropStrategy, Value}
+import model.{Position, Positioned, sim}
 
 sealed trait Shape
 
@@ -121,30 +122,44 @@ sealed trait TypeSection
 /* These refClasses are the userClasses for which this section's node is
  * the reference node.
  */
-case class SourceSection(refClassNames: Seq[String])     extends TypeSection
-case class TunnelSection()                               extends TypeSection
-case class RouterSection(routingStrategy: xml.Node)      extends TypeSection
-case class SinkSection()                                 extends TypeSection
-case class TerminalSection()                             extends TypeSection
-case class QueueSection(queueingStrategy: Seq[xml.Node]) extends TypeSection
-case class DelaySection()                                extends TypeSection
-case class ServerSection()                               extends TypeSection
-case class ForkSection()                                 extends TypeSection
-case class JoinSection()                                 extends TypeSection
-case class LoggerSection()                               extends TypeSection
-case class ClassSwitchSection()                          extends TypeSection
-case class SemaphoreSection()                            extends TypeSection
-case class StorageSection()                              extends TypeSection
-case class LinkageSection()                              extends TypeSection
-case class EnablingSection()                             extends TypeSection
-case class TimingSection()                               extends TypeSection
-case class FiringSection()                               extends TypeSection
+case class SourceSection(refClassNames: Seq[String]) extends TypeSection
+case class TunnelSection()                           extends TypeSection
+case class RouterSection(routingStrategy: xml.Node)  extends TypeSection
+case class SinkSection()                             extends TypeSection
+case class TerminalSection()                         extends TypeSection
+case class QueueSection(
+    size: Option[Int],
+    dropStrategy: Option[DropStrategy],
+    queueingStrategy: Seq[xml.Node]
+) extends TypeSection
+case class DelaySection()                            extends TypeSection
+case class ServerSection()                           extends TypeSection
+case class ForkSection()                             extends TypeSection
+case class JoinSection()                             extends TypeSection
+case class LoggerSection()                           extends TypeSection
+case class ClassSwitchSection()                      extends TypeSection
+case class SemaphoreSection()                        extends TypeSection
+case class StorageSection()                          extends TypeSection
+case class LinkageSection()                          extends TypeSection
+case class EnablingSection()                         extends TypeSection
+case class TimingSection()                           extends TypeSection
+case class FiringSection()                           extends TypeSection
 case class UnimplementedSection[T <: TypeSection](raw: xml.Node)
     extends TypeSection {
   def asImplementedUnsafe: T = ???
 }
 
-case class Connection(source: Node, target: Node)        extends Element
+object DropStrategy                                  extends Enumeration {
+  type DropStrategy = Value
+
+  val DROP: sim.DropStrategy.Value          = Value("drop")
+  val WAITING_QUEUE: sim.DropStrategy.Value = Value("waiting queue")
+  val BAS_BLOCKING: sim.DropStrategy.Value  = Value("BAS blocking")
+
+//  override def toString(): String = this.Value.toString
+}
+
+case class Connection(source: Node, target: Node)    extends Element
 
 case class Trace(
     var image: Trace.Image,

@@ -85,10 +85,8 @@ object Implicit {
   implicit object QueueSectionDefault     extends Default[QueueSection]     {
     override def default: QueueSection =
       QueueSection(
-        <parameter classPath="java.lang.Integer" name="size">
-          <value>-1</value>
-        </parameter>
-        <parameter array="true" classPath="java.lang.String" name="dropStrategies"/>
+        None,
+        None,
         <parameter classPath="jmt.engine.NetStrategies.QueueGetStrategies.FCFSstrategy" name="FCFSstrategy"/>
         <parameter array="true" classPath="jmt.engine.NetStrategies.QueuePutStrategy" name="QueuePutStrategy"/>
       )

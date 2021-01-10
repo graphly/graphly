@@ -80,7 +80,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     </node>
   }
 
-  def representClass(u: UserClass): xml.Elem = {
+  def representClass(u: UserClass): xml.Elem                               = {
     if (u.referenceSource.isDefined) {
       <userClass name={u.name} priority={u.priority.toString} referenceSource={
         u.referenceSource.get.name
@@ -91,7 +91,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     }
   }
 
-  def representClassGui(u: UserClass): xml.Elem              = {
+  def representClassGui(u: UserClass): xml.Elem    = {
     val r       = (u.color.red * 255).toInt
     val g       = (u.color.green * 255).toInt
     val b       = (u.color.blue * 255).toInt
@@ -193,7 +193,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       simulationAssets: Seq[xml.Node],
       nodes: mutable.Map[String, Node],
       userClasses: mutable.Map[String, UserClass]
-  ): mutable.Set[Measure]                                    =
+  ): mutable.Set[Measure]   =
     simulationAssets.filter(asset => asset.label == XML_E_MEASURE)
       .flatMap(measureAsset => measureFromXML(measureAsset, nodes, userClasses))
       .to(mutable.Set)
@@ -618,8 +618,21 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     RouterSection(sectionXml)
   private def makeSinkSection(): SinkSection                                   = SinkSection()
   private def makeTerminalSection(sectionXml: xml.Node): TerminalSection       = ???
-  private def makeQueueSection(sectionXml: xml.Node): QueueSection             =
-    QueueSection(sectionXml)
+  private def makeQueueSection(sectionXml: xml.Node): QueueSection             = {
+    val parsedSize         = sectionXml.child(1).child(1).child(0).toString.toInt
+    val size               = if (parsedSize < -1) None else Some(parsedSize)
+    val parsedDropStrategy =
+      sectionXml.child(3).child.find(node => node.label == XML_E_SUBPARAMETER)
+
+    val dropStrategy = parsedDropStrategy match {
+      case Some(dropStrategyXml) =>
+        Some(DropStrategy.withName(dropStrategyXml.child(1).child(0).toString))
+      case None => None
+    }
+
+    QueueSection(size, dropStrategy, sectionXml.child.drop(4))
+  }
+
   private def makeDelaySection(sectionXml: xml.Node): DelaySection             = ???
   private def makeServerSection(sectionXml: xml.Node): ServerSection           = ???
   private def makeForkSection(sectionXml: xml.Node): ForkSection               = ???

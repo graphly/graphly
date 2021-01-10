@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="100%" height="100%" viewBox="0 0 1182 1182" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:100;">
-    <g transform="matrix(1,0,0,1,-7795,-2599)">
-        <g id="Fork3" transform="matrix(1,0,0,1,0,-0.0724232)">
+    <g transform="matrix(1,0,0,1,-9094,-2599)">
+        <g id="Join3" transform="matrix(1,0,0,1,1299,-0.0724232)">
             <rect x="7795" y="2599.07" width="1181.1" height="1181.1" style="fill:none;"/>
-            <g transform="matrix(1,0,0,1,0,118.11)">
+            <g transform="matrix(-1,0,0,1,16771.1,118.11)">
                 <g transform="matrix(1,0,0,1,0,0.0724232)">
                     <path d="M8196.58,3189.55l236.22,-236.22l401.575,-0" style="fill:none;stroke:black;stroke-width:104.17px;"/>
                 </g>

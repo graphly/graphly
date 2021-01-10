@@ -41,13 +41,17 @@ object SimDrawAction {
     implicit object Node extends this.Shape[sim.Node] {
       val radius: Int                                                  = 20
       private val highlighting                                         = Color.GreenYellow
-      private val icons: Map[Class[_ <: sim.Node], String] = Map(
-        classOf[sim.Source] -> "/assets/icons/source.svg",
-        classOf[sim.Join]   -> "/assets/icons/source.svg",
-        classOf[sim.Queue]  -> "/assets/icons/queue.svg",
-        classOf[sim.Fork]   -> "/assets/icons/fork.svg",
-        classOf[sim.Sink]   -> "/assets/icons/sink.svg",
+      private val images: Map[Class[_ <: sim.Node], Image] = Map(
+        classOf[sim.Source] -> initImage("/assets/icons/source.svg"),
+        classOf[sim.Join]   -> initImage("/assets/icons/join.svg"),
+        classOf[sim.Queue]  -> initImage("/assets/icons/queue.svg"),
+        classOf[sim.Fork]   -> initImage("/assets/icons/fork.svg"),
+        classOf[sim.Sink]   -> initImage("/assets/icons/sink.svg"),
       )
+
+      private def initImage(resourceUri: String): Image = {
+        new Image(resourceUri, 2 * radius, 2 * radius, false, false)
+      }
 
       private def drawCircle(
           position: Position,
@@ -94,8 +98,7 @@ object SimDrawAction {
             drawCircle(node.position, radius * 1.3, highlighting, context)
           drawCircle(node.position, radius, classColor(node), context)
 
-          val resourceURI = icons(node.getClass)
-          val img = new Image(resourceURI, 2 * radius, 2 * radius, false, false)
+          val img = images(node.getClass)
           context.drawImage(img, node.x - radius, node.y - radius)
 
           drawName(context, node)

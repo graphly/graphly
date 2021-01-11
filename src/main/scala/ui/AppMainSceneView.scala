@@ -110,12 +110,7 @@ class AppMainSceneView(width: Double, height: Double)
           items = List(
             new MenuItem("New") {
               onAction = (_: ActionEvent) => {
-                if (hasChanges) {
-                  if (checkUserWantsExit) {
-                    setModel(Sim.empty)
-                  }
-                }
-                else {
+                if (!hasChanges || checkUserWantsExit) {
                   setModel(Sim.empty)
                 }
               }
@@ -137,17 +132,19 @@ class AppMainSceneView(width: Double, height: Double)
             new SeparatorMenuItem(),
             new MenuItem("Open")    {
               onAction = (_: ActionEvent) => {
-                val fileChooser = new FileChooser()
-                fileChooser.initialDirectory =
-                  new File(System.getProperty("user.home"))
-                fileChooser.title = "Open Simulation"
-                fileChooser.extensionFilters.add(
-                  new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg")
-                )
-                Option(fileChooser.showOpenDialog(new Stage)).foreach { file =>
-                  model = xml.XML.loadFile(file).toSim
+                if (!hasChanges || checkUserWantsExit) {
+                  val fileChooser = new FileChooser()
+                  fileChooser.initialDirectory =
+                    new File(System.getProperty("user.home"))
+                  fileChooser.title = "Open Simulation"
+                  fileChooser.extensionFilters.add(
+                    new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg")
+                  )
+                  Option(fileChooser.showOpenDialog(new Stage)).foreach { file =>
+                    model = xml.XML.loadFile(file).toSim
+                  }
+                  setModel(model)
                 }
-                setModel(model)
               }
               accelerator =
                 new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)

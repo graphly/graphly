@@ -73,6 +73,14 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     result.get == ButtonType.OK
   }
 
+  def showError(title: String, header: String, message: String): Unit = {
+    val alert = new Alert(AlertType.Error)
+    alert.setTitle(title)
+    alert.setHeaderText(header)
+    alert.setContentText(message)
+    alert.showAndWait()
+  }
+
   final def redrawMode(state: EditingMode.State, update: Redraw[D]): Unit = {
     mode = state
     update(Some(foreground), Some(background))
@@ -352,6 +360,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
       editingFile = Some(file)
     } else {
       //TODO: Let the user know we failed to save
+      showError("Error", "Error saving file.", s"There was an error saving this file: explain the error pls.")
     }
   }
 

@@ -26,24 +26,10 @@ class AppMainSceneView(width: Double, height: Double)
   private val rightMenu      = WidgetPanel.Element()
   private val general        = new PropertiesWidget("Model Settings", model)
   private val nodeMenu       = NodeWidget("Node Settings", model, controller)
-  private var oldModel = model.clone()
   nodeMenu.visible = false
 
-  def hasChanges: Boolean = !model.strongEq(oldModel)
-
-  def checkUserWantsExit: Boolean = {
-    val alert = new Alert(AlertType.Confirmation)
-    alert.setTitle("Unsaved Work")
-    alert.setHeaderText("You have unsaved changes.")
-    alert.setContentText("Press \"OK\" to discard them.")
-    val result = alert.showAndWait()
-    if (result.get == ButtonType.OK) {
-      true
-    }
-    else {
-      false
-    }
-  }
+  def hasChanges: Boolean = controller.hasChanges
+  def checkUserWantsExit: Boolean = controller.checkUserWantsExit
 
   private def resetGeneralMenu(mdl: Sim): Unit = {
     val newGeneral  = new PropertiesWidget("Model Settings", mdl)
@@ -53,8 +39,7 @@ class AppMainSceneView(width: Double, height: Double)
 
   private def setModel(mdl: Sim): Unit = {
     model = mdl
-    oldModel = model.copyWithNodes()
-    controller.model = model
+    controller.updateModel(model)
     controller.redrawMode(
       GraphCanvasController.EditingMode.Selecting,
       graphContainer.redraw
@@ -140,10 +125,12 @@ class AppMainSceneView(width: Double, height: Double)
                   fileChooser.extensionFilters.add(
                     new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg")
                   )
-                  Option(fileChooser.showOpenDialog(new Stage)).foreach { file =>
-                    model = xml.XML.loadFile(file).toSim
+                  fileChooser.showOpenDialog(new Stage) match {
+                    case file: File =>
+                      model = xml.XML.loadFile(file).toSim
+                      setModel(model)
+                    case _ =>
                   }
-                  setModel(model)
                 }
               }
               accelerator =

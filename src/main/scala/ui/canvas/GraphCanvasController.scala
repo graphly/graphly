@@ -51,7 +51,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
 
   def recountCounters(): Unit = {
     resetCounters()
-    model.nodes.foreach(node => counters(node.getClass) += 1)
+    model.nodes.foreach(node => counters(node.nodeType.getClass) += 1)
   }
 
   // What state is the view in - whether we are creating nodes and connections,

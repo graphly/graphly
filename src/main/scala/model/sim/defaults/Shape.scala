@@ -71,10 +71,7 @@ object Implicit {
     override def default: TunnelSection = TunnelSection()
   }
   implicit object RouterSectionDefault    extends Default[RouterSection]    {
-    override def default: RouterSection =
-      RouterSection(
-        <parameter array="true" classPath="jmt.engine.NetStrategies.RoutingStrategy" name="RoutingStrategy"/>
-      )
+    override def default: RouterSection = RouterSection(Random())
   }
   implicit object SinkSectionDefault      extends Default[SinkSection]      {
     override def default: SinkSection = SinkSection()

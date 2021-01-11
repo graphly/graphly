@@ -7,6 +7,8 @@ import javax.imageio.ImageIO
 import model.sim.DropStrategy.{DropStrategy, Value}
 import model.{Position, Positioned, sim}
 
+import scala.collection.mutable
+
 sealed trait Shape
 
 sealed trait Element extends Shape
@@ -122,44 +124,83 @@ sealed trait TypeSection
 /* These refClasses are the userClasses for which this section's node is
  * the reference node.
  */
-case class SourceSection(refClassNames: Seq[String]) extends TypeSection
-case class TunnelSection()                           extends TypeSection
-case class RouterSection(routingStrategy: xml.Node)  extends TypeSection
-case class SinkSection()                             extends TypeSection
-case class TerminalSection()                         extends TypeSection
+case class SourceSection(refClassNames: Seq[String])       extends TypeSection
+case class TunnelSection()                                 extends TypeSection
+case class RouterSection(routingStrategy: RoutingStrategy) extends TypeSection
+case class SinkSection()                                   extends TypeSection
+case class TerminalSection()                               extends TypeSection
 case class QueueSection(
     var size: Option[Int],
     var dropStrategy: Option[DropStrategy],
     queueingStrategy: Seq[xml.Node]
 ) extends TypeSection
-case class DelaySection()                            extends TypeSection
-case class ServerSection()                           extends TypeSection
-case class ForkSection()                             extends TypeSection
-case class JoinSection()                             extends TypeSection
-case class LoggerSection()                           extends TypeSection
-case class ClassSwitchSection()                      extends TypeSection
-case class SemaphoreSection()                        extends TypeSection
-case class StorageSection()                          extends TypeSection
-case class LinkageSection()                          extends TypeSection
-case class EnablingSection()                         extends TypeSection
-case class TimingSection()                           extends TypeSection
-case class FiringSection()                           extends TypeSection
+case class DelaySection()                                  extends TypeSection
+case class ServerSection()                                 extends TypeSection
+case class ForkSection()                                   extends TypeSection
+case class JoinSection()                                   extends TypeSection
+case class LoggerSection()                                 extends TypeSection
+case class ClassSwitchSection()                            extends TypeSection
+case class SemaphoreSection()                              extends TypeSection
+case class StorageSection()                                extends TypeSection
+case class LinkageSection()                                extends TypeSection
+case class EnablingSection()                               extends TypeSection
+case class TimingSection()                                 extends TypeSection
+case class FiringSection()                                 extends TypeSection
 case class UnimplementedSection[T <: TypeSection](raw: xml.Node)
-    extends TypeSection {
+    extends TypeSection     {
   def asImplementedUnsafe: T = ???
 }
 
-object DropStrategy                                  extends Enumeration {
+object DropStrategy                                        extends Enumeration {
   type DropStrategy = Value
 
   val DROP: sim.DropStrategy.Value          = Value("drop")
   val WAITING_QUEUE: sim.DropStrategy.Value = Value("waiting queue")
   val BAS_BLOCKING: sim.DropStrategy.Value  = Value("BAS blocking")
 
-//  override def toString(): String = this.Value.toString
 }
 
-case class Connection(source: Node, target: Node)    extends Element
+sealed trait RoutingStrategy
+
+case class Random()                                        extends RoutingStrategy {
+  override def toString: String = "Random"
+}
+case class RoundRobin()                                    extends RoutingStrategy {
+  override def toString: String = "Round Robin"
+}
+case class Probabilities(probabilities: mutable.Map[Node, Double])
+    extends RoutingStrategy {
+  override def toString: String = "Probabilities"
+}
+case class JSQ()                                           extends RoutingStrategy {
+  override def toString: String = "Join the Shortest Queue (JSQ)"
+}
+case class SRT()                                           extends RoutingStrategy {
+  override def toString: String = "Shortest Response Time"
+}
+case class LeastUtilisation()                              extends RoutingStrategy {
+  override def toString: String = "Least Utilisation"
+}
+case class FastestService()                                extends RoutingStrategy {
+  override def toString: String = "Fastest Service"
+}
+case class LoadDependentRouting(raw: xml.Node)             extends RoutingStrategy {
+  override def toString: String = "Load Dependent Routing"
+}
+case class PowerOfK(k: Int, hasMemory: Boolean)            extends RoutingStrategy {
+  override def toString: String = "Power of k"
+}
+case class WeightedRoundRobin(probabilities: mutable.Map[Node, Int])
+    extends RoutingStrategy {
+  override def toString: String = "Weighted Round Robin"
+}
+case class Disabled()                                      extends RoutingStrategy {
+  override def toString: String = "Disabled"
+}
+case class UnimplementedRoutingStrategy(raw: xml.Node)
+    extends RoutingStrategy {}
+
+case class Connection(source: Node, target: Node)          extends Element
 
 case class Trace(
     var image: Trace.Image,
@@ -167,7 +208,7 @@ case class Trace(
     var width: Double,
     var height: Double
 ) extends Shape
-    with Positioned     {
+    with Positioned {
   def end: Position = position + Position(width, height)
   val uid: UUID     = UUID.randomUUID()
 
@@ -179,7 +220,7 @@ case class Trace(
   override def hashCode: Int             = uid.hashCode
 }
 
-object Trace            {
+object Trace        {
   /* Use a byte array for redrawing in memory, especially since a FileInputStream cannot be reset.
      A better buffer system may be warranted later, but we can keep the interface consistent and provide a stream
      as necessary */

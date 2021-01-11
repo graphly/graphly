@@ -10,7 +10,7 @@ import model.sim._
 import scalafx.scene.paint
 import scalafx.scene.paint.Color
 
-import scala.collection.mutable
+import scala.collection.{AbstractSeq, LinearSeq, mutable}
 import scala.language.implicitConversions
 import scala.math.random
 import scala.util.control.Breaks.{break, breakable}
@@ -46,6 +46,70 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       case UnimplementedDistribution(raw) => raw
     }
 
+  def representRoutingStrategy(routingStrategy: RoutingStrategy): xml.Node =
+    routingStrategy match {
+      case Random() =>
+        <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.RandomStrategy" name="Random"/>
+      case RoundRobin() =>
+        <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.RandomStrategy" name="Round Robin"/>
+      case Probabilities(probabilities) =>
+        <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.EmpiricalStrategy" name="Probabilities">
+          <subParameter array="true" classPath="jmt.engine.random.EmpiricalEntry" name="EmpiricalEntryArray">
+            {
+          probabilities.map(x => {
+            <subParameter classPath="jmt.engine.random.EmpiricalEntry" name="EmpiricalEntry">
+        <subParameter classPath="java.lang.String" name="stationName">
+          <value>{x._1.name}</value>
+        </subParameter>
+        <subParameter classPath="java.lang.Double" name="probability">
+          <value>
+            {x._2.toString}</value>
+        </subParameter>
+      </subParameter>
+          }).toArray
+        }
+          </subParameter>
+        </subParameter>
+      case JSQ() =>
+        <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.ShortestQueueLengthRoutingStrategy" name="Join the Shortest Queue (JSQ)"/>
+      case SRT() =>
+        <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.ShortestResponseTimeRoutingStrategy" name="Shortest Response Time"/>
+      case LeastUtilisation() =>
+        <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.LeastUtilizationRoutingStrategy" name="Least Utilization"/>
+      case FastestService() =>
+        <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.FastestServiceRoutingStrategy" name="Fastest Service"/>
+      case LoadDependentRouting(raw) => raw
+      case PowerOfK(k, hasMemory) =>
+        <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.PowerOfKRoutingStrategy" name="Power of k">
+    <subParameter classPath="java.lang.Integer" name="k">
+    <value>{k.toString}</value>
+    </subParameter>
+    <subParameter classPath="java.lang.Boolean" name="withMemory">
+    <value>
+      {hasMemory.toString}</value>
+    </subParameter>
+    </subParameter>
+      case WeightedRoundRobin(probabilities) =>
+        <subParameter array="true" classPath="jmt.engine.NetStrategies.RoutingStrategies.WeightEntry" name="WeightEntryArray">
+      {
+          probabilities.map(
+            x =>
+              <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.WeightEntry" name="WeightEntry">
+          <subParameter classPath="java.lang.String" name="stationName">
+            <value>{x._1.name}</value>
+          </subParameter>
+          <subParameter classPath="java.lang.Integer" name="weight">
+            <value>{x._2.toString}</value>
+          </subParameter>
+        </subParameter>
+          ).toArray
+        }
+      </subParameter>
+      case Disabled() =>
+        <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.DisabledRoutingStrategy" name="Disabled"/>
+      case UnimplementedRoutingStrategy(raw) => raw
+    }
+
   def representTypeSection(
       ts: TypeSection,
       classes: mutable.Set[UserClass]
@@ -70,8 +134,15 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       case TunnelSection() => <section className="ServiceTunnel"/>
       case RouterSection(routingStrategy) =>
         <section className="Router" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        {routingStrategy}
-      </section>
+          <parameter array="true" classPath="jmt.engine.NetStrategies.RoutingStrategy" name="RoutingStrategy">
+            {
+          classes.map(userClass => <refClass>
+            {userClass.name}
+          </refClass>)
+        }
+          {representRoutingStrategy(routingStrategy)}    
+          </parameter>
+        </section>
       case QueueSection(size, dropStrategy, queueingStrategy) =>
         <section className="Queue">
           <parameter classPath="java.lang.Integer" name="size">
@@ -766,8 +837,37 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     SourceSection(refClassNames.toSeq)
   }
   private def makeTunnelSection(): TunnelSection                               = TunnelSection()
-  private def makeRouterSection(sectionXml: xml.Node): RouterSection           =
-    RouterSection(sectionXml.child(1))
+  private def makeRouterSection(sectionXml: xml.Node): RouterSection           = {
+    val routingStrategyXml = sectionXml.child(1).child
+      .find(node => node.label == XML_E_SUBPARAMETER).get
+
+    val routingStrategyName =
+      routingStrategyXml.attribute(XML_A_SUBPARAMETER_NAME).get.toString
+
+    val routingStrategy = routingStrategyName match {
+      case "Random" => Random()
+      case "Round Robin" => RoundRobin()
+      //TODO: These cases
+//      case "Probabilities" => Probabilities()
+//      case "Weighted Round Robin" => WeightedRoundRobin()
+      case "Join the Shortest Queue (JSQ)" => JSQ()
+      case "Shortest Response Time" => SRT()
+      case "Least Utilisation" => LeastUtilisation()
+      case "Fastest Service" => FastestService()
+      case "Load Dependent Routing" => LoadDependentRouting(routingStrategyXml)
+      case "Power of k" => {
+        val k          = routingStrategyXml.child(1).child(1).child.head.toString.toInt
+        val withMemory =
+          routingStrategyXml.child(3).child(1).child.head.toString.toBoolean
+
+        PowerOfK(k, withMemory)
+      }
+      case "Disabled" => Disabled()
+      case _ => UnimplementedRoutingStrategy(routingStrategyXml)
+    }
+
+    RouterSection(routingStrategy)
+  }
   private def makeSinkSection(): SinkSection                                   = SinkSection()
   private def makeTerminalSection(sectionXml: xml.Node): TerminalSection       = ???
   private def makeQueueSection(sectionXml: xml.Node): QueueSection             = {

@@ -59,14 +59,13 @@ case class Sim(
       case sim: Sim =>
         equals(sim) && nodes.forall(n => {
           val node = sim.nodes.find(x => x.equals(n))
-          if (node.isEmpty) {
-            false
-          }
+          if (node.isEmpty) { false }
           else {
             val nodeVal = node.get
             n.rotated == nodeVal.rotated && n.position.equals(nodeVal.position)
           }
-        }) && configuration.equals(sim.configuration) && traces.equals(sim.traces)
+        }) && configuration.equals(sim.configuration) &&
+          traces.equals(sim.traces)
       case _ => false
     }
   }

@@ -83,7 +83,7 @@ object Implicit {
     override def default: QueueSection =
       QueueSection(
         None,
-        None,
+        Some(DropStrategy.DROP),
         <parameter classPath="jmt.engine.NetStrategies.QueueGetStrategies.FCFSstrategy" name="FCFSstrategy"/>
         <parameter array="true" classPath="jmt.engine.NetStrategies.QueuePutStrategy" name="QueuePutStrategy"/>
       )

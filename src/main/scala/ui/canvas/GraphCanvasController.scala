@@ -490,6 +490,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     pastedModel.nodes.foreach(n => {
       n.x += 30
       n.y += -30
+      n.name += " Copy"
     })
     timeline(
       history.Add.edge(pastedModel.connections) +

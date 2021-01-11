@@ -1,6 +1,7 @@
 package model.sim
 
 import scala.collection.mutable
+import scala.reflect.io.Path
 
 case class Sim(
     nodes: mutable.Set[Node],
@@ -81,7 +82,8 @@ case class Configuration(
     var maxEvents: Int = -1,
     var pollingInterval: Double = 1,
     var parametricAnalysisEnabled: Boolean = false,
-    var loggingPath: String = System.getenv("HOME").concat("/JMT"),
+    var loggingPath: String =
+      (Path.string2path(System.getProperty("user.home")) / "/JMT").toString,
     var loggingAutoAppend: String = "0",
     var loggingDelim: String = ",",
     var loggingDecimalSeparator: String = "."

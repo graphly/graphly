@@ -13,7 +13,11 @@ import scalafx.scene.control.{
   TextFormatter
 }
 import scalafx.scene.layout.{GridPane, Pane, Priority}
-import scalafx.util.converter.{DoubleStringConverter, IntStringConverter}
+import scalafx.util.converter.{
+  DoubleStringConverter,
+  IntStringConverter,
+  LongStringConverter
+}
 
 class PropertiesPanel(model: Sim) extends GridPane {
   private var rowCounter = 0
@@ -43,6 +47,20 @@ class PropertiesPanel(model: Sim) extends GridPane {
       projection: (Sim, Int) => Unit
   ): Unit                                                             = {
     val converter = new IntStringConverter
+    addField(
+      title,
+      x => y => projection(y, converter.fromString(x)),
+      initial.toString,
+      new TextFormatter(converter)
+    )
+  }
+
+  def longField(
+      title: String,
+      initial: Long,
+      projection: (Sim, Long) => Unit
+  ): Unit                                                             = {
+    val converter = new LongStringConverter
     addField(
       title,
       x => y => projection(y, converter.fromString(x)),

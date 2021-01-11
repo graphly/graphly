@@ -9,7 +9,7 @@ class PropertiesWidget(title: String, model: Sim)
   center = propertiesPanel
 
   def generateGlobalMenu(): Unit = {
-    integerField("Seed", model.configuration.seed.toInt, _.configuration.seed = _)
+    longField("Seed", model.configuration.seed, _.configuration.seed = _)
     checkbox("Use random seed", model.configuration.useRandomSeed, _.configuration.useRandomSeed = _)
     doubleField("Maximum duration", model.configuration.maximumDuration, _.configuration.maximumDuration = _)
     doubleField("Max simulated time", model.configuration.maxSimulatedTime, _.configuration.maxSimulatedTime = _)
@@ -36,6 +36,11 @@ class PropertiesWidget(title: String, model: Sim)
       initial: Int,
       configApplication: (Sim, Int) => Unit
   ): Unit = propertiesPanel.integerField(title, initial, configApplication)
+  def longField(
+      title: String,
+      initial: Long,
+      configApplication: (Sim, Long) => Unit
+  ): Unit = propertiesPanel.longField(title, initial, configApplication)
   def doubleField(
       title: String,
       initial: Double,
@@ -48,7 +53,9 @@ class PropertiesWidget(title: String, model: Sim)
       configApplication: (Sim, String) => Unit
   ): Unit =
     propertiesPanel.dropdown(title, options, placeholder, configApplication)
-  def checkbox(title: String, initial: Boolean, configApplication: (Sim, Boolean) => Unit): Unit = {
-    propertiesPanel.checkbox(title, initial, configApplication)
-  }
+  def checkbox(
+      title: String,
+      initial: Boolean,
+      configApplication: (Sim, Boolean) => Unit
+  ): Unit = { propertiesPanel.checkbox(title, initial, configApplication) }
 }

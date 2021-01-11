@@ -11,6 +11,7 @@ import scalafx.scene.control._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
+import ui.canvas.GraphCanvasController.EditingMode
 import ui.canvas.SimDrawAction._
 import ui.canvas.widgetPanel.{NodeWidget, PropertiesWidget, WidgetPanel}
 import ui.canvas.{GraphCanvasController, GraphingCanvas}
@@ -171,6 +172,12 @@ class AppMainSceneView(width: Double, height: Double)
               accelerator = new KeyCodeCombination(KeyCode.Delete)
             },
             new SeparatorMenuItem(),
+            new MenuItem("Select All") {
+              onAction = (_: ActionEvent) =>
+                controller.redrawMode(EditingMode.SelectNode(model.nodes.toSet), graphContainer.redraw)
+              accelerator =
+                new KeyCodeCombination(KeyCode.A, KeyCombination.ControlDown)
+            },
             new MenuItem("Copy")   {
               onAction = (_: ActionEvent) =>
                 controller.copySelectedNodes(graphContainer.redraw)

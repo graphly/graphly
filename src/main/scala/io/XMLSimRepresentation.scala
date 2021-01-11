@@ -457,7 +457,7 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     val seed          = root.attribute(XML_A_ROOT_SEED)
     if (seed.isDefined) {
       configuration.useRandomSeed = false
-      configuration.seed = seed.get.head.toString.toInt
+      configuration.seed = seed.get.head.toString.toLong
     }
 
     // Gets optional parameter maximum time

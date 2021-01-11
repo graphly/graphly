@@ -128,8 +128,8 @@ case class RouterSection(routingStrategy: xml.Node)  extends TypeSection
 case class SinkSection()                             extends TypeSection
 case class TerminalSection()                         extends TypeSection
 case class QueueSection(
-    size: Option[Int],
-    dropStrategy: Option[DropStrategy],
+    var size: Option[Int],
+    var dropStrategy: Option[DropStrategy],
     queueingStrategy: Seq[xml.Node]
 ) extends TypeSection
 case class DelaySection()                            extends TypeSection

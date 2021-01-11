@@ -199,9 +199,9 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     val nodePositions: Array[xml.Elem] = model.nodes.map(
       (node: Node) =>
         <station name={node.name}>
-          <position rotate="false" x={node.position.x.toString} y={
-          node.position.y.toString
-        }/>
+          <position rotate={node.rotated.toString} x={
+          node.position.x.toString
+        } y={node.position.y.toString}/>
         </station>
     ).toArray
 

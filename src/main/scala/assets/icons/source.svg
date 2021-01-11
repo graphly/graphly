@@ -1,23 +1,13 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g filter="url(#filter0_d)">
-<circle cx="32" cy="30.0002" r="28" fill="white"/>
-<circle cx="32" cy="30.0002" r="27.5" stroke="#F2F2F2"/>
-</g>
-<circle cx="32.5" cy="30.5002" r="14.5" fill="#595959"/>
-<mask id="path-4-inside-1" fill="white">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M24 15.0002C23.0335 15.0002 22.25 15.7837 22.25 16.7502V20.4252H18.75C17.7835 20.4252 17 21.2087 17 22.1752C17 23.1417 17.7835 23.9252 18.75 23.9252H22.25V27.2502C22.25 28.2167 23.0335 29.0002 24 29.0002C24.9665 29.0002 25.75 28.2167 25.75 27.2502V23.9252H29.25C30.2165 23.9252 31 23.1417 31 22.1752C31 21.2087 30.2165 20.4252 29.25 20.4252H25.75V16.7502C25.75 15.7837 24.9665 15.0002 24 15.0002Z"/>
-</mask>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M24 15.0002C23.0335 15.0002 22.25 15.7837 22.25 16.7502V20.4252H18.75C17.7835 20.4252 17 21.2087 17 22.1752C17 23.1417 17.7835 23.9252 18.75 23.9252H22.25V27.2502C22.25 28.2167 23.0335 29.0002 24 29.0002C24.9665 29.0002 25.75 28.2167 25.75 27.2502V23.9252H29.25C30.2165 23.9252 31 23.1417 31 22.1752C31 21.2087 30.2165 20.4252 29.25 20.4252H25.75V16.7502C25.75 15.7837 24.9665 15.0002 24 15.0002Z" fill="black"/>
-<path d="M22.25 20.4252V21.6252H23.45V20.4252H22.25ZM22.25 23.9252H23.45V22.7252H22.25V23.9252ZM25.75 23.9252V22.7252H24.55V23.9252H25.75ZM25.75 20.4252H24.55V21.6252H25.75V20.4252ZM23.45 16.7502C23.45 16.4465 23.6962 16.2002 24 16.2002V13.8002C22.3708 13.8002 21.05 15.121 21.05 16.7502H23.45ZM23.45 20.4252V16.7502H21.05V20.4252H23.45ZM18.75 21.6252H22.25V19.2252H18.75V21.6252ZM18.2 22.1752C18.2 21.8715 18.4462 21.6252 18.75 21.6252V19.2252C17.1208 19.2252 15.8 20.546 15.8 22.1752H18.2ZM18.75 22.7252C18.4462 22.7252 18.2 22.479 18.2 22.1752H15.8C15.8 23.8045 17.1208 25.1252 18.75 25.1252V22.7252ZM22.25 22.7252H18.75V25.1252H22.25V22.7252ZM23.45 27.2502V23.9252H21.05V27.2502H23.45ZM24 27.8002C23.6962 27.8002 23.45 27.554 23.45 27.2502H21.05C21.05 28.8795 22.3708 30.2002 24 30.2002V27.8002ZM24.55 27.2502C24.55 27.554 24.3038 27.8002 24 27.8002V30.2002C25.6292 30.2002 26.95 28.8795 26.95 27.2502H24.55ZM24.55 23.9252V27.2502H26.95V23.9252H24.55ZM29.25 22.7252H25.75V25.1252H29.25V22.7252ZM29.8 22.1752C29.8 22.479 29.5538 22.7252 29.25 22.7252V25.1252C30.8792 25.1252 32.2 23.8045 32.2 22.1752H29.8ZM29.25 21.6252C29.5538 21.6252 29.8 21.8715 29.8 22.1752H32.2C32.2 20.546 30.8792 19.2252 29.25 19.2252V21.6252ZM25.75 21.6252H29.25V19.2252H25.75V21.6252ZM24.55 16.7502V20.4252H26.95V16.7502H24.55ZM24 16.2002C24.3038 16.2002 24.55 16.4465 24.55 16.7502H26.95C26.95 15.121 25.6292 13.8002 24 13.8002V16.2002Z" fill="white" mask="url(#path-4-inside-1)"/>
-<defs>
-<filter id="filter0_d" x="0" y="0.000244141" width="64" height="64" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"/>
-<feOffset dy="2"/>
-<feGaussianBlur stdDeviation="2"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
-</filter>
-</defs>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1182 1182" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <rect id="Source1" x="0" y="0" width="1181.1" height="1181.1" style="fill:none;"/>
+    <g id="Source11" serif:id="Source1">
+        <g transform="matrix(1.29921,0,0,1.29921,-214.484,-122.918)">
+            <path d="M764.446,698.5c-50.156,81.123 -139.919,135.22 -242.218,135.22c-157.054,-0 -284.563,-127.509 -284.563,-284.563c-0,-157.055 127.509,-284.564 284.563,-284.564c99.123,0 186.476,50.791 237.433,127.744" style="fill:none;stroke:black;stroke-width:80.18px;"/>
+            <g transform="matrix(1,0,0,1,45.4883,3.27401)">
+                <path d="M555.965,547.69l412.177,-0l-129.08,-129.081l129.08,129.081l-123.946,123.946" style="fill:none;stroke:black;stroke-width:80.18px;"/>
+            </g>
+        </g>
+    </g>
 </svg>

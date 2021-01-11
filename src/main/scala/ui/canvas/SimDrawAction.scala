@@ -42,11 +42,21 @@ object SimDrawAction {
       val radius: Int                                                  = 20
       private val highlighting                                         = Color.GreenYellow
       private val images: Map[Class[_ <: sim.NodeType], Image] = Map(
-        classOf[sim.Source] -> initImage("/assets/icons/source.svg"),
-        classOf[sim.Join]   -> initImage("/assets/icons/join.svg"),
-        classOf[sim.Server]  -> initImage("/assets/icons/queue.svg"),
+        classOf[sim.ClassSwitch] -> initImage("/assets/icons/class-switch.svg"),
+        classOf[sim.Delay] -> initImage("/assets/icons/delay.svg"),
         classOf[sim.Fork]   -> initImage("/assets/icons/fork.svg"),
+        classOf[sim.Join]   -> initImage("/assets/icons/join.svg"),
+        classOf[sim.Logger] -> initImage("/assets/icons/logger.svg"),
+        classOf[sim.Place] -> initImage("/assets/icons/place.svg"),
+        classOf[sim.Router] -> initImage("/assets/icons/router.svg"),
+        classOf[sim.Scalar] -> initImage("/assets/icons/scalar.svg"),
+        classOf[sim.Semaphore] -> initImage("/assets/icons/semaphore.svg"),
+        classOf[sim.Server] -> initImage("/assets/icons/server.svg"),
         classOf[sim.Sink]   -> initImage("/assets/icons/sink.svg"),
+        classOf[sim.Source] -> initImage("/assets/icons/source.svg"),
+        classOf[sim.Terminal] -> initImage("/assets/icons/terminal.svg"),
+        classOf[sim.Transition] -> initImage("/assets/icons/transition.svg"),
+        classOf[sim.Unimplemented]  -> initImage("/assets/icons/unimplemented.svg"),
       )
 
       private def initImage(resourceUri: String): Image = {

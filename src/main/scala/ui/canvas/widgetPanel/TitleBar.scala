@@ -7,7 +7,7 @@ import scalafx.scene.text.Text
 
 class TitleBar(title: String) extends HBox {
   private val titleElem = new Text(title)
-  val minimise: StackPane = icon("./assets/icons/triangle-32.png")
+  val minimise: StackPane = icon("/assets/icons/triangle.svg")
   minimise.setPadding(Insets(0, 8, 0, 0))
   val filler = new Pane()
 

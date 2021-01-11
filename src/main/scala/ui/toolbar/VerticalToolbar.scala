@@ -41,7 +41,7 @@ class VerticalToolbar extends ToolBar {
       }
     }
   private val joinBtn      =
-    new ToolbarButton("Create Join Nodes", "/assets/icons/source.svg") {
+    new ToolbarButton("Create Join Nodes", "/assets/icons/join.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
         itemSelected.dispatch(
@@ -50,7 +50,7 @@ class VerticalToolbar extends ToolBar {
       }
     }
   private val queueBtn     =
-    new ToolbarButton("Create Queue Nodes", "/assets/icons/queue.svg") {
+    new ToolbarButton("Create Server (queue) Nodes", "/assets/icons/server.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
         itemSelected.dispatch(

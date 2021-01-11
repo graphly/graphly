@@ -452,6 +452,10 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   def pasteSelectedNodes(update: Redraw[D]): Unit = {
     val content     = Clipboard.systemClipboard.content
     val pastedModel = xml.XML.loadString(content.getString).toSim
+    pastedModel.nodes.foreach(n => {
+      n.x += 30
+      n.y += -30
+    })
     timeline(
       history.Add.edge(pastedModel.connections) +
         history.Add.node(pastedModel.nodes) +

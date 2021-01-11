@@ -1,6 +1,6 @@
 package ui.canvas.widgetPanel
 
-import model.sim.{DropStrategy, Server, Sim, Source}
+import model.sim.{DropStrategy, Server, Sim}
 import ui.canvas.GraphCanvasController
 
 class NodeWidget(title: String, model: Sim)

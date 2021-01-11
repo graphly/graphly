@@ -33,6 +33,19 @@ case class Sim(
     )
   }
 
+  def copyWithNodes(): Sim = {
+    Sim(
+      this.nodes.map(_.copy()),
+      this.connections.clone(),
+      this.classes.clone(),
+      this.measures.clone(),
+      this.blockingRegions.clone(),
+      this.traces.clone(),
+      this.configuration.clone(),
+      this.results
+    )
+  }
+
   override def equals(obj: Any): Boolean = {
     obj match {
       case sim: Sim =>
@@ -44,7 +57,16 @@ case class Sim(
   def strongEq(obj: Any): Boolean = {
     obj match {
       case sim: Sim =>
-        equals(sim) && configuration.equals(sim.configuration) && traces.equals(sim.traces)
+        equals(sim) && nodes.forall(n => {
+          val node = sim.nodes.find(x => x.equals(n))
+          if (node.isEmpty) {
+            false
+          }
+          else {
+            val nodeVal = node.get
+            n.rotated == nodeVal.rotated && n.position.equals(nodeVal.position)
+          }
+        }) && configuration.equals(sim.configuration) && traces.equals(sim.traces)
       case _ => false
     }
   }

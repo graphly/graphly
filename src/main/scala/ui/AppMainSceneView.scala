@@ -53,7 +53,7 @@ class AppMainSceneView(width: Double, height: Double)
 
   private def setModel(mdl: Sim): Unit = {
     model = mdl
-    oldModel = model.clone()
+    oldModel = model.copyWithNodes()
     controller.model = model
     controller.redrawMode(
       GraphCanvasController.EditingMode.Selecting,
@@ -110,7 +110,7 @@ class AppMainSceneView(width: Double, height: Double)
           items = List(
             new MenuItem("New") {
               onAction = (_: ActionEvent) => {
-                if (!model.strongEq(oldModel)) {
+                if (hasChanges) {
                   if (checkUserWantsExit) {
                     setModel(Sim.empty)
                   }

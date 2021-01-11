@@ -51,6 +51,10 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   // moving objects, etc.
   private var _mode: EditingMode.State = Default.default
 
+  private var _editingFile: Option[File] = Option.empty
+  def editingFile: Option[File] = _editingFile
+  def editingFile_=(newFile:Option[File]): Unit = _editingFile = newFile
+
   private var oldModel: sim.Sim = model.copyWithNodes()
 
   def updateModel(mdl: sim.Sim): Unit = {
@@ -334,7 +338,28 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     s"$header\n${model.toRepresentation(filename).toString}"
   }
 
-  def save(): Unit                                                    = {
+  private def saveFile(file: File): Unit = {
+    val modelXml: String = modelToString(model, file.getName)
+//    println(modelXml)
+//    println(modelXml.nonEmpty)
+    if (modelXml.nonEmpty) {
+      file.createNewFile()
+      new PrintWriter(file) {
+        write(modelXml)
+        close()
+      }
+      oldModel = model.copyWithNodes()
+      editingFile = Some(file)
+    } else {
+      //TODO: Let the user know we failed to save
+    }
+  }
+
+  def save(): Unit = {
+    saveFile(editingFile.get)
+  }
+
+  def saveAs(): Unit                                                    = {
     val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
     fileChooser.title = "Save Simulation"
@@ -343,20 +368,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     fileChooser.initialFileName = ".jsimg"
     val result                                 = fileChooser.showSaveDialog(new Stage)
     result match {
-      case dest: File =>
-        val modelXml: String = modelToString(model, dest.getName)
-        println(modelXml)
-        println(modelXml.nonEmpty)
-        if (modelXml.nonEmpty) {
-          dest.createNewFile()
-          new PrintWriter(dest) {
-            write(modelXml)
-            close()
-          }
-          oldModel = model.copyWithNodes()
-        } else {
-          //TODO: Let the user know we failed to save
-        }
+      case dest: File => saveFile(dest)
       case _ =>
     }
   }

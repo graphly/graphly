@@ -109,6 +109,7 @@ class AppMainSceneView(width: Double, height: Double)
                 if (!hasChanges || checkUserWantsExit) {
                   setModel(Sim.empty)
                   controller.editingFile = Option.empty
+                  controller.resetCounters()
                 }
               }
               accelerator =
@@ -154,6 +155,7 @@ class AppMainSceneView(width: Double, height: Double)
                       }
                       controller.editingFile = Some(file)
                       setModel(model)
+                      controller.recountCounters()
                     case _ =>
                   }
                 }

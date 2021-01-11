@@ -7,7 +7,6 @@ import javafx.event.ActionEvent
 import javafx.scene.input.KeyEvent
 import model.sim._
 import scalafx.scene.Scene
-import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.control._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane

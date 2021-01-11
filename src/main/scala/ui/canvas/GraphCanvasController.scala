@@ -51,9 +51,9 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   // moving objects, etc.
   private var _mode: EditingMode.State = Default.default
 
-  private var _editingFile: Option[File] = Option.empty
-  def editingFile: Option[File] = _editingFile
-  def editingFile_=(newFile:Option[File]): Unit = _editingFile = newFile
+  private var _editingFile: Option[File]         = Option.empty
+  def editingFile: Option[File]                  = _editingFile
+  def editingFile_=(newFile: Option[File]): Unit = _editingFile = newFile
 
   private var oldModel: sim.Sim = model.copyWithNodes()
 
@@ -73,7 +73,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     result.get == ButtonType.OK
   }
 
-  def showError(title: String, header: String, message: String): Unit = {
+  def showError(title: String, header: String, message: String): Unit     = {
     val alert = new Alert(AlertType.Error)
     alert.setTitle(title)
     alert.setHeaderText(header)
@@ -105,11 +105,14 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
 
   private val timeline = new history.Timeline
 
-  override def onMousePress(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit   = {
+  override def onMousePress(
+      logicalEvent: LogicalEvent[MouseEvent],
+      update: Redraw[D]
+  ): Unit = {
     super.onMousePress(logicalEvent, update)
 
     val event: MouseEvent = logicalEvent.event
-    val position = logicalEvent.modelPosition
+    val position          = logicalEvent.modelPosition
 
     // So far we drag only on when we press middle mouse.
     if (event.button == MouseButton.Middle) {
@@ -159,10 +162,13 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
   }
 
-  override def onMouseRelease(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit = {
+  override def onMouseRelease(
+      logicalEvent: LogicalEvent[MouseEvent],
+      update: Redraw[D]
+  ): Unit = {
     super.onMouseRelease(logicalEvent, update)
 
-    val event = logicalEvent.event
+    val event    = logicalEvent.event
     val position = logicalEvent.modelPosition
 
     mode match {
@@ -307,9 +313,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
       case trace: EditingMode.Trace =>
         trace match {
           case EditingMode.DragTrace(traces, from, origin) =>
-            traces.foreach { trace =>
-              trace.position += position - from
-            }
+            traces.foreach { trace => trace.position += position - from }
             mode = EditingMode.DragTrace(traces, position, origin)
           case EditingMode.ResizeTrace(traces, start, base, origin) =>
             traces.foreach { trace =>
@@ -346,7 +350,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     s"$header\n${model.toRepresentation(filename).toString}"
   }
 
-  private def saveFile(file: File): Unit = {
+  private def saveFile(file: File): Unit                              = {
     val modelXml: String = modelToString(model, file.getName)
 //    println(modelXml)
 //    println(modelXml.nonEmpty)
@@ -360,15 +364,17 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
       editingFile = Some(file)
     } else {
       //TODO: Let the user know we failed to save
-      showError("Error", "Error saving file.", s"There was an error saving this file: explain the error pls.")
+      showError(
+        "Error",
+        "Error saving file.",
+        s"There was an error saving this file."
+      )
     }
   }
 
-  def save(): Unit = {
-    saveFile(editingFile.get)
-  }
+  def save(): Unit                                                    = { saveFile(editingFile.get) }
 
-  def saveAs(): Unit                                                    = {
+  def saveAs(): Unit                          = {
     val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
     fileChooser.title = "Save Simulation"
@@ -382,7 +388,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
   }
 
-  def loadTrace(update: Redraw[D]): Unit                              = {
+  def loadTrace(update: Redraw[D]): Unit      = {
     val fileChooser: scalafx.stage.FileChooser = new FileChooser
     fileChooser.title = "Open Trace"
     fileChooser.initialDirectory = new File(System.getProperty("user.home"))
@@ -401,13 +407,14 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
   }
 
-  def deleteSelected(update: Redraw[D]): Unit                         = {
+  def deleteSelected(update: Redraw[D]): Unit = {
     mode match {
       case active: EditingMode.SelectActiveNode =>
         timeline(
           history.Delete.node(active.active) +
             history.Delete.edge(model.connections.view.filter { connection =>
-              active.active(connection.source) || active.active(connection.target)
+              active.active(connection.source) ||
+              active.active(connection.target)
             }.toSet),
           model
         )

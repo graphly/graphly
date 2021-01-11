@@ -27,16 +27,16 @@ class AppMainSceneView(width: Double, height: Double)
   private val nodeMenu       = NodeWidget("Node Settings", model, controller)
   nodeMenu.visible = false
 
-  def hasChanges: Boolean = controller.hasChanges
+  def hasChanges: Boolean         = controller.hasChanges
   def checkUserWantsExit: Boolean = controller.checkUserWantsExit
 
   private def resetGeneralMenu(mdl: Sim): Unit = {
-    val newGeneral  = new PropertiesWidget("Model Settings", mdl)
+    val newGeneral = new PropertiesWidget("Model Settings", mdl)
     newGeneral.generateGlobalMenu()
     rightMenu.children.set(0, newGeneral)
   }
 
-  private def setModel(mdl: Sim): Unit = {
+  private def setModel(mdl: Sim): Unit         = {
     model = mdl
     controller.updateModel(model)
     controller.redrawMode(
@@ -76,15 +76,22 @@ class AppMainSceneView(width: Double, height: Double)
   rightMenu.prefWidth <== graphContainer.width / 3
   private val toolbar = new VerticalToolbar
 
-  private def niceFileString(fileOpt: Option[File]): String = fileOpt match {
-    case Some(file) => file.getName
-    case _ => "none"
-  }
+  private def niceFileString(fileOpt: Option[File]): String =
+    fileOpt match {
+      case Some(file) => file.getName
+      case _ => "none"
+    }
 
-  private val statusBar =
-    new Label() { text = s"Status: ${controller.mode.toolbarStatusMnemonic}, file: ${niceFileString(controller.editingFile)}" }
+  private val statusBar = new Label() {
+    text =
+      s"Status: ${controller.mode.toolbarStatusMnemonic}, file: ${niceFileString(controller.editingFile)}"
+  }
   controller.onSwitchMode +=
-    (state => statusBar.text = s"Status: ${state.toolbarStatusMnemonic}, file: ${niceFileString(controller.editingFile)}")
+    (
+        state =>
+          statusBar.text =
+            s"Status: ${state.toolbarStatusMnemonic}, file: ${niceFileString(controller.editingFile)}"
+    )
   controller.onSwitchMode += (state => toolbar.controllerUpdatedMode(state))
   controller.onCanvasTransform +=
     (tuple => graphContainer.transformCanvas(tuple._1, tuple._2))
@@ -97,31 +104,26 @@ class AppMainSceneView(width: Double, height: Double)
       menus = List(
         new Menu("File")  {
           items = List(
-            new MenuItem("New") {
+            new MenuItem("New")     {
               onAction = (_: ActionEvent) => {
                 if (!hasChanges || checkUserWantsExit) {
                   setModel(Sim.empty)
                   controller.editingFile = Option.empty
                 }
               }
-              accelerator = new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)
+              accelerator =
+                new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)
             },
             new MenuItem("Save")    {
               onAction = (_: ActionEvent) => {
-                if (controller.editingFile.isEmpty) {
-                  controller.saveAs()
-                }
-                else {
-                  controller.save()
-                }
+                if (controller.editingFile.isEmpty) { controller.saveAs() }
+                else { controller.save() }
               }
               accelerator =
                 new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown)
             },
             new MenuItem("Save As") {
-              onAction = (_: ActionEvent) => {
-                controller.saveAs()
-              }
+              onAction = (_: ActionEvent) => { controller.saveAs() }
               accelerator = new KeyCodeCombination(
                 KeyCode.S,
                 KeyCombination.ControlDown,
@@ -141,7 +143,15 @@ class AppMainSceneView(width: Double, height: Double)
                   )
                   fileChooser.showOpenDialog(new Stage) match {
                     case file: File =>
-                      model = xml.XML.loadFile(file).toSim
+                      try { model = xml.XML.loadFile(file).toSim }
+                      catch {
+                        case _: Exception =>
+                          controller.showError(
+                            "Error",
+                            "Error loading file.",
+                            s"Failed to load file."
+                          )
+                      }
                       controller.editingFile = Some(file)
                       setModel(model)
                     case _ =>

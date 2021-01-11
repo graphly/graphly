@@ -39,15 +39,19 @@ object SimDrawAction {
     }
 
     implicit object Node extends this.Shape[sim.Node] {
-      val radius: Int                                          = 20
-      private val highlighting                                 = Color.GreenYellow
-      private val icons: Map[Class[_ <: sim.NodeType], String] = Map(
-        classOf[sim.Source] -> "/assets/icons/source.svg",
-        classOf[sim.Join] -> "/assets/icons/source.svg",
-        classOf[sim.Server] -> "/assets/icons/queue.svg",
-        classOf[sim.Fork] -> "/assets/icons/fork.svg",
-        classOf[sim.Sink] -> "/assets/icons/sink.svg"
+      val radius: Int                                                  = 20
+      private val highlighting                                         = Color.GreenYellow
+      private val images: Map[Class[_ <: sim.NodeType], Image] = Map(
+        classOf[sim.Source] -> initImage("/assets/icons/source.svg"),
+        classOf[sim.Join]   -> initImage("/assets/icons/join.svg"),
+        classOf[sim.Server]  -> initImage("/assets/icons/queue.svg"),
+        classOf[sim.Fork]   -> initImage("/assets/icons/fork.svg"),
+        classOf[sim.Sink]   -> initImage("/assets/icons/sink.svg"),
       )
+
+      private def initImage(resourceUri: String): Image = {
+        new Image(resourceUri, 2 * radius, 2 * radius, false, false)
+      }
 
       private def drawCircle(
           position: Position,
@@ -67,24 +71,20 @@ object SimDrawAction {
         )
       }
 
-      def classColor(instance: Any): Color                               = {
+      def classColor(instance: Any): Color = {
         val conversion    = 0.5 / 26
         val name          = instance.getClass.getSimpleName
         def index(n: Int) = 0.5 + (name(n).toUpper.toInt % 26) * conversion
         Color.color(index(0), index(1), index(2))
       }
 
-      final private def drawName(
-          context: GraphicsContext,
-          node: sim.Node
-      ): Unit                                                            = {
+      final private def drawName(context: GraphicsContext, node: sim.Node): Unit = {
         val textObj = new Text(node.name)
         textObj.font = context.font
 
-        val (x, y)   = node.position.coords
-        val textY    = y + 2 * radius
-        val (tw, th) =
-          (textObj.layoutBounds().getWidth, textObj.layoutBounds().getHeight)
+        val (x, y) = node.position.coords
+        val textY = y + 2 * radius
+        val (tw, th) = (textObj.layoutBounds().getWidth, textObj.layoutBounds().getHeight)
         context.fill = Color.Black
         context.clearRect(x - tw / 2 - 5, textY - th / 2 - 5, tw + 10, th + 5)
 
@@ -98,10 +98,7 @@ object SimDrawAction {
             drawCircle(node.position, radius * 1.3, highlighting, context)
           drawCircle(node.position, radius, classColor(node), context)
 
-          //TODO: Actually design the icon
-          val resourceURI = icons
-            .getOrElse(node.nodeType.getClass, "/assets/icons/triangle.svg")
-          val img         = new Image(resourceURI, 2 * radius, 2 * radius, false, false)
+          val img = images(node.nodeType.getClass)
           context.drawImage(img, node.x - radius, node.y - radius)
 
           drawName(context, node)

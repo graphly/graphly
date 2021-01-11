@@ -28,7 +28,6 @@ class TitleBar(title: String) extends HBox {
 
     val stackPane =  new StackPane()
     stackPane.children.add(iconImage)
-    stackPane.setStyle("-fx-cursor: hand;")
     stackPane
   }
 }

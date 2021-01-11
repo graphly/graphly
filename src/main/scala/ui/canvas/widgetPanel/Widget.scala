@@ -11,7 +11,7 @@ class Widget(title: String) extends BorderPane {
   styleClass = List("widget")
   managed <== visible
 
-  titleBar.minimise.onMouseClicked = (_: MouseEvent) => minimise()
+  titleBar.onMouseClicked = (_: MouseEvent) => minimise()
 
   def close(): Unit = {
     visible = false

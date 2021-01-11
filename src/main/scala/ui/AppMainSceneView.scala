@@ -181,7 +181,7 @@ class AppMainSceneView(width: Double, height: Double)
               onAction = (_: ActionEvent) =>
                 controller.pasteSelectedNodes(graphContainer.redraw)
               accelerator =
-                new KeyCodeCombination(KeyCode.P, KeyCombination.ControlDown)
+                new KeyCodeCombination(KeyCode.V, KeyCombination.ControlDown)
             },
             new MenuItem("Cut")    {
               onAction = (_: ActionEvent) =>

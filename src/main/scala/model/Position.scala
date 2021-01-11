@@ -36,6 +36,13 @@ case class Position(x: Double, y: Double)                              {
     Position(x * math.cos(angle), y * math.sin(angle))
 
   def coords: (Double, Double) = (x, y)
+
+  override def equals(obj: Any): Boolean = {
+    obj match {
+      case position: Position => x == position.x && y == position.y
+      case _ => false
+    }
+  }
 }
 
 object Position                                                        {

@@ -8,6 +8,7 @@
 
 .widget-titlebar {
     -fx-padding: 0 7 0 12;
+    -fx-cursor: hand;
 }
 
 .prop-panel {

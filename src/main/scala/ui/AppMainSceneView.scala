@@ -27,10 +27,23 @@ class AppMainSceneView(width: Double, height: Double)
   private val nodeMenu       = NodeWidget("Node Settings", model, controller)
   nodeMenu.visible = false
 
+  def hasChanges: Boolean = controller.hasChanges
+  def checkUserWantsExit: Boolean = controller.checkUserWantsExit
+
   private def resetGeneralMenu(mdl: Sim): Unit = {
     val newGeneral  = new PropertiesWidget("Model Settings", mdl)
     newGeneral.generateGlobalMenu()
     rightMenu.children.set(0, newGeneral)
+  }
+
+  private def setModel(mdl: Sim): Unit = {
+    model = mdl
+    controller.updateModel(model)
+    controller.redrawMode(
+      GraphCanvasController.EditingMode.Selecting,
+      graphContainer.redraw
+    )
+    resetGeneralMenu(model)
   }
 
   // This commented code is only used to generate the general simulation config fields, and should be deleted
@@ -81,15 +94,11 @@ class AppMainSceneView(width: Double, height: Double)
           items = List(
             new MenuItem("New") {
               onAction = (_: ActionEvent) => {
-                model = Sim.empty
-                controller.model = model
-                controller.redrawMode(
-                  GraphCanvasController.EditingMode.Selecting,
-                  graphContainer.redraw
-                )
-                resetGeneralMenu(model)
+                if (!hasChanges || checkUserWantsExit) {
+                  setModel(Sim.empty)
+                }
               }
-//              accelerator = new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)
+              accelerator = new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)
             },
             new MenuItem("Save")    {
               onAction = (_: ActionEvent) => { controller.save() }
@@ -107,23 +116,21 @@ class AppMainSceneView(width: Double, height: Double)
             new SeparatorMenuItem(),
             new MenuItem("Open")    {
               onAction = (_: ActionEvent) => {
-                val fileChooser = new FileChooser()
-                fileChooser.initialDirectory =
-                  new File(System.getProperty("user.home"))
-                fileChooser.title = "Open Simulation"
-                fileChooser.extensionFilters.add(
-                  new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg")
-                )
-                Option(fileChooser.showOpenDialog(new Stage)).foreach { file =>
-                  model = xml.XML.loadFile(file).toSim
+                if (!hasChanges || checkUserWantsExit) {
+                  val fileChooser = new FileChooser()
+                  fileChooser.initialDirectory =
+                    new File(System.getProperty("user.home"))
+                  fileChooser.title = "Open Simulation"
+                  fileChooser.extensionFilters.add(
+                    new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg")
+                  )
+                  fileChooser.showOpenDialog(new Stage) match {
+                    case file: File =>
+                      model = xml.XML.loadFile(file).toSim
+                      setModel(model)
+                    case _ =>
+                  }
                 }
-                //TODO: Update display
-                controller.model = model
-                controller.redrawMode(
-                  GraphCanvasController.EditingMode.Selecting,
-                  graphContainer.redraw
-                )
-                resetGeneralMenu(model)
               }
               accelerator =
                 new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)

@@ -24,6 +24,14 @@ class GraphingCanvas(
   traceCanvas.width <== this.width
   traceCanvas.height <== this.height
 
+  width.addListener((_, _, _) => {
+    controller.redrawMode(controller.mode, this.redraw)
+  })
+
+  height.addListener((_, _, _) => {
+    controller.redrawMode(controller.mode, this.redraw)
+  })
+
   background = Background(Color.White)
 
   children = List(traceCanvas, canvas)

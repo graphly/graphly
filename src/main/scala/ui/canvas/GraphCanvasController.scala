@@ -1,12 +1,13 @@
 package ui.canvas
 
 import java.io.{File, FileInputStream, PrintWriter}
-
 import io.Implicit._
 import io.XMLSimRepresentation.Implicit._
 import model.sim.Trace.Image
 import model.sim.{Configuration, Connection, Node, NodeType}
 import model.{Position, sim}
+import scalafx.scene.control.{Alert, ButtonType}
+import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.input._
 import scalafx.stage.{FileChooser, Stage}
 import ui.WithPosition.Implicit._
@@ -50,6 +51,24 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   // What state is the view in - whether we are creating nodes and connections,
   // moving objects, etc.
   private var _mode: EditingMode.State = Default.default
+
+  private var oldModel: sim.Sim = model.copyWithNodes()
+
+  def updateModel(mdl: sim.Sim): Unit = {
+    oldModel = mdl.copyWithNodes()
+    model = mdl
+  }
+
+  def hasChanges: Boolean = !model.strongEq(oldModel)
+
+  def checkUserWantsExit: Boolean                                         = {
+    val alert  = new Alert(AlertType.Confirmation)
+    alert.setTitle("Unsaved Work")
+    alert.setHeaderText("You have unsaved changes.")
+    alert.setContentText("Press \"OK\" to discard them.")
+    val result = alert.showAndWait()
+    result.get == ButtonType.OK
+  }
 
   final def redrawMode(state: EditingMode.State, update: Redraw[D]): Unit = {
     mode = state
@@ -328,18 +347,23 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     fileChooser.extensionFilters
       .add(new FileChooser.ExtensionFilter("JSIMgraph XML", "*.jsimg"))
     fileChooser.initialFileName = ".jsimg"
-    Option(fileChooser.showSaveDialog(new Stage)).foreach { dest =>
-      val modelXml: String = modelToString(model, dest.getName)
-
-      if (!modelXml.isEmpty) {
-        dest.createNewFile()
-        new PrintWriter(dest) {
-          write(modelXml)
-          close()
+    val result                                 = fileChooser.showSaveDialog(new Stage)
+    result match {
+      case dest: File =>
+        val modelXml: String = modelToString(model, dest.getName)
+        println(modelXml)
+        println(modelXml.nonEmpty)
+        if (modelXml.nonEmpty) {
+          dest.createNewFile()
+          new PrintWriter(dest) {
+            write(modelXml)
+            close()
+          }
+          oldModel = model.copyWithNodes()
+        } else {
+          //TODO: Let the user know we failed to save
         }
-      } else {
-        //TODO: Let the user know we failed to save
-      }
+      case _ =>
     }
   }
 
@@ -491,10 +515,10 @@ object GraphCanvasController      {
     }
 
     case class Node(nodeType: NodeType)    extends Entry {
-      var typeName = nodeType.getClass.getSimpleName
+      var typeName: String = nodeType.getClass.getSimpleName
       if (typeName.equals("Server")) typeName = "Queue"
 
-      override def toolbarStatusMnemonic = s"Create [${typeName} Node]"
+      override def toolbarStatusMnemonic = s"Create [$typeName Node]"
     }
 
     sealed trait Select                    extends State

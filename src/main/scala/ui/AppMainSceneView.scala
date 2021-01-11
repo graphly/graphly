@@ -7,6 +7,7 @@ import javafx.event.ActionEvent
 import javafx.scene.input.KeyEvent
 import model.sim._
 import scalafx.scene.Scene
+import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.control._
 import scalafx.scene.input.{KeyCode, KeyCodeCombination, KeyCombination}
 import scalafx.scene.layout.BorderPane
@@ -25,12 +26,40 @@ class AppMainSceneView(width: Double, height: Double)
   private val rightMenu      = WidgetPanel.Element()
   private val general        = new PropertiesWidget("Model Settings", model)
   private val nodeMenu       = NodeWidget("Node Settings", model, controller)
+  private var oldModel = model.clone()
   nodeMenu.visible = false
+
+  def hasChanges: Boolean = !model.strongEq(oldModel)
+
+  def checkUserWantsExit: Boolean = {
+    val alert = new Alert(AlertType.Confirmation)
+    alert.setTitle("Unsaved Work")
+    alert.setHeaderText("You have unsaved changes.")
+    alert.setContentText("Press \"OK\" to discard them.")
+    val result = alert.showAndWait()
+    if (result.get == ButtonType.OK) {
+      true
+    }
+    else {
+      false
+    }
+  }
 
   private def resetGeneralMenu(mdl: Sim): Unit = {
     val newGeneral  = new PropertiesWidget("Model Settings", mdl)
     newGeneral.generateGlobalMenu()
     rightMenu.children.set(0, newGeneral)
+  }
+
+  private def setModel(mdl: Sim): Unit = {
+    model = mdl
+    oldModel = model.clone()
+    controller.model = model
+    controller.redrawMode(
+      GraphCanvasController.EditingMode.Selecting,
+      graphContainer.redraw
+    )
+    resetGeneralMenu(model)
   }
 
   // This commented code is only used to generate the general simulation config fields, and should be deleted
@@ -81,15 +110,16 @@ class AppMainSceneView(width: Double, height: Double)
           items = List(
             new MenuItem("New") {
               onAction = (_: ActionEvent) => {
-                model = Sim.empty
-                controller.model = model
-                controller.redrawMode(
-                  GraphCanvasController.EditingMode.Selecting,
-                  graphContainer.redraw
-                )
-                resetGeneralMenu(model)
+                if (!model.strongEq(oldModel)) {
+                  if (checkUserWantsExit) {
+                    setModel(Sim.empty)
+                  }
+                }
+                else {
+                  setModel(Sim.empty)
+                }
               }
-//              accelerator = new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)
+              accelerator = new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)
             },
             new MenuItem("Save")    {
               onAction = (_: ActionEvent) => { controller.save() }
@@ -117,13 +147,7 @@ class AppMainSceneView(width: Double, height: Double)
                 Option(fileChooser.showOpenDialog(new Stage)).foreach { file =>
                   model = xml.XML.loadFile(file).toSim
                 }
-                //TODO: Update display
-                controller.model = model
-                controller.redrawMode(
-                  GraphCanvasController.EditingMode.Selecting,
-                  graphContainer.redraw
-                )
-                resetGeneralMenu(model)
+                setModel(model)
               }
               accelerator =
                 new KeyCodeCombination(KeyCode.O, KeyCombination.ControlDown)

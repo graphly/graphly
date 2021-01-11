@@ -40,6 +40,14 @@ case class Sim(
       case _ => false
     }
   }
+
+  def strongEq(obj: Any): Boolean = {
+    obj match {
+      case sim: Sim =>
+        equals(sim) && configuration.equals(sim.configuration) && traces.equals(sim.traces)
+      case _ => false
+    }
+  }
 }
 
 case class Configuration(

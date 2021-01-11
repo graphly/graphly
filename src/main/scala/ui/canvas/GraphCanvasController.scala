@@ -330,10 +330,8 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     fileChooser.initialFileName = ".jsimg"
     Option(fileChooser.showSaveDialog(new Stage)).foreach { dest =>
       val modelXml: String = modelToString(model, dest.getName)
-      println(modelXml)
-      println(!modelXml.isEmpty)
-      if (!modelXml.isEmpty) {
 
+      if (!modelXml.isEmpty) {
         dest.createNewFile()
         new PrintWriter(dest) {
           write(modelXml)

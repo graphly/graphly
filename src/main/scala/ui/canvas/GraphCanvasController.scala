@@ -10,7 +10,6 @@ import scalafx.scene.control.{Alert, ButtonType}
 import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.input._
 import scalafx.stage.{FileChooser, Stage}
-import ui.WithPosition.Implicit._
 import ui.canvas.Draw.Implicit.DrawShape
 import ui.canvas.GraphCanvasController.EditingMode.default
 import ui.canvas.GraphCanvasController.{EditingMode, Redraw}
@@ -94,14 +93,11 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
 
   private val timeline = new history.Timeline
 
-  override def onMousePress(
-      logicalEvent: LogicalEvent[MouseEvent],
-      update: Redraw[D]
-  ): Unit                                                             = {
-    val event: MouseEvent = logicalEvent.event
-
+  override def onMousePress(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit   = {
     super.onMousePress(logicalEvent, update)
-    val position = event.position.model
+
+    val event: MouseEvent = logicalEvent.event
+    val position = logicalEvent.modelPosition
 
     // So far we drag only on when we press middle mouse.
     if (event.button == MouseButton.Middle) {
@@ -151,13 +147,11 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
   }
 
-  override def onMouseRelease(
-      logicalEvent: LogicalEvent[MouseEvent],
-      update: Redraw[D]
-  ): Unit                                                             = {
-    val event    = logicalEvent.event
+  override def onMouseRelease(logicalEvent: LogicalEvent[MouseEvent], update: Redraw[D]): Unit = {
     super.onMouseRelease(logicalEvent, update)
-    val position = event.position.model
+
+    val event = logicalEvent.event
+    val position = logicalEvent.modelPosition
 
     mode match {
       case EditingMode.NavigationPan(_, prevMode) =>
@@ -302,7 +296,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
         trace match {
           case EditingMode.DragTrace(traces, from, origin) =>
             traces.foreach { trace =>
-              trace.position += event.position.model - from
+              trace.position += position - from
             }
             mode = EditingMode.DragTrace(traces, position, origin)
           case EditingMode.ResizeTrace(traces, start, base, origin) =>
@@ -392,8 +386,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
         timeline(
           history.Delete.node(active.active) +
             history.Delete.edge(model.connections.view.filter { connection =>
-              !active.active(connection.source) &&
-              !active.active(connection.target)
+              active.active(connection.source) || active.active(connection.target)
             }.toSet),
           model
         )

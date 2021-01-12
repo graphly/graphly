@@ -1,4 +1,4 @@
-package ui.canvas.widgetPanel
+package ui.widgetPanel
 
 import model.sim.Sim
 
@@ -9,7 +9,7 @@ class PropertiesWidget(title: String, model: Sim)
   center = propertiesPanel
 
   def generateGlobalMenu(): Unit = {
-    longField("Seed", model.configuration.seed, _.configuration.seed = _)
+    longField("Seed", model.configuration.seed, _.configuration.seed = _, Some("Sample text"))
     checkbox("Use random seed", model.configuration.useRandomSeed, _.configuration.useRandomSeed = _)
     doubleField("Maximum duration", model.configuration.maximumDuration, _.configuration.maximumDuration = _)
     doubleField("Max simulated time", model.configuration.maxSimulatedTime, _.configuration.maxSimulatedTime = _)
@@ -29,33 +29,39 @@ class PropertiesWidget(title: String, model: Sim)
   def textField(
       title: String,
       initial: String,
-      configApplication: (Sim, String) => Unit
-  ): Unit = propertiesPanel.textField(title, initial, configApplication)
+      configApplication: (Sim, String) => Unit,
+      tooltip: Option[String] = Option.empty
+  ): Unit = propertiesPanel.textField(title, initial, configApplication, tooltip)
   def integerField(
       title: String,
       initial: Int,
-      configApplication: (Sim, Int) => Unit
-  ): Unit = propertiesPanel.integerField(title, initial, configApplication)
+      configApplication: (Sim, Int) => Unit,
+      tooltip: Option[String] = Option.empty
+  ): Unit = propertiesPanel.integerField(title, initial, configApplication, tooltip)
   def longField(
       title: String,
       initial: Long,
-      configApplication: (Sim, Long) => Unit
-  ): Unit = propertiesPanel.longField(title, initial, configApplication)
+      configApplication: (Sim, Long) => Unit,
+      tooltip: Option[String] = Option.empty
+  ): Unit = propertiesPanel.longField(title, initial, configApplication, tooltip)
   def doubleField(
       title: String,
       initial: Double,
-      configApplication: (Sim, Double) => Unit
-  ): Unit = propertiesPanel.doubleField(title, initial, configApplication)
+      configApplication: (Sim, Double) => Unit,
+      tooltip: Option[String] = Option.empty
+  ): Unit = propertiesPanel.doubleField(title, initial, configApplication, tooltip)
   def dropdown(
       title: String,
       options: List[String],
       placeholder: String,
-      configApplication: (Sim, String) => Unit
+      configApplication: (Sim, String) => Unit,
+      tooltip: Option[String] = Option.empty
   ): Unit =
-    propertiesPanel.dropdown(title, options, placeholder, configApplication)
+    propertiesPanel.dropdown(title, options, placeholder, configApplication, tooltip)
   def checkbox(
       title: String,
       initial: Boolean,
-      configApplication: (Sim, Boolean) => Unit
-  ): Unit = { propertiesPanel.checkbox(title, initial, configApplication) }
+      configApplication: (Sim, Boolean) => Unit,
+      tooltip: Option[String] = Option.empty
+  ): Unit = { propertiesPanel.checkbox(title, initial, configApplication, tooltip) }
 }

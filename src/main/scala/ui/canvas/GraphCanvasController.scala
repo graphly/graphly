@@ -71,13 +71,32 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
 
   def hasChanges: Boolean = !model.strongEq(oldModel)
 
+  def checkUserWantsErase: Boolean = {
+    val alert  = new Alert(AlertType.Confirmation)
+    alert.setTitle("Unsaved Work")
+    alert.setHeaderText("You have unsaved changes.")
+    alert.setContentText("Press \"OK\" to discard them and continue.")
+    val result = alert.showAndWait()
+    result.get == ButtonType.OK
+  }
+
   def checkUserWantsExit: Boolean                                         = {
     val alert  = new Alert(AlertType.Confirmation)
     alert.setTitle("Unsaved Work")
     alert.setHeaderText("You have unsaved changes.")
-    alert.setContentText("Press \"OK\" to discard them.")
+    alert.setContentText("If you do not save, your changes will be lost.")
+    val NoSave = new ButtonType("Close without Saving")
+    val Cancel = new ButtonType("Cancel")
+    val Save = new ButtonType("Save and Exit")
+    alert.getButtonTypes.setAll(NoSave, Cancel, Save)
     val result = alert.showAndWait()
-    result.get == ButtonType.OK
+    result.get match {
+      case NoSave => true
+      case Cancel => false
+      case _ =>
+        this.save()
+        true
+    }
   }
 
   def showError(title: String, header: String, message: String): Unit     = {
@@ -376,7 +395,14 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     }
   }
 
-  def save(): Unit                                                    = { saveFile(editingFile.get) }
+  def save(): Unit                                                    = {
+    if (editingFile.isEmpty) {
+      saveAs()
+    }
+    else {
+      saveFile(editingFile.get)
+    }
+  }
 
   def saveAs(): Unit                          = {
     val fileChooser: scalafx.stage.FileChooser = new FileChooser

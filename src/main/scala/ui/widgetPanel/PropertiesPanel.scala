@@ -1,23 +1,14 @@
-package ui.canvas.widgetPanel
+package ui.widgetPanel
 
 import javafx.event.ActionEvent
 import javafx.scene.input.{KeyCode, KeyEvent}
 import model.sim.Sim
 import scalafx.geometry.{HPos, VPos}
 import scalafx.scene.Node
-import scalafx.scene.control.{
-  CheckBox,
-  ComboBox,
-  Label,
-  TextField,
-  TextFormatter
-}
+import scalafx.scene.control.{CheckBox, ComboBox, Label, TextField, TextFormatter, Tooltip}
 import scalafx.scene.layout.{GridPane, Pane, Priority}
-import scalafx.util.converter.{
-  DoubleStringConverter,
-  IntStringConverter,
-  LongStringConverter
-}
+import scalafx.util.Duration
+import scalafx.util.converter.{DoubleStringConverter, IntStringConverter, LongStringConverter}
 
 class PropertiesPanel(model: Sim) extends GridPane {
   private var rowCounter = 0
@@ -29,8 +20,14 @@ class PropertiesPanel(model: Sim) extends GridPane {
 
   def show(): Unit = { visible = true }
 
-  def wideLabel(str: String): Label = {
+  def wideLabel(str: String, tooltip: Option[String]): Label = {
     val lbl = new Label(str)
+    if (tooltip.isDefined) {
+      val tooltipObj = new Tooltip(tooltip.get) {
+        showDelay = Duration(500)
+      }
+      lbl.setTooltip(tooltipObj)
+    }
     lbl.minWidth = 40
     lbl
   }
@@ -38,48 +35,55 @@ class PropertiesPanel(model: Sim) extends GridPane {
   def textField(
       title: String,
       initial: String,
-      projection: (Sim, String) => Unit
-  ): Unit                           = { addField(title, x => y => projection(y, x), initial, null) }
+      projection: (Sim, String) => Unit,
+      tooltip: Option[String]
+  ): Unit                           = { addField(title, x => y => projection(y, x), initial, null, tooltip) }
 
   def integerField(
       title: String,
       initial: Int,
-      projection: (Sim, Int) => Unit
+      projection: (Sim, Int) => Unit,
+      tooltip: Option[String]
   ): Unit                                                             = {
     val converter = new IntStringConverter
     addField(
       title,
       x => y => projection(y, converter.fromString(x)),
       initial.toString,
-      new TextFormatter(converter)
+      new TextFormatter(converter),
+      tooltip
     )
   }
 
   def longField(
       title: String,
       initial: Long,
-      projection: (Sim, Long) => Unit
+      projection: (Sim, Long) => Unit,
+      tooltip: Option[String]
   ): Unit                                                             = {
     val converter = new LongStringConverter
     addField(
       title,
       x => y => projection(y, converter.fromString(x)),
       initial.toString,
-      new TextFormatter(converter)
+      new TextFormatter(converter),
+      tooltip
     )
   }
 
   def doubleField(
       title: String,
       initial: Double,
-      projection: (Sim, Double) => Unit
+      projection: (Sim, Double) => Unit,
+      tooltip: Option[String]
   ): Unit                                                             = {
     val converter = new DoubleStringConverter
     addField(
       title,
       x => y => projection(y, converter.fromString(x)),
       initial.toString,
-      new TextFormatter(converter)
+      new TextFormatter(converter),
+      tooltip
     )
   }
 
@@ -87,7 +91,8 @@ class PropertiesPanel(model: Sim) extends GridPane {
       title: String,
       projection: String => Sim => Unit,
       initial: String,
-      formatter: TextFormatter[_]
+      formatter: TextFormatter[_],
+      tooltip: Option[String]
   ): Unit                                                             = {
     val textField = new TextField {
       textFormatter = formatter
@@ -104,7 +109,7 @@ class PropertiesPanel(model: Sim) extends GridPane {
       }
     })
     textField.text = initial
-    this.addRowSpaced(rowCounter, wideLabel(title), textField)
+    this.addRowSpaced(rowCounter, wideLabel(title, tooltip), textField)
     rowCounter += 1
   }
 
@@ -112,7 +117,8 @@ class PropertiesPanel(model: Sim) extends GridPane {
       title: String,
       options: List[String],
       placeholder: String,
-      projection: (Sim, String) => Unit
+      projection: (Sim, String) => Unit,
+      tooltip: Option[String]
   ): Unit                                                             = {
     val box = new ComboBox[String](options) {
       onAction = (_: ActionEvent) => {
@@ -121,7 +127,7 @@ class PropertiesPanel(model: Sim) extends GridPane {
       }
     }
     box.setValue(placeholder)
-    this.addRowSpaced(rowCounter, wideLabel(title), box)
+    this.addRowSpaced(rowCounter, wideLabel(title, tooltip), box)
     rowCounter += 1
   }
 
@@ -132,16 +138,14 @@ class PropertiesPanel(model: Sim) extends GridPane {
     GridPane.setHgrow(right, Priority.Always)
     GridPane.setHalignment(right, HPos.Right)
     GridPane.setValignment(left, VPos.Center)
-//    left.setStyle("-fx-background-color: lightblue;")
-//    spacer.setStyle("-fx-background-color: lightgreen;")
-//    right.setStyle("-fx-background-color: pink;")
     this.addRow(index, left, spacer, right)
   }
 
   def checkbox(
       title: String,
       initial: Boolean,
-      projection: (Sim, Boolean) => Unit
+      projection: (Sim, Boolean) => Unit,
+      tooltip: Option[String]
   ): Unit                                                             = {
     val checkbox = new CheckBox() {
       onAction = (_: ActionEvent) => {
@@ -150,7 +154,7 @@ class PropertiesPanel(model: Sim) extends GridPane {
       }
     }
     checkbox.selected = initial
-    this.addRowSpaced(rowCounter, wideLabel(title), checkbox)
+    this.addRowSpaced(rowCounter, wideLabel(title, tooltip), checkbox)
     rowCounter += 1
   }
 

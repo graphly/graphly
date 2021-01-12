@@ -107,7 +107,7 @@ class AppMainSceneView(width: Double, height: Double)
           items = List(
             new MenuItem("New")     {
               onAction = (_: ActionEvent) => {
-                if (!hasChanges || checkUserWantsExit) {
+                if (!hasChanges || controller.checkUserWantsErase) {
                   setModel(Sim.empty)
                   controller.editingFile = Option.empty
                   controller.resetCounters()
@@ -117,10 +117,7 @@ class AppMainSceneView(width: Double, height: Double)
                 new KeyCodeCombination(KeyCode.N, KeyCombination.ControlDown)
             },
             new MenuItem("Save")    {
-              onAction = (_: ActionEvent) => {
-                if (controller.editingFile.isEmpty) { controller.saveAs() }
-                else { controller.save() }
-              }
+              onAction = (_: ActionEvent) => { controller.save() }
               accelerator =
                 new KeyCodeCombination(KeyCode.S, KeyCombination.ControlDown)
             },
@@ -135,7 +132,7 @@ class AppMainSceneView(width: Double, height: Double)
             new SeparatorMenuItem(),
             new MenuItem("Open")    {
               onAction = (_: ActionEvent) => {
-                if (!hasChanges || checkUserWantsExit) {
+                if (!hasChanges || controller.checkUserWantsErase) {
                   val fileChooser = new FileChooser()
                   fileChooser.initialDirectory =
                     new File(System.getProperty("user.home"))

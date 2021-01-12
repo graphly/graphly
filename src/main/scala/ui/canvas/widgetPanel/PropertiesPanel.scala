@@ -1,14 +1,13 @@
 package ui.canvas.widgetPanel
 
 import javafx.event.ActionEvent
-import javafx.scene.control.Tooltip
 import javafx.scene.input.{KeyCode, KeyEvent}
-import javafx.util.Duration
 import model.sim.Sim
 import scalafx.geometry.{HPos, VPos}
 import scalafx.scene.Node
-import scalafx.scene.control.{CheckBox, ComboBox, Label, TextField, TextFormatter}
+import scalafx.scene.control.{CheckBox, ComboBox, Label, TextField, TextFormatter, Tooltip}
 import scalafx.scene.layout.{GridPane, Pane, Priority}
+import scalafx.util.Duration
 import scalafx.util.converter.{DoubleStringConverter, IntStringConverter, LongStringConverter}
 
 class PropertiesPanel(model: Sim) extends GridPane {
@@ -25,7 +24,7 @@ class PropertiesPanel(model: Sim) extends GridPane {
     val lbl = new Label(str)
     if (tooltip.isDefined) {
       val tooltipObj = new Tooltip(tooltip.get) {
-        setShowDelay(Duration.seconds(0.5))
+        showDelay = Duration(500)
       }
       lbl.setTooltip(tooltipObj)
     }

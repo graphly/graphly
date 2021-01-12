@@ -81,11 +81,11 @@ object SimDrawAction {
         )
       }
 
-      def classColor(instance: Any): Color = {
+      def classColor(instance: sim.Node): Color = {
         val conversion    = 0.5 / 26
-        val name          = instance.getClass.getSimpleName
+        val name          = instance.nodeType.getClass.getSimpleName
         def index(n: Int) = 0.5 + (name(n).toUpper.toInt % 26) * conversion
-        Color.color(index(0), index(1), index(2))
+        Color.color(index(1), index(2), index(3))
       }
 
       final private def drawName(context: GraphicsContext, node: sim.Node): Unit = {

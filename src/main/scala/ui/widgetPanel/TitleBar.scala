@@ -1,4 +1,4 @@
-package ui.canvas.widgetPanel
+package ui.widgetPanel
 
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.image.ImageView

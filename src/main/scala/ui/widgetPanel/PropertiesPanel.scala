@@ -1,4 +1,4 @@
-package ui.canvas.widgetPanel
+package ui.widgetPanel
 
 import javafx.event.ActionEvent
 import javafx.scene.input.{KeyCode, KeyEvent}

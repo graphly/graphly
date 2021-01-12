@@ -204,7 +204,10 @@ object SimDrawAction {
             preserveRatio = false,
             smooth = true
           )
+          context.setGlobalAlpha(0.3)
           context.drawImage(image, trace.x, trace.y)
+          context.setGlobalAlpha(1)
+
           if (highlight) {
             context.fill = highlighting
             var Position(x, y) = trace.`end`

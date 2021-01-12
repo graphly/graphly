@@ -53,6 +53,47 @@ object Implicit {
       )
   }
 
+  implicit object TerminalDefault extends Default[Terminal] {
+    override def default: Terminal = ???
+  }
+
+  implicit object RouterDefault extends Default[Router] {
+    override def default: Router = Router(
+      Default.default(QueueSectionDefault),
+      Default.default(TunnelSectionDefault),
+      Default.default(RouterSectionDefault)
+    )
+  }
+
+  implicit object DelayDefault extends Default[Delay] {
+    override def default: Delay = ???
+  }
+
+  implicit object LoggerDefault extends Default[Logger] {
+    override def default: Logger = ???
+  }
+
+  implicit object ClassSwitchDefault extends Default[ClassSwitch] {
+    override def default: ClassSwitch = ???
+  }
+
+  implicit object SemaphoreDefault extends Default[Semaphore] {
+    override def default: Semaphore = ???
+  }
+
+  implicit object ScalarDefault extends Default[Scalar] {
+    override def default: Scalar = ???
+  }
+
+  implicit object PlaceDefault extends Default[Place] {
+    override def default: Place = ???
+  }
+
+  implicit object TransitionDefault extends Default[Transition] {
+    override def default: Transition = ???
+  }
+
+
   implicit object SourceSectionDefault    extends Default[SourceSection]    {
     override def default: SourceSection = SourceSection(Seq.empty)
   }

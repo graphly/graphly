@@ -6,6 +6,7 @@ import model.sim.Sim
 import scalafx.geometry.{HPos, VPos}
 import scalafx.scene.Node
 import scalafx.scene.control.{CheckBox, ComboBox, Label, TextField, TextFormatter, Tooltip}
+import javafx.scene.layout.GridPane.getRowIndex
 import scalafx.scene.layout.{GridPane, Pane, Priority}
 import scalafx.util.Duration
 import scalafx.util.converter.{DoubleStringConverter, IntStringConverter, LongStringConverter}
@@ -161,5 +162,11 @@ class PropertiesPanel(model: Sim) extends GridPane {
   def clearAll(): Unit                                                = {
     children.clear()
     rowCounter = 0
+  }
+
+  def removeLastRows(n: Int): Unit = {
+    val rows = this.getRowCount
+    this.children.removeIf(node => getRowIndex(node) > (rows - 1 - n))
+    rowCounter -= n
   }
 }

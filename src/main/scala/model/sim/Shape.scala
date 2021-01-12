@@ -126,7 +126,7 @@ sealed trait TypeSection
  */
 case class SourceSection(refClassNames: Seq[String])       extends TypeSection
 case class TunnelSection()                                 extends TypeSection
-case class RouterSection(routingStrategy: RoutingStrategy) extends TypeSection
+case class RouterSection(var routingStrategy: RoutingStrategy) extends TypeSection
 case class SinkSection()                                   extends TypeSection
 case class TerminalSection()                               extends TypeSection
 case class QueueSection(
@@ -187,7 +187,7 @@ case class FastestService()                                extends RoutingStrate
 case class LoadDependentRouting(raw: xml.Node)             extends RoutingStrategy {
   override def toString: String = "Load Dependent Routing"
 }
-case class PowerOfK(k: Int, hasMemory: Boolean)            extends RoutingStrategy {
+case class PowerOfK(var k: Int = 1, var hasMemory: Boolean = false)            extends RoutingStrategy {
   override def toString: String = "Power of k"
 }
 case class WeightedRoundRobin(probabilities: mutable.Map[Node, Int])

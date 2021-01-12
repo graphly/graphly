@@ -25,6 +25,7 @@ class PropertiesWidget(title: String, model: Sim)
   }
 
   def clear(): Unit = { propertiesPanel.clearAll() }
+  def removeLastRows(n: Int): Unit = { propertiesPanel.removeLastRows(n) }
 
   def textField(
       title: String,

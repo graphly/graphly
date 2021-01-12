@@ -1,20 +1,49 @@
 package ui.widgetPanel
 
-import model.sim.{
-  ClassSwitch,
-  Delay,
-  DropStrategy,
-  Fork,
-  Logger,
-  QueueSection,
-  Router,
-  Server,
-  Sim
-}
+import model.sim.{ClassSwitch, Delay, Disabled, DropStrategy, FastestService, Fork, JSQ, LeastUtilisation, Logger, PowerOfK, QueueSection, Random, RoundRobin, Router, RouterSection, RoutingStrategy, SRT, Server, Sim}
 import ui.canvas.GraphCanvasController
 
 class NodeWidget(title: String, model: Sim)
     extends PropertiesWidget(title, model) {
+  def routerWidget(router: RouterSection): Unit = {
+    val strategies = List[RoutingStrategy](
+      Random(),
+      RoundRobin(),
+      JSQ(),
+      SRT(),
+      LeastUtilisation(),
+      FastestService(),
+      PowerOfK(),
+      Disabled()
+    )
+    dropdown(
+      "Routing Strategy",
+      strategies.map(_.toString),
+      router.routingStrategy.toString,
+      (_, y) => {
+        val oldStrat = router.routingStrategy
+        router.routingStrategy = strategies.find(s => s.toString.equals(y)).get
+        println(oldStrat, router.routingStrategy)
+        oldStrat match {
+          case _: PowerOfK => removeLastRows(2)
+          case _ =>
+        }
+        router.routingStrategy match {
+          case strat: PowerOfK =>
+            integerField("K", strat.k, (_, k) => strat.k = k)
+            checkbox("Has memory", strat.hasMemory, (_, hasMem) => strat.hasMemory = hasMem)
+          case _ =>
+        }
+      }
+    )
+    router.routingStrategy match {
+      case strat: PowerOfK =>
+        integerField("K", strat.k, (_, k) => strat.k = k)
+        checkbox("Has memory", strat.hasMemory, (_, hasMem) => strat.hasMemory = hasMem)
+      case _ =>
+    }
+  }
+
   private def queueWidget(queue: QueueSection): Unit = {
     integerField(
       "Queue size",
@@ -46,8 +75,12 @@ object NodeWidget                          {
             widget.textField("Name", n.name, (_, y) => n.name = y)
             widget.checkbox("Rotated", n.rotated, (_, y) => n.rotated = y)
             n.nodeType match {
-              case Server(queue, _, _) => widget.queueWidget(queue)
-              case Router(queue, _, _) => widget.queueWidget(queue)
+              case Server(queue, _, router) =>
+                widget.queueWidget(queue)
+                widget.routerWidget(router)
+              case Router(queue, _, router) =>
+                widget.queueWidget(queue)
+                widget.routerWidget(router)
               case Delay(queue, _, _) => widget.queueWidget(queue)
               case Fork(queue, _, _) => widget.queueWidget(queue)
               case Logger(queue, _, _) => widget.queueWidget(queue)

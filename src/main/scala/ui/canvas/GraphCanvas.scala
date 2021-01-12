@@ -28,9 +28,6 @@ class GraphCanvas extends Canvas {
 
     xform.appendTranslation(delta.x, delta.y)
 
-    println(s"Panning by ${delta.x}, ${delta.y} [${this}]")
-    println(s"${xform}\n")
-
     graphicsContext2D.setTransform(xform)
   }
 
@@ -47,9 +44,6 @@ class GraphCanvas extends Canvas {
 
     // Figure out the zoom factor and zoom back in.
     xform.appendScale(tgtZoomLevel, tgtZoomLevel, center.x, center.y)
-
-    println(s"Zoom into ${tgtZoomLevel} from ${center} [${this}]")
-    println(s"${xform}\n")
 
     graphicsContext2D.setTransform(xform)
   }

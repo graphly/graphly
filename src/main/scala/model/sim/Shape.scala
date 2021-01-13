@@ -98,9 +98,9 @@ case class Semaphore(
 ) extends NodeType
 
 case class Scalar(
-    joinSection: UnimplementedSection[JoinSection],
+    joinSection: JoinSection,
     tunnelSection: TunnelSection,
-    forkSection: UnimplementedSection[ForkSection]
+    forkSection: ForkSection
 ) extends NodeType
 
 case class Place(
@@ -124,18 +124,19 @@ sealed trait TypeSection
 /* These refClasses are the userClasses for which this section's node is
  * the reference node.
  */
-case class SourceSection(refClassNames: Seq[String])       extends TypeSection
-case class TunnelSection()                                 extends TypeSection
-case class RouterSection(var routingStrategy: RoutingStrategy) extends TypeSection
-case class SinkSection()                                   extends TypeSection
-case class TerminalSection()                               extends TypeSection
+case class SourceSection(refClassNames: Seq[String])    extends TypeSection
+case class TunnelSection()                              extends TypeSection
+case class RouterSection(var routingStrategy: RoutingStrategy)
+    extends TypeSection
+case class SinkSection()                                extends TypeSection
+case class TerminalSection()                            extends TypeSection
 case class QueueSection(
     var size: Option[Int],
     var dropStrategy: Option[DropStrategy],
     queueingStrategy: Seq[xml.Node]
 ) extends TypeSection
-case class DelaySection()                                  extends TypeSection
-case class ServerSection()                                 extends TypeSection
+case class DelaySection()                               extends TypeSection
+case class ServerSection()                              extends TypeSection
 case class ForkSection(
     var jobsPerLink: Int,
     var isSimplifiedFork: Boolean,
@@ -143,20 +144,20 @@ case class ForkSection(
 ) extends TypeSection
 case class JoinSection(joinStrategies: mutable.Map[String, JoinStrategy])
     extends TypeSection
-case class LoggerSection()                                 extends TypeSection
-case class ClassSwitchSection()                            extends TypeSection
-case class SemaphoreSection()                              extends TypeSection
-case class StorageSection()                                extends TypeSection
-case class LinkageSection()                                extends TypeSection
-case class EnablingSection()                               extends TypeSection
-case class TimingSection()                                 extends TypeSection
-case class FiringSection()                                 extends TypeSection
+case class LoggerSection()                              extends TypeSection
+case class ClassSwitchSection()                         extends TypeSection
+case class SemaphoreSection()                           extends TypeSection
+case class StorageSection()                             extends TypeSection
+case class LinkageSection()                             extends TypeSection
+case class EnablingSection()                            extends TypeSection
+case class TimingSection()                              extends TypeSection
+case class FiringSection()                              extends TypeSection
 case class UnimplementedSection[T <: TypeSection](raw: xml.Node)
     extends TypeSection     {
   def asImplementedUnsafe: T = ???
 }
 
-object DropStrategy                                        extends Enumeration {
+object DropStrategy                                     extends Enumeration {
   type DropStrategy = Value
 
   val DROP: sim.DropStrategy.Value          = Value("drop")
@@ -167,57 +168,58 @@ object DropStrategy                                        extends Enumeration {
 
 sealed trait JoinStrategy
 
-case class StandardJoin()                                  extends JoinStrategy {
+case class StandardJoin()                               extends JoinStrategy {
   override def toString: String = "Standard Join"
 }
-case class Quorum(numRequired: Int)                        extends JoinStrategy {
+case class Quorum(numRequired: Int)                     extends JoinStrategy {
   override def toString: String = "Quorum"
 }
-case class Guard(guardValues: mutable.Map[String, Int])    extends JoinStrategy {
+case class Guard(guardValues: mutable.Map[String, Int]) extends JoinStrategy {
   override def toString: String = "Guard"
 }
 
 sealed trait RoutingStrategy
 
-case class Random()                                        extends RoutingStrategy {
+case class Random()                                     extends RoutingStrategy {
   override def toString: String = "Random"
 }
-case class RoundRobin()                                    extends RoutingStrategy {
+case class RoundRobin()                                 extends RoutingStrategy {
   override def toString: String = "Round Robin"
 }
 case class Probabilities(probabilities: mutable.Map[Node, Double])
     extends RoutingStrategy {
   override def toString: String = "Probabilities"
 }
-case class JSQ()                                           extends RoutingStrategy {
+case class JSQ()                                        extends RoutingStrategy {
   override def toString: String = "Join the Shortest Queue (JSQ)"
 }
-case class SRT()                                           extends RoutingStrategy {
+case class SRT()                                        extends RoutingStrategy {
   override def toString: String = "Shortest Response Time"
 }
-case class LeastUtilisation()                              extends RoutingStrategy {
+case class LeastUtilisation()                           extends RoutingStrategy {
   override def toString: String = "Least Utilisation"
 }
-case class FastestService()                                extends RoutingStrategy {
+case class FastestService()                             extends RoutingStrategy {
   override def toString: String = "Fastest Service"
 }
-case class LoadDependentRouting(raw: xml.Node)             extends RoutingStrategy {
+case class LoadDependentRouting(raw: xml.Node)          extends RoutingStrategy {
   override def toString: String = "Load Dependent Routing"
 }
-case class PowerOfK(var k: Int = 1, var hasMemory: Boolean = false)            extends RoutingStrategy {
+case class PowerOfK(var k: Int = 1, var hasMemory: Boolean = false)
+    extends RoutingStrategy {
   override def toString: String = "Power of k"
 }
 case class WeightedRoundRobin(probabilities: mutable.Map[Node, Int])
     extends RoutingStrategy {
   override def toString: String = "Weighted Round Robin"
 }
-case class Disabled()                                      extends RoutingStrategy {
+case class Disabled()                                   extends RoutingStrategy {
   override def toString: String = "Disabled"
 }
 case class UnimplementedRoutingStrategy(raw: xml.Node)
     extends RoutingStrategy {}
 
-case class Connection(source: Node, target: Node)          extends Element
+case class Connection(source: Node, target: Node)       extends Element
 
 case class Trace(
     var image: Trace.Image,

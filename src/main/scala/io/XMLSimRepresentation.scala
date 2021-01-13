@@ -846,9 +846,9 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_FORK
     )
       Scalar(
-        makeUnimplementedSection(sections(0)),
+        makeJoinSection(sections(0)),
         makeTunnelSection(),
-        makeUnimplementedSection(sections(2))
+        makeForkSection(sections(2))
       )
     else if (
       sectionNames(0) == CLASSNAME_STORAGE &&

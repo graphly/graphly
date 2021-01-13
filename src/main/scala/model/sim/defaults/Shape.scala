@@ -53,46 +53,170 @@ object Implicit {
       )
   }
 
-  implicit object TerminalDefault extends Default[Terminal] {
+  implicit object TerminalDefault         extends Default[Terminal]         {
     override def default: Terminal = ???
   }
 
-  implicit object RouterDefault extends Default[Router] {
-    override def default: Router = Router(
-      Default.default(QueueSectionDefault),
-      Default.default(TunnelSectionDefault),
-      Default.default(RouterSectionDefault)
-    )
+  implicit object RouterDefault           extends Default[Router]           {
+    override def default: Router =
+      Router(
+        Default.default(QueueSectionDefault),
+        Default.default(TunnelSectionDefault),
+        Default.default(RouterSectionDefault)
+      )
   }
 
-  implicit object DelayDefault extends Default[Delay] {
-    override def default: Delay = ???
+  implicit object DelayDefault            extends Default[Delay]            {
+    override def default: Delay =
+      Delay(
+        Default.default(QueueSectionDefault),
+        UnimplementedSection(<section className="Delay">
+          <parameter array="true" classPath="jmt.engine.NetStrategies.ServiceStrategy" name="ServiceStrategy"/>
+        </section>),
+        Default.default(RouterSectionDefault)
+      )
   }
 
-  implicit object LoggerDefault extends Default[Logger] {
-    override def default: Logger = ???
+  implicit object LoggerDefault           extends Default[Logger]           {
+    override def default: Logger =
+      Logger(
+        Default.default(QueueSectionDefault),
+        UnimplementedSection(<section className="LogTunnel">
+            <parameter classPath="java.lang.String" name="logfileName">
+              <value>global.csv</value>
+            </parameter>
+            <parameter classPath="java.lang.String" name="logfilePath">
+              <value>~/JMT/</value>
+            </parameter>
+            <parameter classPath="java.lang.Boolean" name="logExecTimestamp">
+              <value>false</value>
+            </parameter>
+            <parameter classPath="java.lang.Boolean" name="logLoggerName">
+              <value>true</value>
+            </parameter>
+            <parameter classPath="java.lang.Boolean" name="logTimeStamp">
+              <value>true</value>
+            </parameter>
+            <parameter classPath="java.lang.Boolean" name="logJobID">
+              <value>true</value>
+            </parameter>
+            <parameter classPath="java.lang.Boolean" name="logJobClass">
+              <value>false</value>
+            </parameter>
+            <parameter classPath="java.lang.Boolean" name="logTimeSameClass">
+              <value>false</value>
+            </parameter>
+            <parameter classPath="java.lang.Boolean" name="logTimeAnyClass">
+              <value>false</value>
+            </parameter>
+            <parameter classPath="java.lang.Integer" name="numClasses">
+              <value>0</value>
+            </parameter>
+          </section>),
+        Default.default(RouterSectionDefault)
+      )
   }
 
-  implicit object ClassSwitchDefault extends Default[ClassSwitch] {
-    override def default: ClassSwitch = ???
+  implicit object ClassSwitchDefault      extends Default[ClassSwitch]      {
+    override def default: ClassSwitch =
+      ClassSwitch(
+        Default.default(QueueSectionDefault),
+        UnimplementedSection(<section className="ClassSwitch">
+          <parameter array="true" classPath="java.lang.Object" name="matrix"/>
+        </section>),
+        Default.default(RouterSectionDefault)
+      )
   }
 
-  implicit object SemaphoreDefault extends Default[Semaphore] {
-    override def default: Semaphore = ???
+  implicit object SemaphoreDefault        extends Default[Semaphore]        {
+    override def default: Semaphore =
+      Semaphore(
+        UnimplementedSection(<section className="Semaphore">
+      <parameter array="true" classPath="jmt.engine.NetStrategies.SemaphoreStrategy" name="SemaphoreStrategy"/>
+    </section>),
+        Default.default(TunnelSectionDefault),
+        Default.default(RouterSectionDefault)
+      )
   }
 
-  implicit object ScalarDefault extends Default[Scalar] {
-    override def default: Scalar = ???
+  implicit object ScalarDefault           extends Default[Scalar]           {
+    override def default: Scalar =
+      Scalar(
+        Default.default(JoinSectionDefault),
+        Default.default(TunnelSectionDefault),
+        Default.default(ForkSectionDefault)
+      )
   }
 
-  implicit object PlaceDefault extends Default[Place] {
-    override def default: Place = ???
+  implicit object PlaceDefault            extends Default[Place]            {
+    override def default: Place =
+      Place(
+        UnimplementedSection(<section className="Storage">
+      <parameter classPath="java.lang.Integer" name="totalCapacity">
+        <value>-1</value>
+      </parameter>
+      <parameter array="true" classPath="java.lang.Integer" name="capacities"/>
+      <parameter array="true" classPath="java.lang.String" name="dropRules"/>
+      <parameter classPath="jmt.engine.NetStrategies.QueueGetStrategies.FCFSstrategy" name="getStrategy"/>
+      <parameter array="true" classPath="jmt.engine.NetStrategies.QueuePutStrategy" name="putStrategies"/>
+    </section>),
+        Default.default(TunnelSectionDefault),
+        UnimplementedSection(<section className="Linkage"/>)
+      )
   }
 
-  implicit object TransitionDefault extends Default[Transition] {
-    override def default: Transition = ???
+  implicit object TransitionDefault       extends Default[Transition]       {
+    override def default: Transition =
+      Transition(UnimplementedSection(<section className="Enabling">
+      <parameter array="true" classPath="jmt.engine.NetStrategies.TransitionUtilities.TransitionMatrix" name="enablingConditions">
+        <subParameter classPath="jmt.engine.NetStrategies.TransitionUtilities.TransitionMatrix" name="enablingCondition">
+          <subParameter array="true" classPath="jmt.engine.NetStrategies.TransitionUtilities.TransitionVector" name="enablingVectors"/>
+        </subParameter>
+      </parameter>
+      <parameter array="true" classPath="jmt.engine.NetStrategies.TransitionUtilities.TransitionMatrix" name="inhibitingConditions">
+        <subParameter classPath="jmt.engine.NetStrategies.TransitionUtilities.TransitionMatrix" name="inhibitingCondition">
+          <subParameter array="true" classPath="jmt.engine.NetStrategies.TransitionUtilities.TransitionVector" name="inhibitingVectors"/>
+        </subParameter>
+      </parameter>
+    </section>), UnimplementedSection(<section className="Timing">
+        <parameter array="true" classPath="java.lang.String" name="modeNames">
+          <subParameter classPath="java.lang.String" name="modeName">
+            <value>Mode1</value>
+          </subParameter>
+        </parameter>
+        <parameter array="true" classPath="java.lang.Integer" name="numbersOfServers">
+          <subParameter classPath="java.lang.Integer" name="numberOfServers">
+            <value>-1</value>
+          </subParameter>
+        </parameter>
+        <parameter array="true" classPath="jmt.engine.NetStrategies.ServiceStrategy" name="timingStrategies">
+          <subParameter classPath="jmt.engine.NetStrategies.ServiceStrategies.ServiceTimeStrategy" name="timingStrategy">
+            <subParameter classPath="jmt.engine.random.Exponential" name="Exponential"/>
+            <subParameter classPath="jmt.engine.random.ExponentialPar" name="distrPar">
+              <subParameter classPath="java.lang.Double" name="lambda">
+                <value>1.0</value>
+              </subParameter>
+            </subParameter>
+          </subParameter>
+        </parameter>
+        <parameter array="true" classPath="java.lang.Integer" name="firingPriorities">
+          <subParameter classPath="java.lang.Integer" name="firingPriority">
+            <value>-1</value>
+          </subParameter>
+        </parameter>
+        <parameter array="true" classPath="java.lang.Double" name="firingWeights">
+          <subParameter classPath="java.lang.Double" name="firingWeight">
+            <value>1.0</value>
+          </subParameter>
+        </parameter>
+      </section>), UnimplementedSection(<section className="Firing">
+        <parameter array="true" classPath="jmt.engine.NetStrategies.TransitionUtilities.TransitionMatrix" name="firingOutcomes">
+          <subParameter classPath="jmt.engine.NetStrategies.TransitionUtilities.TransitionMatrix" name="firingOutcome">
+            <subParameter array="true" classPath="jmt.engine.NetStrategies.TransitionUtilities.TransitionVector" name="firingVectors"/>
+          </subParameter>
+        </parameter>
+      </section>))
   }
-
 
   implicit object SourceSectionDefault    extends Default[SourceSection]    {
     override def default: SourceSection = SourceSection(Seq.empty)

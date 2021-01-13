@@ -13,7 +13,7 @@ import scalafx.scene.layout.BorderPane
 import scalafx.stage.{FileChooser, Stage}
 import ui.canvas.GraphCanvasController.EditingMode
 import ui.canvas.SimDrawAction._
-import ui.canvas.widgetPanel.{NodeWidget, PropertiesWidget, WidgetPanel}
+import ui.widgetPanel.{NodeWidget, PropertiesWidget, WidgetPanel}
 import ui.canvas.{GraphCanvasController, GraphingCanvas}
 import ui.toolbar.VerticalToolbar
 

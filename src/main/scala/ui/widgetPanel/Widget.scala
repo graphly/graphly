@@ -1,4 +1,4 @@
-package ui.canvas.widgetPanel
+package ui.widgetPanel
 
 import scalafx.scene.layout.BorderPane
 import scalafx.Includes._

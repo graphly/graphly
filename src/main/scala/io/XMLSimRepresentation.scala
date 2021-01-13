@@ -10,7 +10,7 @@ import model.sim._
 import scalafx.scene.paint
 import scalafx.scene.paint.Color
 
-import scala.collection.{AbstractSeq, LinearSeq, mutable}
+import scala.collection.mutable
 import scala.language.implicitConversions
 import scala.math.random
 import scala.util.control.Breaks.{break, breakable}
@@ -166,6 +166,74 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
         {queueingStrategy.toArray}
       </section>
       case SinkSection() => <section className="JobSink"/>
+      case ForkSection(jobsPerLink, isSimplifiedFork, forkStrategy) =>
+        <section className="Fork">
+        {
+          if (isSimplifiedFork)
+            <parameter classPath="java.lang.Integer" name="jobsPerLink">
+            <value>{jobsPerLink.toString}</value>
+          </parameter>
+              <parameter classPath="java.lang.Boolean" name="isSimplifiedFork">
+                <value>
+                  {isSimplifiedFork.toString}</value>
+              </parameter>
+        }
+        {forkStrategy.toArray}
+      </section>
+      case JoinSection(joinStrategies) => {
+        <section className="Join">
+          <parameter array="true" classPath="jmt.engine.NetStrategies.JoinStrategy" name="JoinStrategy">
+          {
+          if (classes.isEmpty)
+            <parameter array="true" classPath="jmt.engine.NetStrategies.JoinStrategy" name="JoinStrategy"/>
+          else
+            classes.map(userClass => {
+              <refClass>{userClass.name}</refClass> 
+            <subParameter classPath="jmt.engine.NetStrategies.JoinStrategies.NormalJoin" name={
+                joinStrategies.getOrElse(userClass.name, StandardJoin())
+                  .toString
+              }>
+            {
+                joinStrategies.getOrElse(userClass.name, StandardJoin()) match {
+                  case StandardJoin() =>
+                    <subParameter classPath="java.lang.Integer" name="numRequired">
+                  <value>-1</value>
+                </subParameter>
+                  case Quorum(numRequired) =>
+                    <subParameter classPath="java.lang.Integer" name="numRequired">
+                    <value>{numRequired.toString}</value>
+                  </subParameter>
+                  case Guard(guardValues) =>
+                    <subParameter classPath="jmt.engine.NetStrategies.JoinStrategies.GuardJoin" name="Guard">
+                    <subParameter array="true" classPath="java.lang.String" name="Classes">
+                    {
+                      classes.map(userClass => {
+                        <subParameter classPath="java.lang.String" name="class">
+                      <value>{userClass.name}</value>
+                      </subParameter>
+                      })
+                    }
+                    </subParameter>
+                    <subParameter array="true" classPath="java.lang.String" name="Numbers">
+                    {
+                      classes.map(userClass => {
+                        <subParameter classPath="java.lang.String" name="required">
+                        <value>{
+                          guardValues.getOrElse(userClass.name, 0).toString
+                        }</value>
+                      </subParameter>
+                      })
+                    }
+                    </subParameter>
+                  </subParameter>
+                }
+              }
+          </subParameter>
+            }).toArray
+        }
+          </parameter>
+        </section>
+      }
       case UnimplementedSection(raw) => raw
       case x => {
         println(x.getClass, " isn't implemented!")
@@ -734,14 +802,14 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
       Fork(
         makeQueueSection(sections(0)),
         makeTunnelSection(),
-        makeUnimplementedSection(sections(2))
+        makeForkSection(sections(2))
       )
     else if (
       sectionNames(0) == CLASSNAME_JOIN &&
       sectionNames(1) == CLASSNAME_TUNNEL && sectionNames(2) == CLASSNAME_ROUTER
     )
       Join(
-        makeUnimplementedSection(sections(0)),
+        makeJoinSection(sections(0)),
         makeTunnelSection(),
         makeRouterSection(sections(2))
       )
@@ -886,8 +954,61 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
 
   private def makeDelaySection(sectionXml: xml.Node): DelaySection             = ???
   private def makeServerSection(sectionXml: xml.Node): ServerSection           = ???
-  private def makeForkSection(sectionXml: xml.Node): ForkSection               = ???
-  private def makeJoinSection(sectionXml: xml.Node): JoinSection               = ???
+  private def makeForkSection(sectionXml: xml.Node): ForkSection               = {
+    val paramNodes       = sectionXml.child.filter(node => node.label == "parameter")
+    val isSimplifiedFork = paramNodes.find(
+      paramNode =>
+        paramNode.attribute(XML_A_PARAMETER_NAME).get.head.toString ==
+          "isSimplifiedFork"
+    ).get.child(1).child(0).toString.strip().toBoolean
+
+    if (isSimplifiedFork)
+      ForkSection(
+        1,
+        true,
+        paramNodes.filter(
+          paramNode =>
+            paramNode.attribute(XML_A_PARAMETER_NAME).get.toString() ==
+              "block" | paramNode.attribute(XML_A_PARAMETER_NAME)
+                .get.toString() == "ForkStrategy"
+        )
+      )
+    else ForkSection(1, false, paramNodes)
+  }
+  private def makeJoinSection(sectionXml: xml.Node): JoinSection               = {
+    val joinStrategiesXml = sectionXml.child(1).child
+
+    val refUserClasses  =
+      joinStrategiesXml.filter(_.label == XML_E_PARAMETER_REFCLASS)
+    val classStrategies =
+      joinStrategiesXml.filter(_.label == XML_E_SUBPARAMETER)
+
+    val stratMap: mutable.Map[String, JoinStrategy] = mutable.Map.empty
+    for (i <- refUserClasses.indices) {
+      val strategyName =
+        classStrategies(i).attribute(XML_A_SUBPARAMETER_NAME).get.toString()
+
+      val strategy = strategyName match {
+        case "Standard Join" => StandardJoin()
+        case "Quorum" =>
+          Quorum(classStrategies(i).child(1).child(1).child(0).toString.toInt)
+        case "Guard" => {
+          val classes = classStrategies(i).child(1).child
+            .filter(_.label == XML_E_SUBPARAMETER)
+            .map(subParamXml => subParamXml.child(1).child(0).toString)
+          val numbers = classStrategies(i).child(3).child
+            .filter(_.label == XML_E_SUBPARAMETER)
+            .map(subParamXml => subParamXml.child(1).child(0).toString.toInt)
+
+          Guard(classes.zip(numbers).to(mutable.Map))
+        }
+      }
+
+      stratMap.put(refUserClasses(i).child(0).toString(), strategy)
+    }
+
+    JoinSection(stratMap)
+  }
   private def makeLoggerSection(sectionXml: xml.Node): LoggerSection           = ???
   private def makeClassSwitchSection(sectionXml: xml.Node): ClassSwitchSection =
     ???

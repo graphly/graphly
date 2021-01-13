@@ -377,8 +377,6 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
 
   private def saveFile(file: File): Unit                              = {
     val modelXml: String = modelToString(model, file.getName)
-//    println(modelXml)
-//    println(modelXml.nonEmpty)
     if (modelXml.nonEmpty) {
       file.createNewFile()
       new PrintWriter(file) {
@@ -509,13 +507,32 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   }
 
   def pasteSelectedNodes(update: Redraw[D]): Unit = {
-    val content     = Clipboard.systemClipboard.content
-    val pastedModel = xml.XML.loadString(content.getString).toSim
+    val content      = Clipboard.systemClipboard.content
+    val pastedModel  = xml.XML.loadString(content.getString).toSim
+    val allNodeNames = model.nodes.map(_.name)
     pastedModel.nodes.foreach(n => {
       n.x += 30
       n.y += -30
-      n.name += " Copy"
+      n.name = {
+        val baseName =
+          if (n.name.contains(" Copy "))
+            n.name.reverse.dropWhile(c => c.isDigit).reverse
+              .stripSuffix(" Copy ")
+          else n.name
+        var name     = baseName
+
+        var i = 1
+        while (allNodeNames.contains(name)) {
+          name = baseName + " Copy " + i
+          i += 1
+        }
+
+        allNodeNames.add(name)
+        name
+      }
     })
+    putModelToClipboard(modelFromSelectedNodes(pastedModel.nodes.toSet))
+
     timeline(
       history.Add.edge(pastedModel.connections) +
         history.Add.node(pastedModel.nodes) +

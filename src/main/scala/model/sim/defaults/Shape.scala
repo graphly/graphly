@@ -3,6 +3,8 @@ package model.sim.defaults
 import model.sim._
 import util.Default
 
+import scala.collection.mutable
+
 object Implicit {
 
   implicit object SinkDefault             extends Default[Sink]             {
@@ -27,9 +29,7 @@ object Implicit {
   implicit object JoinDefault             extends Default[Join]             {
     override def default: Join =
       Join(
-        UnimplementedSection(<section className="Join">
-        <parameter array="true" classPath="jmt.engine.NetStrategies.JoinStrategy" name="JoinStrategy"/>
-      </section>),
+        Default.default(JoinSectionDefault),
         Default.default(TunnelSectionDefault),
         Default.default(RouterSectionDefault)
       )
@@ -49,20 +49,50 @@ object Implicit {
       Fork(
         Default.default(QueueSectionDefault),
         Default.default(TunnelSectionDefault),
-        UnimplementedSection(<section className="Fork">
-            <parameter classPath="java.lang.Integer" name="jobsPerLink">
-              <value>1</value>
-            </parameter>
-            <parameter classPath="java.lang.Integer" name="block">
-              <value>-1</value>
-            </parameter>
-            <parameter classPath="java.lang.Boolean" name="isSimplifiedFork">
-              <value>true</value>
-            </parameter>
-            <parameter array="true" classPath="jmt.engine.NetStrategies.ForkStrategy" name="ForkStrategy"/>
-          </section>)
+        Default.default(ForkSectionDefault)
       )
   }
+
+  implicit object TerminalDefault extends Default[Terminal] {
+    override def default: Terminal = ???
+  }
+
+  implicit object RouterDefault extends Default[Router] {
+    override def default: Router = Router(
+      Default.default(QueueSectionDefault),
+      Default.default(TunnelSectionDefault),
+      Default.default(RouterSectionDefault)
+    )
+  }
+
+  implicit object DelayDefault extends Default[Delay] {
+    override def default: Delay = ???
+  }
+
+  implicit object LoggerDefault extends Default[Logger] {
+    override def default: Logger = ???
+  }
+
+  implicit object ClassSwitchDefault extends Default[ClassSwitch] {
+    override def default: ClassSwitch = ???
+  }
+
+  implicit object SemaphoreDefault extends Default[Semaphore] {
+    override def default: Semaphore = ???
+  }
+
+  implicit object ScalarDefault extends Default[Scalar] {
+    override def default: Scalar = ???
+  }
+
+  implicit object PlaceDefault extends Default[Place] {
+    override def default: Place = ???
+  }
+
+  implicit object TransitionDefault extends Default[Transition] {
+    override def default: Transition = ???
+  }
+
 
   implicit object SourceSectionDefault    extends Default[SourceSection]    {
     override def default: SourceSection = SourceSection(Seq.empty)
@@ -95,10 +125,18 @@ object Implicit {
     override def default: ServerSection = ServerSection()
   }
   implicit object ForkSectionDefault      extends Default[ForkSection]      {
-    override def default: ForkSection = ForkSection()
+    override def default: ForkSection =
+      ForkSection(
+        1,
+        true,
+        <parameter classPath="java.lang.Integer" name="block">
+      <value>-1</value>
+    </parameter>
+            <parameter array="true" classPath="jmt.engine.NetStrategies.ForkStrategy" name="ForkStrategy"/>
+      )
   }
   implicit object JoinSectionDefault      extends Default[JoinSection]      {
-    override def default: JoinSection = JoinSection()
+    override def default: JoinSection = JoinSection(mutable.Map.empty)
   }
   implicit object LoggerSectionDefault    extends Default[LoggerSection]    {
     override def default: LoggerSection = LoggerSection()

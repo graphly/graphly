@@ -57,6 +57,7 @@ class NodeWidget(title: String, model: Sim)
   }
 
   private def queueWidget(queue: QueueSection): Unit = {
+    println(queue.hashCode())
     integerField(
       "Queue size",
       queue.size.getOrElse(-1),

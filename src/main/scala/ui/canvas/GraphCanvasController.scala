@@ -222,12 +222,13 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
         update(None, Some(background))
         return
 
-      case EditingMode.Node(nodeType) => hitShape(position) match {
+      case EditingMode.Node(nodeTypeConstructor) => hitShape(position) match {
           // If we clicked on nothing, make a new node.
           case None =>
-            val mkNode = nodeType.getClass
+            val nodeType = nodeTypeConstructor()
+            val mkNode   = nodeType.getClass
             counters(mkNode) += 1
-            val node   = Node(
+            val node     = Node(
               s"${mkNode.getSimpleName} ${counters(mkNode)}",
               position,
               nodeType
@@ -580,18 +581,18 @@ object GraphCanvasController      {
 
     case object BeginEdge extends Edge with Entry
 
-    case class DrawingEdge(from: sim.Node) extends Edge  {
+    case class DrawingEdge(from: sim.Node)    extends Edge  {
       override def highlights(shape: sim.Shape): Boolean = shape == from
     }
 
-    case class Node(nodeType: NodeType)    extends Entry {
+    case class Node(nodeType: () => NodeType) extends Entry {
       var typeName: String = nodeType.getClass.getSimpleName
       if (typeName.equals("Server")) typeName = "Queue"
 
       override def toolbarStatusMnemonic = s"Create [$typeName Node]"
     }
 
-    sealed trait Select                    extends State
+    sealed trait Select                       extends State
 
     case object Selecting extends Select with Entry
 

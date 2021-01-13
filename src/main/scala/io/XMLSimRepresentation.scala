@@ -847,7 +847,6 @@ object XMLSimRepresentation extends SimRepresentation[xml.Elem] {
     val routingStrategy = routingStrategyName match {
       case "Random" => Random()
       case "Round Robin" => RoundRobin()
-      //TODO: These cases
 //      case "Probabilities" => Probabilities()
 //      case "Weighted Round Robin" => WeightedRoundRobin()
       case "Join the Shortest Queue (JSQ)" => JSQ()

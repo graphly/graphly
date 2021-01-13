@@ -236,7 +236,6 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
           // We clicked on a node, select it.
           case Some(node: sim.Node) => mode = EditingMode.SelectNode(Set(node))
           // We clicked on an edge, select it.
-          // TODO: If ALT is pressed insert an elbow (meaningless node to tidy up the graph)?
           case Some(edge: sim.Connection) =>
             mode = EditingMode.SelectEdge(Set(edge))
         }
@@ -389,7 +388,6 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
       oldModel = model.copyWithNodes()
       editingFile = Some(file)
     } else {
-      //TODO: Let the user know we failed to save
       showError(
         "Error",
         "Error saving file.",

@@ -48,7 +48,6 @@ class AppMainSceneView(width: Double, height: Double)
   }
 
   // This commented code is only used to generate the general simulation config fields, and should be deleted
-  // TODO: remove once done
 //  private val fields = model.configuration.getClass.getDeclaredFields
 //  private val jLong = classOf[Long]
 //  private val jInt = classOf[Int]

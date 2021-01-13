@@ -5,11 +5,22 @@ import javafx.scene.input.{KeyCode, KeyEvent}
 import model.sim.Sim
 import scalafx.geometry.{HPos, VPos}
 import scalafx.scene.Node
-import scalafx.scene.control.{CheckBox, ComboBox, Label, TextField, TextFormatter, Tooltip}
+import scalafx.scene.control.{
+  CheckBox,
+  ComboBox,
+  Label,
+  TextField,
+  TextFormatter,
+  Tooltip
+}
 import javafx.scene.layout.GridPane.getRowIndex
 import scalafx.scene.layout.{GridPane, Pane, Priority}
 import scalafx.util.Duration
-import scalafx.util.converter.{DoubleStringConverter, IntStringConverter, LongStringConverter}
+import scalafx.util.converter.{
+  DoubleStringConverter,
+  IntStringConverter,
+  LongStringConverter
+}
 
 class PropertiesPanel(model: Sim) extends GridPane {
   private var rowCounter = 0
@@ -24,9 +35,7 @@ class PropertiesPanel(model: Sim) extends GridPane {
   def wideLabel(str: String, tooltip: Option[String]): Label = {
     val lbl = new Label(str)
     if (tooltip.isDefined) {
-      val tooltipObj = new Tooltip(tooltip.get) {
-        showDelay = Duration(500)
-      }
+      val tooltipObj = new Tooltip(tooltip.get) { showDelay = Duration(500) }
       lbl.setTooltip(tooltipObj)
     }
     lbl.minWidth = 40
@@ -38,7 +47,9 @@ class PropertiesPanel(model: Sim) extends GridPane {
       initial: String,
       projection: (Sim, String) => Unit,
       tooltip: Option[String]
-  ): Unit                           = { addField(title, x => y => projection(y, x), initial, null, tooltip) }
+  ): Unit                                                    = {
+    addField(title, x => y => projection(y, x), initial, null, tooltip)
+  }
 
   def integerField(
       title: String,
@@ -104,10 +115,7 @@ class PropertiesPanel(model: Sim) extends GridPane {
       }
     }
     textField.focusedProperty().addListener((_, _, newVal) => {
-      if (!newVal) {
-        println(title, textField.text.value)
-        projection(textField.text.value)(model)
-      }
+      if (!newVal) { projection(textField.text.value)(model) }
     })
     textField.text = initial
     this.addRowSpaced(rowCounter, wideLabel(title, tooltip), textField)
@@ -122,10 +130,7 @@ class PropertiesPanel(model: Sim) extends GridPane {
       tooltip: Option[String]
   ): Unit                                                             = {
     val box = new ComboBox[String](options) {
-      onAction = (_: ActionEvent) => {
-        println(title, this.value.value)
-        projection(model, this.value.value)
-      }
+      onAction = (_: ActionEvent) => { projection(model, this.value.value) }
     }
     box.setValue(placeholder)
     this.addRowSpaced(rowCounter, wideLabel(title, tooltip), box)
@@ -149,10 +154,7 @@ class PropertiesPanel(model: Sim) extends GridPane {
       tooltip: Option[String]
   ): Unit                                                             = {
     val checkbox = new CheckBox() {
-      onAction = (_: ActionEvent) => {
-        println(title, this.isSelected)
-        projection(model, this.isSelected)
-      }
+      onAction = (_: ActionEvent) => { projection(model, this.isSelected) }
     }
     checkbox.selected = initial
     this.addRowSpaced(rowCounter, wideLabel(title, tooltip), checkbox)

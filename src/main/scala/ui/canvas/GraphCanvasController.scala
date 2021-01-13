@@ -71,7 +71,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
 
   def hasChanges: Boolean = !model.strongEq(oldModel)
 
-  def checkUserWantsErase: Boolean = {
+  def checkUserWantsErase: Boolean                                        = {
     val alert  = new Alert(AlertType.Confirmation)
     alert.setTitle("Unsaved Work")
     alert.setHeaderText("You have unsaved changes.")
@@ -87,7 +87,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
     alert.setContentText("If you do not save, your changes will be lost.")
     val NoSave = new ButtonType("Close without Saving")
     val Cancel = new ButtonType("Cancel")
-    val Save = new ButtonType("Save and Exit")
+    val Save   = new ButtonType("Save and Exit")
     alert.getButtonTypes.setAll(NoSave, Cancel, Save)
     val result = alert.showAndWait()
     result.get match {
@@ -236,7 +236,6 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
           // We clicked on a node, select it.
           case Some(node: sim.Node) => mode = EditingMode.SelectNode(Set(node))
           // We clicked on an edge, select it.
-          // TODO: If ALT is pressed insert an elbow (meaningless node to tidy up the graph)?
           case Some(edge: sim.Connection) =>
             mode = EditingMode.SelectEdge(Set(edge))
         }
@@ -396,12 +395,8 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
   }
 
   def save(): Unit                                                    = {
-    if (editingFile.isEmpty) {
-      saveAs()
-    }
-    else {
-      saveFile(editingFile.get)
-    }
+    if (editingFile.isEmpty) { saveAs() }
+    else { saveFile(editingFile.get) }
   }
 
   def saveAs(): Unit                          = {
@@ -494,7 +489,7 @@ class GraphCanvasController[D](var model: sim.Sim)(implicit
       case EditingMode.SelectNode(nodes) => putModelToClipboard(
           modelFromSelectedNodes(nodes)
         )
-      case _ => println("Finish selecting nodes to copy them")
+      case _ =>
     }
   }
 

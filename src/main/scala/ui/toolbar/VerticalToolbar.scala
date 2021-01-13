@@ -11,7 +11,6 @@ import util.Default
 class VerticalToolbar extends ToolBar {
   orientation = Orientation.Vertical
 
-  // TODO Refactor state machine so that State -> EntryState.
   val itemSelected = new Event[GraphCanvasController.EditingMode.State]
 
   private val allButtonsTg   = new ToggleGroup()

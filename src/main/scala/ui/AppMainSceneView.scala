@@ -47,30 +47,6 @@ class AppMainSceneView(width: Double, height: Double)
     resetGeneralMenu(model)
   }
 
-  // This commented code is only used to generate the general simulation config fields, and should be deleted
-  // TODO: remove once done
-//  private val fields = model.configuration.getClass.getDeclaredFields
-//  private val jLong = classOf[Long]
-//  private val jInt = classOf[Int]
-//  private val jString = classOf[String]
-//  private val jBool = classOf[Boolean]
-//  private val jDouble = classOf[Double]
-//
-//  def convertCamelCase(str: String): String = {
-//    var temp = str.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2").replaceAll("([a-z\\d])([A-Z])", "$1_$2").toLowerCase
-//    temp.replaceAll("_", " ").capitalize
-//  }
-//
-//  fields.foreach {
-//    f => f.getType match {
-//      case `jLong` | `jInt` => println(s"""integerField("${convertCamelCase(f.getName)}", model.configuration.${f.getName}, _.${f.getName} = _)""")
-//      case `jString` => println(s"""textField("${convertCamelCase(f.getName)}", model.configuration.${f.getName}, _.${f.getName} = _)""")
-//      case `jBool` => println(s"""checkbox("${convertCamelCase(f.getName)}", model.configuration.${f.getName}, _.${f.getName} = _)""")
-//      case `jDouble` => println(s"""doubleField("${convertCamelCase(f.getName)}", model.configuration.${f.getName}, _.${f.getName} = _)""")
-//      case _ => println("what")
-//    }
-//  }
-
   general.generateGlobalMenu()
   rightMenu.widget(general)
   rightMenu.widget(nodeMenu)
@@ -165,7 +141,7 @@ class AppMainSceneView(width: Double, height: Double)
         },
         new Menu("Edit")  {
           items = List(
-            new MenuItem("Delete") {
+            new MenuItem("Delete")     {
               onAction = (_: ActionEvent) =>
                 controller.deleteSelected(graphContainer.redraw)
               accelerator = new KeyCodeCombination(KeyCode.Delete)
@@ -173,35 +149,38 @@ class AppMainSceneView(width: Double, height: Double)
             new SeparatorMenuItem(),
             new MenuItem("Select All") {
               onAction = (_: ActionEvent) =>
-                controller.redrawMode(EditingMode.SelectNode(model.nodes.toSet), graphContainer.redraw)
+                controller.redrawMode(
+                  EditingMode.SelectNode(model.nodes.toSet),
+                  graphContainer.redraw
+                )
               accelerator =
                 new KeyCodeCombination(KeyCode.A, KeyCombination.ControlDown)
             },
-            new MenuItem("Copy")   {
+            new MenuItem("Copy")       {
               onAction = (_: ActionEvent) =>
                 controller.copySelectedNodes(graphContainer.redraw)
               accelerator =
                 new KeyCodeCombination(KeyCode.C, KeyCombination.ControlDown)
             },
-            new MenuItem("Paste")  {
+            new MenuItem("Paste")      {
               onAction = (_: ActionEvent) =>
                 controller.pasteSelectedNodes(graphContainer.redraw)
               accelerator =
                 new KeyCodeCombination(KeyCode.V, KeyCombination.ControlDown)
             },
-            new MenuItem("Cut")    {
+            new MenuItem("Cut")        {
               onAction = (_: ActionEvent) =>
                 controller.cutSelectedNodes(graphContainer.redraw)
               accelerator =
                 new KeyCodeCombination(KeyCode.X, KeyCombination.ControlDown)
             },
-            new MenuItem("Undo")   {
+            new MenuItem("Undo")       {
               onAction =
                 (_: ActionEvent) => controller.undo(graphContainer.redraw)
               accelerator =
                 new KeyCodeCombination(KeyCode.Z, KeyCombination.ControlDown)
             },
-            new MenuItem("Redo")   {
+            new MenuItem("Redo")       {
               onAction =
                 (_: ActionEvent) => controller.redo(graphContainer.redraw)
               accelerator = new KeyCodeCombination(

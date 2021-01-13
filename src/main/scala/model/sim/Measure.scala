@@ -1,6 +1,5 @@
 package model.sim
 
-//TODO: We need to delete a measure if we delete its referenceNode
 case class Measure(
     alpha: Float,
     name: String,

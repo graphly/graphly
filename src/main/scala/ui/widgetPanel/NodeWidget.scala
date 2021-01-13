@@ -46,7 +46,6 @@ class NodeWidget(title: String, model: Sim)
       (_, y) => {
         val oldStrat = router.routingStrategy
         router.routingStrategy = strategies.find(s => s.toString.equals(y)).get
-        println(oldStrat, router.routingStrategy)
         oldStrat match {
           case _: PowerOfK => removeLastRows(2)
           case _ =>

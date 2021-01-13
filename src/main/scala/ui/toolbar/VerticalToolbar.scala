@@ -14,15 +14,15 @@ class VerticalToolbar extends ToolBar {
   // TODO Refactor state machine so that State -> EntryState.
   val itemSelected = new Event[GraphCanvasController.EditingMode.State]
 
-  private val allButtonsTg = new ToggleGroup()
-  private val selectBtn    =
+  private val allButtonsTg   = new ToggleGroup()
+  private val selectBtn      =
     new ToolbarButton("Select Nodes or Edges", "/assets/icons/select.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
         itemSelected.dispatch(GraphCanvasController.EditingMode.Selecting)
       }
     }
-  private val sourceBtn    =
+  private val sourceBtn      =
     new ToolbarButton("Create Source Nodes", "/assets/icons/source.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
@@ -31,7 +31,7 @@ class VerticalToolbar extends ToolBar {
         )
       }
     }
-  private val forkBtn      =
+  private val forkBtn        =
     new ToolbarButton("Create Fork Nodes", "/assets/icons/fork.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
@@ -40,7 +40,7 @@ class VerticalToolbar extends ToolBar {
         )
       }
     }
-  private val joinBtn      =
+  private val joinBtn        =
     new ToolbarButton("Create Join Nodes", "/assets/icons/join.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
@@ -49,16 +49,18 @@ class VerticalToolbar extends ToolBar {
         )
       }
     }
-  private val queueBtn     =
-    new ToolbarButton("Create Server (queue) Nodes", "/assets/icons/server.svg") {
-      toggleGroup = allButtonsTg
-      onAction = e => {
-        itemSelected.dispatch(
-          GraphCanvasController.EditingMode.Node(Default.default[Server])
-        )
-      }
+  private val queueBtn       = new ToolbarButton(
+    "Create Server (queue) Nodes",
+    "/assets/icons/server.svg"
+  ) {
+    toggleGroup = allButtonsTg
+    onAction = e => {
+      itemSelected.dispatch(
+        GraphCanvasController.EditingMode.Node(Default.default[Server])
+      )
     }
-  private val sinkBtn      =
+  }
+  private val sinkBtn        =
     new ToolbarButton("Create Sink Nodes", "/assets/icons/sink.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
@@ -66,79 +68,92 @@ class VerticalToolbar extends ToolBar {
           .dispatch(GraphCanvasController.EditingMode.Node(Sink(SinkSection())))
       }
     }
-  private val terminalBtn      =
+  private val terminalBtn    =
     new ToolbarButton("Create Terminal Nodes", "/assets/icons/terminal.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
-        itemSelected
-          .dispatch(GraphCanvasController.EditingMode.Node(Default.default[Terminal]))
+        itemSelected.dispatch(
+          GraphCanvasController.EditingMode.Node(Default.default[Terminal])
+        )
       }
     }
   private val routerBtn      =
     new ToolbarButton("Create Router Nodes", "/assets/icons/router.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
-        itemSelected
-          .dispatch(GraphCanvasController.EditingMode.Node(Default.default[Router]))
+        itemSelected.dispatch(
+          GraphCanvasController.EditingMode.Node(Default.default[Router])
+        )
       }
     }
-  private val delayBtn      =
+  private val delayBtn       =
     new ToolbarButton("Create Delay Nodes", "/assets/icons/delay.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
-        itemSelected
-          .dispatch(GraphCanvasController.EditingMode.Node(Default.default[Delay]))
+        itemSelected.dispatch(
+          GraphCanvasController.EditingMode.Node(Default.default[Delay])
+        )
       }
     }
   private val loggerBtn      =
     new ToolbarButton("Create Logger Nodes", "/assets/icons/logger.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
-        itemSelected
-          .dispatch(GraphCanvasController.EditingMode.Node(Default.default[Logger]))
+        itemSelected.dispatch(
+          GraphCanvasController.EditingMode.Node(Default.default[Logger])
+        )
       }
     }
-  private val classSwitchBtn      =
-    new ToolbarButton("Create Class Switch Nodes", "/assets/icons/class-switch.svg") {
-      toggleGroup = allButtonsTg
-      onAction = e => {
-        itemSelected
-          .dispatch(GraphCanvasController.EditingMode.Node(Default.default[ClassSwitch]))
-      }
+  private val classSwitchBtn = new ToolbarButton(
+    "Create Class Switch Nodes",
+    "/assets/icons/class-switch.svg"
+  ) {
+    toggleGroup = allButtonsTg
+    onAction = e => {
+      itemSelected.dispatch(
+        GraphCanvasController.EditingMode.Node(Default.default[ClassSwitch])
+      )
     }
-  private val semaphoreBtn      =
+  }
+  private val semaphoreBtn   =
     new ToolbarButton("Create Semaphore Nodes", "/assets/icons/semaphore.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
-        itemSelected
-          .dispatch(GraphCanvasController.EditingMode.Node(Default.default[Semaphore]))
+        itemSelected.dispatch(
+          GraphCanvasController.EditingMode.Node(Default.default[Semaphore])
+        )
       }
     }
   private val scalarBtn      =
     new ToolbarButton("Create Scalar Nodes", "/assets/icons/scalar.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
-        itemSelected
-          .dispatch(GraphCanvasController.EditingMode.Node(Default.default[Scalar]))
+        itemSelected.dispatch(
+          GraphCanvasController.EditingMode.Node(Default.default[Scalar])
+        )
       }
     }
-  private val placeBtn      =
+  private val placeBtn       =
     new ToolbarButton("Create Place Nodes", "/assets/icons/place.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
-        itemSelected
-          .dispatch(GraphCanvasController.EditingMode.Node(Default.default[Place]))
+        itemSelected.dispatch(
+          GraphCanvasController.EditingMode.Node(Default.default[Place])
+        )
       }
     }
-  private val transitionBtn      =
-    new ToolbarButton("Create Transition Nodes", "/assets/icons/transition.svg") {
-      toggleGroup = allButtonsTg
-      onAction = e => {
-        itemSelected
-          .dispatch(GraphCanvasController.EditingMode.Node(Default.default[Transition]))
-      }
+  private val transitionBtn  = new ToolbarButton(
+    "Create Transition Nodes",
+    "/assets/icons/transition.svg"
+  ) {
+    toggleGroup = allButtonsTg
+    onAction = e => {
+      itemSelected.dispatch(
+        GraphCanvasController.EditingMode.Node(Default.default[Transition])
+      )
     }
-  private val edgesBtn     =
+  }
+  private val edgesBtn       =
     new ToolbarButton("Create Edges", "/assets/icons/edge.svg") {
       toggleGroup = allButtonsTg
       onAction = e => {
@@ -154,7 +169,6 @@ class VerticalToolbar extends ToolBar {
     joinBtn,
     queueBtn,
     sinkBtn,
-    terminalBtn,
     routerBtn,
     delayBtn,
     loggerBtn,
@@ -169,7 +183,7 @@ class VerticalToolbar extends ToolBar {
 
   def controllerUpdatedMode(
       mode: GraphCanvasController.EditingMode.State
-  ): Unit                  = {
+  ): Unit                    = {
     mode match {
       case GraphCanvasController.EditingMode.Selecting =>
         selectBtn.selected = true

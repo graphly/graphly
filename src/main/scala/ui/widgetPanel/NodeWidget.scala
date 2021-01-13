@@ -1,22 +1,30 @@
 package ui.widgetPanel
 
-import model.sim.{ClassSwitch, Delay, Disabled, DropStrategy, FastestService, Fork, ForkSection, JSQ, LeastUtilisation, Logger, PowerOfK, QueueSection, Random, RoundRobin, Router, RouterSection, RoutingStrategy, SRT, Server, Sim}
+import model.sim._
 import ui.canvas.GraphCanvasController
 
 class NodeWidget(title: String, model: Sim)
     extends PropertiesWidget(title, model) {
   def forkWidget(fork: ForkSection): Unit = {
     if (fork.isSimplifiedFork) {
-      integerField("Jobs per link", fork.jobsPerLink, (_, y) => fork.jobsPerLink = y)
+      integerField(
+        "Jobs per link",
+        fork.jobsPerLink,
+        (_, y) => fork.jobsPerLink = y
+      )
     }
   }
 
-  def routerWidget(router: RouterSection): Unit = {
+  def routerWidget(router: RouterSection): Unit      = {
     def matchPowerofK(routeStrat: RoutingStrategy): Unit = {
       routeStrat match {
         case strat: PowerOfK =>
           integerField("K", strat.k, (_, k) => strat.k = k)
-          checkbox("Has memory", strat.hasMemory, (_, hasMem) => strat.hasMemory = hasMem)
+          checkbox(
+            "Has memory",
+            strat.hasMemory,
+            (_, hasMem) => strat.hasMemory = hasMem
+          )
         case _ =>
       }
     }
@@ -58,7 +66,7 @@ class NodeWidget(title: String, model: Sim)
     dropdown(
       "Drop Strategy",
       DropStrategy.values.toList.map(_.toString),
-      queue.dropStrategy.getOrElse(DropStrategy.BAS_BLOCKING).toString,
+      queue.dropStrategy.getOrElse(DropStrategy.DROP).toString,
       (_, y) => queue.dropStrategy = Some(DropStrategy.withName(y))
     )
   }
@@ -80,19 +88,32 @@ object NodeWidget                          {
             widget.textField("Name", n.name, (_, y) => n.name = y)
             widget.checkbox("Rotated", n.rotated, (_, y) => n.rotated = y)
             n.nodeType match {
+              case Source(_, _, router) => widget.routerWidget(router)
+              case Sink(_) =>
+              case Join(join, _, router) => widget.routerWidget(router)
+              case Logger(queue, _, router) =>
+                widget.queueWidget(queue)
+                widget.routerWidget(router)
+              case ClassSwitch(queue, _, router) =>
+                widget.queueWidget(queue)
+                widget.routerWidget(router)
+              case Semaphore(_, _, router) => widget.routerWidget(router)
+              case Scalar(join, _, fork) => widget.forkWidget(fork)
+              case Place(_, _, _) =>
+              case Transition(_, _, _) =>
               case Server(queue, _, router) =>
                 widget.queueWidget(queue)
                 widget.routerWidget(router)
               case Router(queue, _, router) =>
                 widget.queueWidget(queue)
                 widget.routerWidget(router)
-              case Delay(queue, _, _) => widget.queueWidget(queue)
+              case Delay(queue, _, router) =>
+                widget.queueWidget(queue)
+                widget.routerWidget(router)
               case Fork(queue, _, fork) =>
                 widget.queueWidget(queue)
                 widget.forkWidget(fork)
-              case Logger(queue, _, _) => widget.queueWidget(queue)
-              case ClassSwitch(queue, _, _) => widget.queueWidget(queue)
-              case _ =>
+              case Unimplemented(_) =>
             }
           })
         }
